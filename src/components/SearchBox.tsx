@@ -18,7 +18,8 @@ const SearchBox = () => {
         body: JSON.stringify({
           query,
           dbPath:
-            '/Users/bram/Dropbox/PARA/Projects/api-gateway-local-build/api-gateway-electron/yourcommonbase.db',
+            // '/Users/bram/Dropbox/PARA/Projects/api-gateway-local-build/api-gateway-electron/yourcommonbase.db',
+            '/var/data/db1.db',
         }),
       });
       console.log('response:', response);

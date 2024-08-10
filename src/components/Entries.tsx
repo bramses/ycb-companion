@@ -31,7 +31,6 @@ const Entries = ({ searchResults, onDelve }: EntriesProps) => {
           title={entry.metadata.title}
           author={entry.metadata.author}
           createdAt={entry.createdAt}
-          updatedAt={entry.updatedAt}
           similarity={entry.similarity}
           hasYouTubeEmbed={entry.metadata.author.includes('youtube.com')}
           youtubeId={

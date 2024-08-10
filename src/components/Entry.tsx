@@ -1,3 +1,8 @@
+/* eslint-disable @next/next/no-img-element */
+/* eslint-disable jsx-a11y/img-redundant-alt */
+/* eslint-disable unused-imports/no-unused-vars */
+/* eslint-disable import/no-extraneous-dependencies */
+
 'use client';
 
 import 'react-lite-youtube-embed/dist/LiteYouTubeEmbed.css';
@@ -8,7 +13,7 @@ import { Tweet } from 'react-tweet';
 
 const Entry = ({
   hasAliases: initialHasAliases = false,
-  hasCollections: initialHasCollections = false,
+  // hasCollections: initialHasCollections = false,
   hasYouTubeEmbed: initialHasYouTubeEmbed = false,
   hasTwitterEmbed: initialHasTwitterEmbed = false,
   tweetId = '',
@@ -18,14 +23,13 @@ const Entry = ({
   title = '',
   author = '',
   createdAt = '',
-  updatedAt = '',
   similarity = 0,
   imageUrl = '',
   hasImage = false,
-  onDelve = (delveData: string) => {},
+  onDelve = (_: string) => {},
 }) => {
   const [hasAliases] = useState(initialHasAliases);
-  const [hasCollections, setHasCollections] = useState(initialHasCollections);
+  // const [hasCollections] = useState(initialHasCollections);
   const [hasYouTubeEmbed] = useState(initialHasYouTubeEmbed);
   const [hasTwitterEmbed] = useState(initialHasTwitterEmbed);
 

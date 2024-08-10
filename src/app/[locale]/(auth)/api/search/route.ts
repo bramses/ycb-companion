@@ -5,7 +5,7 @@ import { logger } from '@/libs/Logger';
 export const POST = async (request: Request) => {
   const { query, dbPath } = await request.json();
 
-  const resp = await fetch('http://localhost:8088/search', {
+  const resp = await fetch('https://api-gateway-electron.onrender.com/search', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
