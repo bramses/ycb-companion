@@ -5,24 +5,24 @@ import { logger } from '@/libs/Logger';
 // import env variables
 
 export const POST = async (request: Request) => {
-  const { query } = await request.json();
+  const { id } = await request.json();
   const { CLOUD_URL, DATABASE_URL } = process.env;
 
-  const resp = await fetch(`${CLOUD_URL}/search`, {
+  const resp = await fetch(`${CLOUD_URL}/fetch`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      query,
+      id: id.toString(),
       dbPath: DATABASE_URL,
     }),
   });
-
+  logger.info('resp:', resp);
   const data = await resp.json();
 
   try {
-    logger.info(`A new search has been created ${JSON.stringify(data)}`);
+    logger.info(`A new fetch has been created ${JSON.stringify(data)}`);
 
     return NextResponse.json({
       data,

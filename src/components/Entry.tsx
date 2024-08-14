@@ -27,6 +27,8 @@ const Entry = ({
   imageUrl = '',
   hasImage = false,
   onDelve = (_: string) => {},
+  aliases = [],
+  selectedIndex = -1,
 }) => {
   const [hasAliases] = useState(initialHasAliases);
   // const [hasCollections] = useState(initialHasCollections);
@@ -72,37 +74,52 @@ const Entry = ({
             <h2 className="mb-2 text-lg font-semibold text-gray-900 dark:text-white">
               Aliases:
             </h2>
+            {/* {
+    "id": "2449",
+    "data": "me at a hot ones interview",
+    "metadata": {
+        "title": "bingus ✩ on X: \"https://t.co/G8jSTYplMv\" / X",
+        "author": "https://x.com/aliaoftheblade/status/1822602088427487358",
+        "alias_ids": [
+            2450,
+            2451,
+            2517
+        ],
+        "s_id": 2449
+    },
+    "createdAt": "2024-08-12T01:56:14.569Z",
+    "updatedAt": "2024-08-12T01:56:14.569Z",
+    "aliasData": [
+        "dune meme",
+        "hot ones meme",
+        "hot ones dune"
+    ],
+    "selectedIndex": 1
+} 
+map over aliasData and display each alias in a list and put a (*) next to the selected index
+and turn each into a link that searches for that alias
+*/}
             <ul className="max-w-md list-inside list-disc space-y-1 text-gray-500 dark:text-gray-400">
-              <li>
-                <button
-                  onClick={() => {}}
-                  className="font-medium text-blue-600 underline hover:text-blue-700 hover:no-underline dark:text-blue-500 dark:hover:text-blue-600"
-                  type="button"
-                >
-                  atrioc
-                </button>
-              </li>
-              <li>
-                <span>
-                  <button
-                    onClick={() => {}}
-                    className="font-medium text-blue-600 underline hover:text-blue-700 hover:no-underline dark:text-blue-500 dark:hover:text-blue-600"
-                    type="button"
-                  >
-                    japan
-                  </button>
-                  (*)
-                </span>
-              </li>
-              <li>
-                <button
-                  onClick={() => {}}
-                  className="font-medium text-blue-600 underline hover:text-blue-700 hover:no-underline dark:text-blue-500 dark:hover:text-blue-600"
-                  type="button"
-                >
-                  the collapsing us stock market 2024
-                </button>
-              </li>
+              {aliases.map((alias, index) => (
+                <li key={alias}>
+                  {index === selectedIndex ? (
+                    <strong className="font-semibold text-gray-900 dark:text-white">
+                      {alias} *
+                    </strong>
+                  ) : (
+                    <button
+                      type="button"
+                      className="font-normal text-blue-600 hover:underline"
+                      onClick={() => {
+                        // search using alias
+                        onDelve(alias);
+                      }}
+                    >
+                      {alias}
+                    </button>
+                  )}
+                </li>
+              ))}
             </ul>
 
             <hr className="mx-auto my-4 h-1 w-48 rounded border-0 bg-gray-100 md:my-10 dark:bg-gray-700" />

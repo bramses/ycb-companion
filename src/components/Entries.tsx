@@ -24,10 +24,10 @@ const Entries = ({ searchResults, onDelve }: EntriesProps) => {
     <div>
       {searchResults.map((entry: any) => (
         <Entry
-          key={entry.id}
-          data={
-            '_display' in entry.metadata ? entry.metadata._display : entry.data
-          }
+          key={'aliasData' in entry ? Math.random() * 1000 : entry.id} // Replace 'Math.random() * 1000' with a more specific key if possible
+          data={entry.data}
+          aliases={'aliasData' in entry ? entry.aliasData : []}
+          selectedIndex={'selectedIndex' in entry ? entry.selectedIndex : -1}
           title={entry.metadata.title}
           author={entry.metadata.author}
           createdAt={entry.createdAt}
@@ -61,7 +61,7 @@ const Entries = ({ searchResults, onDelve }: EntriesProps) => {
               : ''
           }
           onDelve={onDelve}
-          hasAliases={'_display' in entry.metadata}
+          hasAliases={'aliasData' in entry}
         />
       ))}
     </div>
