@@ -49,6 +49,7 @@ const SearchBox = () => {
       return responseData;
     } catch (error) {
       console.error('Error adding entry:', error);
+      return {};
     }
   };
 
@@ -68,8 +69,10 @@ const SearchBox = () => {
       const responseData = await response.json();
 
       console.log('Updated entry:', responseData);
+      return responseData;
     } catch (error) {
       console.error('Error updating entry:', error);
+      return {};
     }
   };
 
@@ -153,21 +156,25 @@ const SearchBox = () => {
               }
 
               // Fetch all alias entries by alias_ids
-              const aliasData = await Promise.all(
-                parentMetadataJSON.alias_ids.map(async (aliasId: string) => {
-                  try {
-                    const aliasEntryRes = await fetchByID(aliasId);
-                    const aliasEntry = aliasEntryRes.data;
-                    return aliasEntry.data;
-                  } catch (aliasFetchError) {
-                    console.error(
-                      `Error fetching alias entry with ID ${aliasId}:`,
-                      aliasFetchError,
-                    );
-                    throw aliasFetchError;
-                  }
-                }),
-              );
+              const aliasData = parentMetadataJSON.alias_ids
+                ? await Promise.all(
+                    parentMetadataJSON.alias_ids.map(
+                      async (aliasId: string) => {
+                        try {
+                          const aliasEntryRes = await fetchByID(aliasId);
+                          const aliasEntry = aliasEntryRes.data;
+                          return aliasEntry.data;
+                        } catch (aliasFetchError) {
+                          console.error(
+                            `Error fetching alias entry with ID ${aliasId}:`,
+                            aliasFetchError,
+                          );
+                          throw aliasFetchError;
+                        }
+                      },
+                    ),
+                  )
+                : [];
 
               // Return the combined entry with parent and alias data
               return {
@@ -226,10 +233,7 @@ const SearchBox = () => {
       // update the original entry's metadata with the new alias id in the alias_ids array
       const updatedMetadata = {
         ...data.metadata,
-        alias_ids:
-          parentAliases.length > 0
-            ? [parentAliases, aliasId].flat()
-            : [aliasId],
+        alias_ids: parentAliases ? [parentAliases, aliasId].flat() : [aliasId],
       };
       console.log('Updated metadata:', updatedMetadata);
       await updateEntry(parentId, data.data, updatedMetadata);
