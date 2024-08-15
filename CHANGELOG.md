@@ -1,3 +1,10 @@
+# 1.0.0 (2024-08-15)
+
+
+### Bug Fixes
+
+* Clear alias input field after adding alias in Entry component ([f04c460](https://github.com/bramses/ycb-companion/commit/f04c4609e0a71dcef384fb251d25b20cbe7f22ec))
+
 # [3.54.0](https://github.com/ixartz/Next-js-Boilerplate/compare/v3.53.0...v3.54.0) (2024-07-23)
 
 
