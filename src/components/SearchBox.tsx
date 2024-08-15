@@ -9,6 +9,7 @@ import Entries from './Entries';
 const SearchBox = () => {
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [textAreaValue, setTextAreaValue] = useState('');
+  const [showLoading, setShowLoading] = useState(false);
 
   const fetchByID = async (id: string) => {
     try {
@@ -32,6 +33,7 @@ const SearchBox = () => {
 
   const fetchSearchResults = async (query: string) => {
     try {
+      setShowLoading(true);
       const response = await fetch('/api/search', {
         method: 'POST',
         headers: {
@@ -146,6 +148,7 @@ const SearchBox = () => {
       );
 
       console.log('Setting search results:', updatedDataWithAliases);
+      setShowLoading(false);
       setSearchResults(updatedDataWithAliases);
     } catch (error) {
       console.error('Error fetching search results:', error);
@@ -154,6 +157,8 @@ const SearchBox = () => {
 
   const handleDataFromEntry = (data: string) => {
     setTextAreaValue(data);
+    // clear search results
+    setSearchResults([]);
     fetchSearchResults(data);
   };
 
@@ -175,6 +180,53 @@ const SearchBox = () => {
       >
         Search
       </button>
+
+      {showLoading && (
+        <div className="flex justify-center">
+          <div
+            role="status"
+            className="my-4 max-w-md animate-pulse space-y-4 divide-y divide-gray-200 rounded border border-gray-200 p-4 shadow md:p-6 dark:divide-gray-700 dark:border-gray-700"
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="mb-2.5 h-2.5 w-24 rounded-full bg-gray-300 dark:bg-gray-600" />
+                <div className="h-2 w-32 rounded-full bg-gray-200 dark:bg-gray-700" />
+              </div>
+              <div className="h-2.5 w-12 rounded-full bg-gray-300 dark:bg-gray-700" />
+            </div>
+            <div className="flex items-center justify-between pt-4">
+              <div>
+                <div className="mb-2.5 h-2.5 w-24 rounded-full bg-gray-300 dark:bg-gray-600" />
+                <div className="h-2 w-32 rounded-full bg-gray-200 dark:bg-gray-700" />
+              </div>
+              <div className="h-2.5 w-12 rounded-full bg-gray-300 dark:bg-gray-700" />
+            </div>
+            <div className="flex items-center justify-between pt-4">
+              <div>
+                <div className="mb-2.5 h-2.5 w-24 rounded-full bg-gray-300 dark:bg-gray-600" />
+                <div className="h-2 w-32 rounded-full bg-gray-200 dark:bg-gray-700" />
+              </div>
+              <div className="h-2.5 w-12 rounded-full bg-gray-300 dark:bg-gray-700" />
+            </div>
+            <div className="flex items-center justify-between pt-4">
+              <div>
+                <div className="mb-2.5 h-2.5 w-24 rounded-full bg-gray-300 dark:bg-gray-600" />
+                <div className="h-2 w-32 rounded-full bg-gray-200 dark:bg-gray-700" />
+              </div>
+              <div className="h-2.5 w-12 rounded-full bg-gray-300 dark:bg-gray-700" />
+            </div>
+            <div className="flex items-center justify-between pt-4">
+              <div>
+                <div className="mb-2.5 h-2.5 w-24 rounded-full bg-gray-300 dark:bg-gray-600" />
+                <div className="h-2 w-32 rounded-full bg-gray-200 dark:bg-gray-700" />
+              </div>
+              <div className="h-2.5 w-12 rounded-full bg-gray-300 dark:bg-gray-700" />
+            </div>
+            <span className="sr-only">Loading...</span>
+          </div>
+        </div>
+      )}
+
       <Entries searchResults={searchResults} onDelve={handleDataFromEntry} />
     </div>
   );
