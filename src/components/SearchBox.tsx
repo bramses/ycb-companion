@@ -31,6 +31,48 @@ const SearchBox = () => {
     }
   };
 
+  const addEntry = async (data: string, metadata: string) => {
+    try {
+      const response = await fetch('/api/add', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          data,
+          metadata,
+        }),
+      });
+      const responseData = await response.json();
+
+      console.log('Added entry:', responseData);
+      return responseData;
+    } catch (error) {
+      console.error('Error adding entry:', error);
+    }
+  };
+
+  const updateEntry = async (id: string, data: string, metadata: string) => {
+    try {
+      const response = await fetch('/api/update', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          id,
+          data,
+          metadata,
+        }),
+      });
+      const responseData = await response.json();
+
+      console.log('Updated entry:', responseData);
+    } catch (error) {
+      console.error('Error updating entry:', error);
+    }
+  };
+
   const fetchSearchResults = async (query: string) => {
     try {
       setShowLoading(true);
@@ -162,6 +204,42 @@ const SearchBox = () => {
     fetchSearchResults(data);
   };
 
+  const handleAliasAdd = async (data: any) => {
+    // get id of the selected alias
+    console.log('Selected alias:', data);
+    // fetch the entry by id
+    const parentEntry = await fetchByID(data.id);
+    console.log('Parent entry:', parentEntry);
+    let parentAliases = [];
+    try {
+      parentAliases = JSON.parse(parentEntry.data.metadata).alias_ids;
+      // add a new entry with the alias as data and the original entry's metadata
+      // add parent_id to the metadata
+      const parentId = data.id;
+      const newMetadata = {
+        ...data.metadata,
+        parent_id: parentId,
+      };
+      const aliasRes = await addEntry(data.alias, newMetadata);
+      const aliasId = aliasRes.respData.id;
+      console.log('Added alias:', aliasRes);
+      // update the original entry's metadata with the new alias id in the alias_ids array
+      const updatedMetadata = {
+        ...data.metadata,
+        alias_ids:
+          parentAliases.length > 0
+            ? [parentAliases, aliasId].flat()
+            : [aliasId],
+      };
+      console.log('Updated metadata:', updatedMetadata);
+      await updateEntry(parentId, data.data, updatedMetadata);
+      return aliasRes;
+    } catch (err) {
+      console.error('Error parsing parent metadata:', err);
+      return { error: 'Error parsing parent metadata' };
+    }
+  };
+
   return (
     <div>
       <textarea
@@ -227,7 +305,11 @@ const SearchBox = () => {
         </div>
       )}
 
-      <Entries searchResults={searchResults} onDelve={handleDataFromEntry} />
+      <Entries
+        searchResults={searchResults}
+        onDelve={handleDataFromEntry}
+        onAddAlias={handleAliasAdd}
+      />
     </div>
   );
 };

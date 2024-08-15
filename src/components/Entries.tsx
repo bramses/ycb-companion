@@ -17,15 +17,17 @@ interface EntryType {
 interface EntriesProps {
   searchResults: EntryType[];
   onDelve: (data: string) => void;
+  onAddAlias: (data: any) => Promise<void>;
 }
 
-const Entries = ({ searchResults, onDelve }: EntriesProps) => {
+const Entries = ({ searchResults, onDelve, onAddAlias }: EntriesProps) => {
   return (
     <div>
       {searchResults.map((entry: any) => (
         <Entry
           key={'aliasData' in entry ? Math.random() * 1000 : entry.id} // Replace 'Math.random() * 1000' with a more specific key if possible
           data={entry.data}
+          id={entry.id}
           aliases={'aliasData' in entry ? entry.aliasData : []}
           selectedIndex={'selectedIndex' in entry ? entry.selectedIndex : -1}
           title={entry.metadata.title}
@@ -61,6 +63,7 @@ const Entries = ({ searchResults, onDelve }: EntriesProps) => {
               : ''
           }
           onDelve={onDelve}
+          onAddAlias={onAddAlias}
           hasAliases={'aliasData' in entry}
         />
       ))}

@@ -25,8 +25,10 @@ const Entry = ({
   createdAt = '',
   similarity = 0,
   imageUrl = '',
+  id = '',
   hasImage = false,
   onDelve = (_: string) => {},
+  onAddAlias = async (_: any) => {},
   aliases = [],
   selectedIndex = -1,
 }) => {
@@ -74,31 +76,6 @@ const Entry = ({
             <h2 className="mb-2 text-lg font-semibold text-gray-900 dark:text-white">
               Aliases:
             </h2>
-            {/* {
-    "id": "2449",
-    "data": "me at a hot ones interview",
-    "metadata": {
-        "title": "bingus ✩ on X: \"https://t.co/G8jSTYplMv\" / X",
-        "author": "https://x.com/aliaoftheblade/status/1822602088427487358",
-        "alias_ids": [
-            2450,
-            2451,
-            2517
-        ],
-        "s_id": 2449
-    },
-    "createdAt": "2024-08-12T01:56:14.569Z",
-    "updatedAt": "2024-08-12T01:56:14.569Z",
-    "aliasData": [
-        "dune meme",
-        "hot ones meme",
-        "hot ones dune"
-    ],
-    "selectedIndex": 1
-} 
-map over aliasData and display each alias in a list and put a (*) next to the selected index
-and turn each into a link that searches for that alias
-*/}
             <ul className="max-w-md list-inside list-disc space-y-1 text-gray-500 dark:text-gray-400">
               {aliases.map((alias, index) => (
                 <li key={alias}>
@@ -125,6 +102,32 @@ and turn each into a link that searches for that alias
             <hr className="mx-auto my-4 h-1 w-48 rounded border-0 bg-gray-100 md:my-10 dark:bg-gray-700" />
           </>
         )}
+        {/* add alias input field and button */}
+        <div className="flex items-center justify-between">
+          <input
+            type="text"
+            className="w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder:text-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
+            placeholder="Add an alias..."
+            id={`alias-input-${id}`}
+          />
+          <button
+            type="button"
+            onClick={async () => {
+              const aliasInput = document.getElementById(`alias-input-${id}`);
+              const alias = aliasInput.value;
+              await onAddAlias({
+                id,
+                alias,
+                data,
+                metadata: { title, author },
+              });
+              aliasInput.value = ''; // Clear the input field
+            }}
+            className="ms-2.5 rounded-lg bg-blue-700 px-5 py-2.5 text-sm font-medium text-white hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+          >
+            Add
+          </button>
+        </div>
 
         <p className="mb-3 font-normal text-gray-500 dark:text-gray-400">
           Added on{' '}
@@ -140,6 +143,7 @@ and turn each into a link that searches for that alias
         <a
           href={author}
           className="inline-flex items-center font-medium text-blue-600 hover:underline"
+          target="_blank"
         >
           {title}
           <svg
