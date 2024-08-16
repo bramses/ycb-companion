@@ -1,3 +1,10 @@
+# [1.3.0](https://github.com/bramses/ycb-companion/compare/v1.2.0...v1.3.0) (2024-08-16)
+
+
+### Features
+
+* Add loading state during file upload in Upload component ([b33acc7](https://github.com/bramses/ycb-companion/commit/b33acc7dec80a29568a205ab0afd779fd77da499))
+
 # [1.2.0](https://github.com/bramses/ycb-companion/compare/v1.1.0...v1.2.0) (2024-08-16)
 
 
