@@ -78,6 +78,7 @@ const SearchBox = () => {
 
   const fetchSearchResults = async (query: string) => {
     try {
+      setSearchResults([]);
       setShowLoading(true);
       const response = await fetch('/api/search', {
         method: 'POST',
@@ -140,19 +141,26 @@ const SearchBox = () => {
               // Fetch parent entry by parent_id
               const parentEntryRes = await fetchByID(entry.metadata.parent_id);
               const parentEntry = parentEntryRes.data;
+              console.log('Parent entry:', parentEntry);
 
               // Parse parent metadata
               const parentMetadataJSON = JSON.parse(parentEntry.metadata);
               parentEntry.metadata = parentMetadataJSON;
 
               // Find the index of the current entry in the parent's alias_ids
-              if (
-                parentMetadataJSON.alias_ids &&
-                parentMetadataJSON.alias_ids.includes(Number(entry.id))
-              ) {
-                selectedIndex = parentMetadataJSON.alias_ids.indexOf(
-                  Number(entry.id),
-                );
+              if (parentMetadataJSON.alias_ids) {
+                // map parent alias to numbers
+                const aliasIds = parentMetadataJSON.alias_ids.map(Number);
+
+                if (aliasIds.includes(Number(entry.id))) {
+                  console.log('aliasIds:', aliasIds);
+                  console.log('entry.id:', entry.id);
+                  console.log(
+                    'aliasIds.indexOf(Number(entry.id)):',
+                    aliasIds.indexOf(Number(entry.id)),
+                  );
+                  selectedIndex = aliasIds.indexOf(Number(entry.id));
+                }
               }
 
               // Fetch all alias entries by alias_ids
@@ -189,6 +197,36 @@ const SearchBox = () => {
                 parentFetchError,
               );
               throw parentFetchError;
+            }
+          } // else if we have an alias_ids array, fetch all the aliases
+          else if (entry.metadata.alias_ids) {
+            try {
+              const aliasData = await Promise.all(
+                entry.metadata.alias_ids.map(async (aliasId: string) => {
+                  try {
+                    const aliasEntryRes = await fetchByID(aliasId);
+                    const aliasEntry = aliasEntryRes.data;
+                    return aliasEntry.data;
+                  } catch (aliasFetchError) {
+                    console.error(
+                      `Error fetching alias entry with ID ${aliasId}:`,
+                      aliasFetchError,
+                    );
+                    throw aliasFetchError;
+                  }
+                }),
+              );
+
+              return {
+                ...entry,
+                aliasData,
+              };
+            } catch (aliasFetchError) {
+              console.error(
+                `Error fetching alias entries with IDs ${entry.metadata.alias_ids}:`,
+                aliasFetchError,
+              );
+              throw aliasFetchError;
             }
           }
 
