@@ -66,7 +66,7 @@ const Upload = () => {
 
       const formData = new FormData();
       formData.append('file', file);
-
+      setLoading(true);
       const response = await fetch(
         'https://commonbase-supabase-alpha.onrender.com/cf-images/upload',
         {
@@ -103,6 +103,8 @@ const Upload = () => {
         { key: 'author', value: data2.metadata.imageUrl },
         { key: 'title', value: 'Image' },
       ]);
+
+      setLoading(false);
 
       // add(data2.description);
     });
