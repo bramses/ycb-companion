@@ -10,6 +10,8 @@ const Upload = () => {
     { key: 'author', value: 'https://ycb-companion.onrender.com/dashboard' },
     { key: 'title', value: 'by Bram Adams' },
   ]);
+  const apiKey = '09e90c7b3e0c69e0ac38031476c2a224';
+  const [loading, setLoading] = useState(false);
 
   const addField = () => {
     setMetadataFields([...metadataFields, { key: '', value: '' }]);
@@ -51,6 +53,59 @@ const Upload = () => {
     console.log('Added entry:', responseData);
     // clear input fields
     setTextAreaValue('');
+  };
+
+  const uploadImage = async () => {
+    const fileInput = document.getElementById('file-input');
+    if (!fileInput) return;
+    (fileInput as HTMLInputElement).click();
+
+    fileInput.addEventListener('change', async (event) => {
+      const file = (event.target as HTMLInputElement).files?.[0];
+      if (!file) return;
+
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const response = await fetch(
+        'https://commonbase-supabase-alpha.onrender.com/cf-images/upload',
+        {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${apiKey}`,
+          },
+          body: formData,
+        },
+      );
+      const data = await response.json();
+      console.log('Image uploaded:', data);
+      const pngUrl = `${data.url}?format=png`;
+      console.log('PNG URL:', pngUrl);
+
+      const response2 = await fetch(
+        'https://commonbase-supabase-alpha.onrender.com/cf-images/describe',
+        {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${apiKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ imageUrl: pngUrl }),
+        },
+      );
+      const data2 = await response2.json();
+      console.log('Image description:', data2);
+      // put img description in text area
+      setTextAreaValue(data2.data);
+
+      // set metadata fields
+      setMetadataFields([
+        { key: 'author', value: data2.metadata.imageUrl },
+        { key: 'title', value: 'Image' },
+      ]);
+
+      // add(data2.description);
+    });
   };
 
   return (
@@ -105,6 +160,87 @@ const Upload = () => {
       >
         Upload
       </button>
+
+      {/* below is code from another app to upload an image. i need a btn here that allows for img upload and that the describe endpoint puts the text from it in the input box above. convert this to react and add it to the app 
+      
+      const fileInput = document.createElement('input');
+      fileInput.type = 'file';
+      fileInput.accept = 'image/*';
+      fileInput.click();
+
+      // post image to server at /cf-images/upload
+      // then take the url and post it to /cf-images/describe
+      // then take the response and post it to /api/insert with title: 'Image' and author: cloudflare image url and data: response from /cf-images/describe
+      fileInput.addEventListener('change', (event) => {
+        const file = event.target.files[0];
+        const formData = new FormData();
+        formData.append('file', file);
+
+        fetch(
+          `https://commonbase-supabase-alpha.onrender.com/cf-images/upload`,
+          {
+            method: 'POST',
+            headers: {
+              Authorization: 'Bearer ' + apiKey,
+            },
+            body: formData,
+          }
+        )
+          .then((response) => response.json())
+          .then((data) => {
+            // console.log('Image uploaded:', data);
+            const pngUrl = data.url + '?format=png';
+            // console.log('PNG URL:', pngUrl);
+            fetch(
+              `https://commonbase-supabase-alpha.onrender.com/cf-images/describe`,
+              {
+                method: 'POST',
+                headers: {
+                  Authorization: 'Bearer ' + apiKey,
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ imageUrl: pngUrl }),
+              }
+            )
+              .then((response) => response.json())
+              .then((data) => {
+                // console.log('Image description:', data);
+                const metadata = {
+                  title: 'Image',
+                  author: data.metadata.imageUrl,
+                };
+
+                
+                dialog
+                  .querySelector('#insert')
+                  .addEventListener('click', () => {
+                    const editedText = dialog.querySelector('textarea').value;
+                    fetch(`https://api-gateway-electron.onrender.com/add`, {
+                      method: 'POST',
+                      headers: {
+                        Authorization: 'Bearer ' + apiKey,
+                        'Content-Type': 'application/json',
+                      },
+                      body: JSON.stringify({
+                        data: editedText,
+                        metadata,
+                        dbPath: '/var/data/db1.db',
+                      }),
+                    })
+                      .then((response) => response.json())
+      
+      */}
+
+      {/* file input */}
+      <input type="file" accept="image/*" className="hidden" id="file-input" />
+      <button
+        type="button"
+        onClick={uploadImage}
+        className="mt-2 block rounded-lg bg-blue-700 px-5 py-2.5 text-sm font-medium text-white hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+      >
+        Upload Image
+      </button>
+      {loading && <p>Loading...</p>}
     </div>
   );
 };
