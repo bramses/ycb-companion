@@ -1,3 +1,10 @@
+# [1.1.0](https://github.com/bramses/ycb-companion/compare/v1.0.0...v1.1.0) (2024-08-16)
+
+
+### Features
+
+* Add ReactMarkdown dependency and render data in Entry component ([ca48573](https://github.com/bramses/ycb-companion/commit/ca48573aa4544ab8f61dec8d77d061a5c54f3be8))
+
 # 1.0.0 (2024-08-15)
 
 
