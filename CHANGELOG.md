@@ -1,3 +1,10 @@
+# [1.2.0](https://github.com/bramses/ycb-companion/compare/v1.1.0...v1.2.0) (2024-08-16)
+
+
+### Features
+
+* Add image upload functionality and description retrieval ([c9c1642](https://github.com/bramses/ycb-companion/commit/c9c164279c859bb082927279a5e97e707cfed059))
+
 # [1.1.0](https://github.com/bramses/ycb-companion/compare/v1.0.0...v1.1.0) (2024-08-16)
 
 
