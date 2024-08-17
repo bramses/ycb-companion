@@ -301,38 +301,42 @@ const SearchBox = () => {
         Search
       </button>
 
-      {/* a btn to take the text in textarea and search google with it in a new tab */}
-      <button
-        type="button"
-        onClick={() => {
-          window.open(
-            `https://www.google.com/search?q=${textAreaValue}`,
-            '_blank',
-          );
-        }}
-        className="mb-2 me-2 mt-4 w-full rounded-lg bg-gray-700 px-5 py-2.5 text-sm font-medium text-white hover:bg-gray-800 focus:outline-none focus:ring-4 focus:ring-gray-300 dark:bg-gray-600 dark:hover:bg-gray-700 dark:focus:ring-gray-800"
-      >
-        Search the Web
-      </button>
+      {/* a container to hold the buttons in the same row */}
+      {/* a container to hold the buttons in the same row */}
+      <div className="mt-4 flex space-x-2">
+        {/* a btn to take the text in textarea and search google with it in a new tab */}
+        <button
+          type="button"
+          onClick={() => {
+            window.open(
+              `https://www.google.com/search?q=${textAreaValue}`,
+              '_blank',
+            );
+          }}
+          className="mb-2 me-2 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4 focus:ring-gray-300 dark:border-gray-600 dark:text-white dark:hover:bg-gray-700 dark:focus:ring-gray-800"
+        >
+          Search the Web
+        </button>
 
-      {/* a btn to call /api/random and put the text in the textarea */}
-      <button
-        type="button"
-        onClick={async () => {
-          const response = await fetch('/api/random', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-          });
-          const data = await response.json();
-          console.log('Random data:', data);
-          setTextAreaValue(data.data.data);
-        }}
-        className="mb-2 me-2 mt-4 w-full rounded-lg bg-gray-700 px-5 py-2.5 text-sm font-medium text-white hover:bg-gray-800 focus:outline-none focus:ring-4 focus:ring-gray-300 dark:bg-gray-600 dark:hover:bg-gray-700 dark:focus:ring-gray-800"
-      >
-        Random
-      </button>
+        {/* a btn to call /api/random and put the text in the textarea */}
+        <button
+          type="button"
+          onClick={async () => {
+            const response = await fetch('/api/random', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+            });
+            const data = await response.json();
+            console.log('Random data:', data);
+            setTextAreaValue(data.data.data);
+          }}
+          className="mb-2 me-2 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4 focus:ring-gray-300 dark:border-gray-600 dark:text-white dark:hover:bg-gray-700 dark:focus:ring-gray-800"
+        >
+          Random
+        </button>
+      </div>
 
       {showLoading && (
         <div className="flex justify-center">
