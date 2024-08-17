@@ -1,3 +1,10 @@
+## [1.6.1](https://github.com/bramses/ycb-companion/compare/v1.6.0...v1.6.1) (2024-08-17)
+
+
+### Bug Fixes
+
+* Return entry object instead of an empty array in catch block ([041513e](https://github.com/bramses/ycb-companion/commit/041513eaca93639bfe49e51fedbfd9e30892b672))
+
 # [1.6.0](https://github.com/bramses/ycb-companion/compare/v1.5.0...v1.6.0) (2024-08-17)
 
 
