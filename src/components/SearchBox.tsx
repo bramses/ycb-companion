@@ -301,6 +301,20 @@ const SearchBox = () => {
         Search
       </button>
 
+      {/* a btn to take the text in textarea and search google with it in a new tab */}
+      <button
+        type="button"
+        onClick={() => {
+          window.open(
+            `https://www.google.com/search?q=${textAreaValue}`,
+            '_blank',
+          );
+        }}
+        className="mb-2 me-2 mt-4 w-full rounded-lg bg-gray-700 px-5 py-2.5 text-sm font-medium text-white hover:bg-gray-800 focus:outline-none focus:ring-4 focus:ring-gray-300 dark:bg-gray-600 dark:hover:bg-gray-700 dark:focus:ring-gray-800"
+      >
+        Search the Web
+      </button>
+
       {showLoading && (
         <div className="flex justify-center">
           <div

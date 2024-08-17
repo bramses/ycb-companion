@@ -10,7 +10,7 @@ const Upload = () => {
     { key: 'author', value: 'https://ycb-companion.onrender.com/dashboard' },
     { key: 'title', value: 'by Bram Adams' },
   ]);
-  const apiKey = '09e90c7b3e0c69e0ac38031476c2a224';
+  const apiKey = 'apikeyyyy';
   const [loading, setLoading] = useState(false);
 
   const addField = () => {
