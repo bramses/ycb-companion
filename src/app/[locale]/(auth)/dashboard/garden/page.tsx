@@ -92,7 +92,7 @@ const GardenDaily = () => {
             };
           } catch (aliasError) {
             console.error('Error fetching aliases:', aliasError);
-            return [];
+            return { ...entry };
           }
         }
         return entry;
