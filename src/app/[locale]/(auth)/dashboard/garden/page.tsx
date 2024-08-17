@@ -189,6 +189,9 @@ const GardenDaily = () => {
       <Calendar onClickDay={(val) => fetchRecords(val)} />
       <h1 className="mb-4 text-4xl font-extrabold leading-none tracking-tight text-gray-900 md:text-5xl lg:text-6xl dark:text-white">
         {selectedDay}
+        <small className="ms-2 font-semibold text-gray-500 dark:text-gray-400">
+          {entries.length > 0 ? `:: ${entries.length} entries` : ''}{' '}
+        </small>
       </h1>
       {loading && <p>Loading...</p>}
       {entries.length === 0 ? (
