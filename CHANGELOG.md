@@ -1,3 +1,10 @@
+# [1.5.0](https://github.com/bramses/ycb-companion/compare/v1.4.0...v1.5.0) (2024-08-17)
+
+
+### Features
+
+* Add button to call /api/random and populate textarea ([b96082d](https://github.com/bramses/ycb-companion/commit/b96082d44516e8ddc20c64b797735c5c9dd624c2))
+
 # [1.4.0](https://github.com/bramses/ycb-companion/compare/v1.3.0...v1.4.0) (2024-08-17)
 
 
