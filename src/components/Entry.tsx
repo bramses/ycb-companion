@@ -27,6 +27,8 @@ const Entry = ({
   similarity = 0,
   imageUrl = '',
   id = '',
+  displayDelve = true,
+  displayMetadata = true,
   hasImage = false,
   onDelve = (_: string) => {},
   onAddAlias = async (_: any) => {},
@@ -62,16 +64,18 @@ const Entry = ({
           {data}
         </ReactMarkdown>
 
-        <button
-          className="mb-2 me-2 mt-4 w-full rounded-lg bg-blue-700 px-5 py-2.5 text-sm font-medium text-white hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
-          type="button"
-          onClick={() => {
-            // search using data
-            onDelve(data);
-          }}
-        >
-          Delve
-        </button>
+        {displayDelve && (
+          <button
+            className="mb-2 me-2 mt-4 w-full rounded-lg bg-blue-700 px-5 py-2.5 text-sm font-medium text-white hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+            type="button"
+            onClick={() => {
+              // search using data
+              onDelve(data);
+            }}
+          >
+            Delve
+          </button>
+        )}
 
         {hasAliases && (
           <>
@@ -136,16 +140,18 @@ const Entry = ({
           </button>
         </div>
 
-        <p className="mb-3 font-normal text-gray-500 dark:text-gray-400">
-          Added on{' '}
-          <strong className="font-semibold text-gray-900 dark:text-white">
-            {new Date(createdAt).toLocaleDateString()}
-          </strong>{' '}
-          with a similarity of{' '}
-          <strong className="font-semibold text-gray-900 dark:text-white">
-            {Math.round(similarity * 100)}%
-          </strong>
-        </p>
+        {displayMetadata && (
+          <p className="mb-3 font-normal text-gray-500 dark:text-gray-400">
+            Added on{' '}
+            <strong className="font-semibold text-gray-900 dark:text-white">
+              {new Date(createdAt).toLocaleDateString()}
+            </strong>{' '}
+            with a similarity of{' '}
+            <strong className="font-semibold text-gray-900 dark:text-white">
+              {Math.round(similarity * 100)}%
+            </strong>
+          </p>
+        )}
 
         <a
           href={author}

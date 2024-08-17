@@ -42,6 +42,7 @@
     "pino": "^9.3.1",
     "pino-pretty": "^11.2.1",
     "react": "^18.3.1",
+    "react-calendar": "^5.0.0",
     "react-dom": "^18.3.1",
     "react-hook-form": "^7.52.1",
     "react-lite-youtube-embed": "^2.4.0",
