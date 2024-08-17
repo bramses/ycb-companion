@@ -1,3 +1,10 @@
+# [1.4.0](https://github.com/bramses/ycb-companion/compare/v1.3.0...v1.4.0) (2024-08-17)
+
+
+### Features
+
+* Update API key in Upload component ([d61677d](https://github.com/bramses/ycb-companion/commit/d61677d1f3183d58abd99917f24fcdcd02fe5023))
+
 # [1.3.0](https://github.com/bramses/ycb-companion/compare/v1.2.0...v1.3.0) (2024-08-16)
 
 
