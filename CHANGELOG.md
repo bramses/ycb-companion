@@ -1,3 +1,10 @@
+# [1.7.0](https://github.com/bramses/ycb-companion/compare/v1.6.1...v1.7.0) (2024-08-17)
+
+
+### Features
+
+* Display number of entries in GardenDaily component ([f1b857d](https://github.com/bramses/ycb-companion/commit/f1b857d14b97d6c15dd956e80bac5d3b8baa4cde))
+
 ## [1.6.1](https://github.com/bramses/ycb-companion/compare/v1.6.0...v1.6.1) (2024-08-17)
 
 
