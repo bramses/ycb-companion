@@ -1,3 +1,10 @@
+# [1.6.0](https://github.com/bramses/ycb-companion/compare/v1.5.0...v1.6.0) (2024-08-17)
+
+
+### Features
+
+* Add "Garden" link to the dashboard navigation ([4380462](https://github.com/bramses/ycb-companion/commit/4380462e31fa020bddeb4055c9528e2db1aba80d))
+
 # [1.5.0](https://github.com/bramses/ycb-companion/compare/v1.4.0...v1.5.0) (2024-08-17)
 
 
