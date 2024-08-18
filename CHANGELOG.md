@@ -1,3 +1,10 @@
+# [1.8.0](https://github.com/bramses/ycb-companion/compare/v1.7.0...v1.8.0) (2024-08-18)
+
+
+### Features
+
+* Add viewport meta tag to improve page layout ([44cdc60](https://github.com/bramses/ycb-companion/commit/44cdc607a36cd17964dd57fc144de9732bf89698))
+
 # [1.7.0](https://github.com/bramses/ycb-companion/compare/v1.6.1...v1.7.0) (2024-08-17)
 
 
