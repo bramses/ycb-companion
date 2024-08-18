@@ -4,13 +4,27 @@ import { useState } from 'react';
 import Calendar from 'react-calendar';
 
 import Entry from '@/components/Entry';
+import { getCache, invalidateCache, setCache } from '@/helpers/cache';
 
 const GardenDaily = () => {
   const [entries, setEntries] = useState<any[]>([]);
   const [selectedDay, setSelectedDay] = useState('');
   const [loading, setLoading] = useState(false);
+  const cache = getCache();
 
   const fetchByID = async (id: string) => {
+    const cachedAlias = cache.aliases[id];
+    if (cachedAlias) {
+      // console.log('Returning cached alias:', cachedAlias);
+      return { data: cachedAlias };
+    }
+
+    const cachedParent = cache.parents[id];
+    if (cachedParent) {
+      // console.log('Returning cached parent:', cachedParent);
+      return { data: cachedParent };
+    }
+
     try {
       const response = await fetch('/api/fetch', {
         method: 'POST',
@@ -22,6 +36,18 @@ const GardenDaily = () => {
         }),
       });
       const data = await response.json();
+      const entry = data.data;
+      // parse metadata
+      const metadata = JSON.parse(entry.metadata);
+
+      // cache the entry
+      if (metadata.parent_id) {
+        cache.aliases[id] = entry;
+      } else {
+        cache.parents[id] = entry;
+      }
+
+      setCache(cache);
 
       return data;
     } catch (error) {
@@ -153,10 +179,8 @@ const GardenDaily = () => {
   // TODO: extract these into helper logic for better reusability bw here and SearchBox component
   const handleAliasAdd = async (data: any) => {
     // get id of the selected alias
-    console.log('Selected alias:', data);
     // fetch the entry by id
     const parentEntry = await fetchByID(data.id);
-    console.log('Parent entry:', parentEntry);
     let parentAliases = [];
     try {
       parentAliases = JSON.parse(parentEntry.data.metadata).alias_ids;
@@ -169,14 +193,13 @@ const GardenDaily = () => {
       };
       const aliasRes = await addEntry(data.alias, newMetadata);
       const aliasId = aliasRes.respData.id;
-      console.log('Added alias:', aliasRes);
       // update the original entry's metadata with the new alias id in the alias_ids array
       const updatedMetadata = {
         ...data.metadata,
         alias_ids: parentAliases ? [parentAliases, aliasId].flat() : [aliasId],
       };
-      console.log('Updated metadata:', updatedMetadata);
       await updateEntry(parentId, data.data, updatedMetadata);
+      invalidateCache(parentId, false);
       return aliasRes;
     } catch (err) {
       console.error('Error parsing parent metadata:', err);
