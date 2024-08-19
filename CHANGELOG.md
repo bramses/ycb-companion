@@ -1,3 +1,10 @@
+# [1.12.0](https://github.com/bramses/ycb-companion/compare/v1.11.0...v1.12.0) (2024-08-19)
+
+
+### Features
+
+* Add cellEditorParams to Grid component for limiting text length ([8a9b96d](https://github.com/bramses/ycb-companion/commit/8a9b96d10bfea6a153e8f6d64be5caee54eef450))
+
 # [1.11.0](https://github.com/bramses/ycb-companion/compare/v1.10.0...v1.11.0) (2024-08-19)
 
 
