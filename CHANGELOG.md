@@ -1,3 +1,10 @@
+# [1.10.0](https://github.com/bramses/ycb-companion/compare/v1.9.0...v1.10.0) (2024-08-19)
+
+
+### Features
+
+* Add ag-grid-community dependency for grid functionality ([9f62524](https://github.com/bramses/ycb-companion/commit/9f625247aedb0626f855a27a01c90494d6f551b0))
+
 # [1.9.0](https://github.com/bramses/ycb-companion/compare/v1.8.0...v1.9.0) (2024-08-19)
 
 
