@@ -23,7 +23,7 @@ const SearchBox = () => {
 
     const cachedParent = cache.parents[id];
     if (cachedParent) {
-      // console.log('Returning cached parent:', cachedParent);
+      console.log('Returning cached parent:', cachedParent);
       return { data: cachedParent };
     }
 
@@ -96,6 +96,7 @@ const SearchBox = () => {
       const responseData = await response.json();
 
       console.log('Updated entry:', responseData);
+      cache.parents[id] = responseData.data;
       return responseData;
     } catch (error) {
       console.error('Error updating entry:', error);
@@ -281,12 +282,17 @@ const SearchBox = () => {
   };
 
   const handleAliasAdd = async (data: any) => {
-    // get id of the selected alias
-    // fetch the entry by id
-    const parentEntry = await fetchByID(data.id);
-    let parentAliases = [];
     try {
-      parentAliases = JSON.parse(parentEntry.data.metadata).alias_ids;
+      // get id of the selected alias
+      // fetch the entry by id
+      invalidateCache(data.id, false);
+      const parentEntry = await fetchByID(data.id);
+      let parentAliases = parentEntry.data.metadata.alias_ids;
+      try {
+        parentAliases = JSON.parse(parentEntry.data.metadata).alias_ids;
+      } catch (err) {
+        console.error('Error parsing parent metadata:', err);
+      }
       // add a new entry with the alias as data and the original entry's metadata
       // add parent_id to the metadata
       const parentId = data.id;
@@ -302,13 +308,10 @@ const SearchBox = () => {
         alias_ids: parentAliases ? [parentAliases, aliasId].flat() : [aliasId],
       };
       await updateEntry(parentId, data.data, updatedMetadata);
-      // invalidate the cache at id for the parent entry
-      invalidateCache(parentId, false);
 
       return aliasRes;
     } catch (err) {
-      console.error('Error parsing parent metadata:', err);
-      return { error: 'Error parsing parent metadata' };
+      return { error: err };
     }
   };
 

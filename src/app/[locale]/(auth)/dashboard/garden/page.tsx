@@ -169,6 +169,7 @@ const GardenDaily = () => {
       const responseData = await response.json();
 
       console.log('Updated entry:', responseData);
+      cache.parents[id] = responseData.data;
       return responseData;
     } catch (error) {
       console.error('Error updating entry:', error);
@@ -180,6 +181,7 @@ const GardenDaily = () => {
   const handleAliasAdd = async (data: any) => {
     // get id of the selected alias
     // fetch the entry by id
+    invalidateCache(data.id, false);
     const parentEntry = await fetchByID(data.id);
     let parentAliases = [];
     try {
@@ -199,7 +201,7 @@ const GardenDaily = () => {
         alias_ids: parentAliases ? [parentAliases, aliasId].flat() : [aliasId],
       };
       await updateEntry(parentId, data.data, updatedMetadata);
-      invalidateCache(parentId, false);
+      invalidateCache(data.id, false);
       return aliasRes;
     } catch (err) {
       console.error('Error parsing parent metadata:', err);
