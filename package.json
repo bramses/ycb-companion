@@ -35,6 +35,7 @@
     "@sentry/nextjs": "^8.19.0",
     "@spotlightjs/spotlight": "^2.0.0",
     "@t3-oss/env-nextjs": "^0.11.0",
+    "ag-grid-react": "^32.1.0",
     "drizzle-orm": "^0.32.0",
     "next": "^14.2.5",
     "next-intl": "^3.17.2",

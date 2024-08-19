@@ -39,28 +39,36 @@ const Entries = ({ searchResults, onDelve, onAddAlias }: EntriesProps) => {
             entry.metadata.author.includes('youtube.com')
           }
           youtubeId={
-            entry.metadata.author.includes('youtube')
+            entry.metadata.author &&
+            entry.metadata.author.includes('youtube.com')
               ? entry.metadata.author.split('v=')[1]?.split('&')[0]
               : ''
           }
           youtubeStart={
+            entry.metadata.author &&
             entry.metadata.author.includes('youtube') &&
             entry.metadata.author.includes('t=')
               ? entry.metadata.author.split('t=')[1].split('s')[0]
               : ''
           }
-          hasImage={entry.metadata.author.includes('imagedelivery.net')}
+          hasImage={
+            entry.metadata.author &&
+            entry.metadata.author.includes('imagedelivery.net')
+          }
           imageUrl={
+            entry.metadata.author &&
             entry.metadata.author.includes('imagedelivery.net')
               ? entry.metadata.author
               : ''
           }
           hasTwitterEmbed={
-            entry.metadata.author.includes('twitter.com') ||
+            (entry.metadata.author &&
+              entry.metadata.author.includes('twitter.com')) ||
             /^https:\/\/(www\.)?x\.com/.test(entry.metadata.author)
           }
           tweetId={
-            entry.metadata.author.includes('twitter.com') ||
+            (entry.metadata.author &&
+              entry.metadata.author.includes('twitter.com')) ||
             /^https:\/\/(www\.)?x\.com/.test(entry.metadata.author)
               ? entry.metadata.author.split('/').pop()
               : ''
