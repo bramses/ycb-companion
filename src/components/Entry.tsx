@@ -84,7 +84,7 @@ const Entry = ({
             <h2 className="mb-2 text-lg font-semibold text-gray-900 dark:text-white">
               Aliases:
             </h2>
-            <ul className="max-w-md list-inside list-disc space-y-1 text-gray-500 dark:text-gray-400">
+            <ul className="list-inside list-disc space-y-1 text-gray-500 dark:text-gray-400">
               {aliases.map((alias, index) => (
                 <li key={alias}>
                   {index === selectedIndex ? (

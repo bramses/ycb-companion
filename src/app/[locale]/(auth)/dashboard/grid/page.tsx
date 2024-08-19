@@ -141,6 +141,7 @@ const Grid = () => {
       {
         field: 'data',
         cellEditor: 'agLargeTextCellEditor',
+        cellEditorParams: { maxLength: 5000 },
         cellEditorPopup: true,
         editable: true,
         onCellValueChanged: (params: any) => {
@@ -175,6 +176,7 @@ const Grid = () => {
       {
         field: 'metadata',
         cellEditor: 'agLargeTextCellEditor',
+        cellEditorParams: { maxLength: 5000 },
         // cellEditor: CustomMetadataEditor,
         cellEditorPopup: true,
         editable: true,
