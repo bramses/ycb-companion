@@ -1,3 +1,10 @@
+# [1.11.0](https://github.com/bramses/ycb-companion/compare/v1.10.0...v1.11.0) (2024-08-19)
+
+
+### Features
+
+* Add "Create Upload w/ ChatGPT" link to upload page ([8156668](https://github.com/bramses/ycb-companion/commit/815666862ebbc7953ec77d8635f69fd2f5c78880))
+
 # [1.10.0](https://github.com/bramses/ycb-companion/compare/v1.9.0...v1.10.0) (2024-08-19)
 
 
