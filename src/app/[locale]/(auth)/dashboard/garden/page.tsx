@@ -19,11 +19,12 @@ const GardenDaily = () => {
       return { data: cachedAlias };
     }
 
-    const cachedParent = cache.parents[id];
-    if (cachedParent) {
-      // console.log('Returning cached parent:', cachedParent);
-      return { data: cachedParent };
-    }
+    // TODO: this breaks w aliases updating and idk how to fix atm
+    // const cachedParent = cache.parents[id];
+    // if (cachedParent) {
+    //   // console.log('Returning cached parent:', cachedParent);
+    //   return { data: cachedParent };
+    // }
 
     try {
       const response = await fetch('/api/fetch', {

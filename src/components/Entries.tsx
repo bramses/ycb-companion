@@ -34,7 +34,10 @@ const Entries = ({ searchResults, onDelve, onAddAlias }: EntriesProps) => {
           author={entry.metadata.author}
           createdAt={entry.createdAt}
           similarity={entry.similarity}
-          hasYouTubeEmbed={entry.metadata.author.includes('youtube.com')}
+          hasYouTubeEmbed={
+            entry.metadata.author &&
+            entry.metadata.author.includes('youtube.com')
+          }
           youtubeId={
             entry.metadata.author.includes('youtube')
               ? entry.metadata.author.split('v=')[1]?.split('&')[0]

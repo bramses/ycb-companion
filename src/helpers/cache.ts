@@ -46,3 +46,7 @@ export const invalidateCache = (id: string, isAlias: boolean) => {
   console.log('Cache after invalidation:', cache);
   setCache(cache);
 };
+
+export const clearCache = () => {
+  localStorage.removeItem(CACHE_KEY);
+};
