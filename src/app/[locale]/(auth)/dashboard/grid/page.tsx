@@ -216,7 +216,7 @@ const Grid = () => {
         field: 'updatedAt',
         suppressHeaderMenuButton: true,
         sortable: true,
-        initialSort: 'desc',
+        initialSort: 'desc' as 'asc' | 'desc' | undefined, // Updated line,
         width: 100,
       },
     ];
