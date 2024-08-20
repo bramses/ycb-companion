@@ -1,3 +1,10 @@
+# [1.13.0](https://github.com/bramses/ycb-companion/compare/v1.12.0...v1.13.0) (2024-08-20)
+
+
+### Features
+
+* Add onAddToCollection function to Entries component ([1655d85](https://github.com/bramses/ycb-companion/commit/1655d850125c776f8798c511178e394723955b1d))
+
 # [1.12.0](https://github.com/bramses/ycb-companion/compare/v1.11.0...v1.12.0) (2024-08-19)
 
 
