@@ -12,6 +12,8 @@ const SearchBox = () => {
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [textAreaValue, setTextAreaValue] = useState('');
   const [showLoading, setShowLoading] = useState(false);
+  const [showCollection, setShowCollection] = useState(false);
+  const [collection, setCollection] = useState<any[]>([]);
   const cache = getCache();
 
   const fetchByID = async (id: string) => {
@@ -79,6 +81,15 @@ const SearchBox = () => {
       console.error('Error adding entry:', error);
       return {};
     }
+  };
+
+  // adding to a collection is the entry selected by the user, the matched alias (if there is one) and the search result. append to the collection
+  const addToCollection = (entry: any, alias: any) => {
+    if (!showCollection) {
+      setShowCollection(true);
+    }
+    setCollection([...collection, { entry, alias, query: textAreaValue }]);
+    console.log('Collection:', collection);
   };
 
   const updateEntry = async (id: string, data: string, metadata: string) => {
@@ -372,6 +383,43 @@ const SearchBox = () => {
         </button>
       </div>
 
+      {/* a second row if showCollection is true one for "Download Collection" and one for "Clear Collection" */}
+      {showCollection && (
+        <div className="mt-4 flex space-x-2">
+          <button
+            type="button"
+            onClick={() => {
+              const element = document.createElement('a');
+              const file = new Blob([JSON.stringify(collection)], {
+                type: 'text/plain',
+              });
+              element.href = URL.createObjectURL(file);
+              element.download = 'collection.json';
+              document.body.appendChild(element); // Required for this to work in FireFox
+              element.click();
+              // clear the collection after downloading and hide the buttons
+              setCollection([]);
+              setShowCollection(false);
+              // remove the element
+              document.body.removeChild(element);
+            }}
+            className="mb-2 me-2 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4 focus:ring-gray-300"
+          >
+            Download Collection
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setCollection([]);
+              setShowCollection(false);
+            }}
+            className="mb-2 me-2 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4 focus:ring-gray-300"
+          >
+            Clear Collection
+          </button>
+        </div>
+      )}
+
       {showLoading && (
         <div className="flex justify-center">
           <div
@@ -422,6 +470,7 @@ const SearchBox = () => {
         searchResults={searchResults}
         onDelve={handleDataFromEntry}
         onAddAlias={handleAliasAdd}
+        onAddToCollection={addToCollection}
       />
     </div>
   );
