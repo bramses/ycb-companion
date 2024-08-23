@@ -126,8 +126,6 @@ const GardenDaily = () => {
       }),
     );
 
-    console.log('Alias data:', aliasData);
-
     setLoading(false);
     setEntries(aliasData);
   };

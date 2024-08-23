@@ -15,8 +15,6 @@ export const POST = async (request: Request) => {
     return NextResponse.json({}, { status: 500 });
   }
   const { DATABASE_URL, API_KEY } = await dbRes.json();
-  console.log('DATABASE_URL:', DATABASE_URL);
-  console.log('API_KEY:', API_KEY);
 
   const resp = await fetch(`${CLOUD_URL}/search`, {
     method: 'POST',
