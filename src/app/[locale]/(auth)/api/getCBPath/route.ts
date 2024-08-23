@@ -7,11 +7,11 @@ const cache = new NodeCache({ stdTTL: 600 }); // Cache for 10 minutes
 export async function GET(_: Request) {
   const { userId }: { userId: string | null } = auth();
 
-  if (!userId) return null;
+  if (!userId)
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const cachedData = cache.get(userId);
   if (cachedData) {
-    console.log('Returning cached data');
     return NextResponse.json(cachedData);
   }
 
