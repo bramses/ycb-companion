@@ -2,10 +2,18 @@ import { NextResponse } from 'next/server';
 
 import { logger } from '@/libs/Logger';
 
+import { GET } from '../getCBPath/route';
+
 // import env variables
 
-export const POST = async (_: Request) => {
-  const { CLOUD_URL, DATABASE_URL } = process.env;
+export const POST = async (request: Request) => {
+  const { CLOUD_URL } = process.env;
+
+  const dbRes = await GET(request);
+  if (!dbRes) {
+    return NextResponse.json({}, { status: 500 });
+  }
+  const { DATABASE_URL } = await dbRes.json();
 
   const resp = await fetch(`${CLOUD_URL}/random`, {
     method: 'POST',

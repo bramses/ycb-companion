@@ -2,11 +2,19 @@ import { NextResponse } from 'next/server';
 
 import { logger } from '@/libs/Logger';
 
+import { GET } from '../getCBPath/route';
+
 // import env variables
 
 export const POST = async (request: Request) => {
   const { data, metadata } = await request.json();
-  const { CLOUD_URL, DATABASE_URL } = process.env;
+  const { CLOUD_URL } = process.env;
+
+  const dbRes = await GET(request);
+  if (!dbRes) {
+    return NextResponse.json({}, { status: 500 });
+  }
+  const { DATABASE_URL, API_KEY } = await dbRes.json();
 
   const resp = await fetch(`${CLOUD_URL}/add`, {
     method: 'POST',
@@ -17,6 +25,7 @@ export const POST = async (request: Request) => {
       dbPath: DATABASE_URL,
       data,
       metadata,
+      apiKey: API_KEY,
     }),
   });
   logger.info('resp:', resp);
