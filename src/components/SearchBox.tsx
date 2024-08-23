@@ -3,6 +3,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import ScrollToTop from 'react-scroll-to-top';
 
 import { getCache, invalidateCache, setCache } from '@/helpers/cache';
 
@@ -480,6 +481,7 @@ const SearchBox = () => {
         onAddAlias={handleAliasAdd}
         onAddToCollection={addToCollection}
       />
+      <ScrollToTop smooth />
     </div>
   );
 };
