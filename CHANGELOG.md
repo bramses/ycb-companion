@@ -1,3 +1,10 @@
+# [1.14.0](https://github.com/bramses/ycb-companion/compare/v1.13.0...v1.14.0) (2024-08-23)
+
+
+### Features
+
+* Add API_KEY to search route for authentication ([2acd00a](https://github.com/bramses/ycb-companion/commit/2acd00ac02c696f07c711f6750ee1a8849d91e2f))
+
 # [1.13.0](https://github.com/bramses/ycb-companion/compare/v1.12.0...v1.13.0) (2024-08-20)
 
 
