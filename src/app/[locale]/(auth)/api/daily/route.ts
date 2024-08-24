@@ -14,7 +14,7 @@ export const POST = async (request: Request) => {
   if (!dbRes) {
     return NextResponse.json({}, { status: 500 });
   }
-  const { DATABASE_URL } = await dbRes.json();
+  const { DATABASE_URL, API_KEY } = await dbRes.json();
 
   const resp = await fetch(`${CLOUD_URL}/entriesByDate`, {
     method: 'POST',
@@ -25,6 +25,7 @@ export const POST = async (request: Request) => {
       excludeParentId: true,
       date,
       dbPath: DATABASE_URL,
+      apiKey: API_KEY,
     }),
   });
   logger.info('resp:', resp);
