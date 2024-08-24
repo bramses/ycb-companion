@@ -34,6 +34,18 @@ const BaseTemplate = (props: {
         <main>{props.children}</main>
 
         <footer className="border-t border-gray-300 py-8 text-center text-sm">
+          <a
+            className="text-blue-700 hover:border-b-2 hover:border-blue-700"
+            href="https://www.icloud.com/shortcuts/e5b66464cff943f286244b06ab79625b"
+          >
+            Get the iOS shortcut.
+          </a>
+          <a
+            className="text-blue-700 hover:border-b-2 hover:border-blue-700"
+            href="https://github.com/bramses/simple-chrome-ycb"
+          >
+            Get the Chrome Extension.
+          </a>
           © Copyright {new Date().getFullYear()} {AppConfig.name}. Boilerplate
           created by{' '}
           <a
