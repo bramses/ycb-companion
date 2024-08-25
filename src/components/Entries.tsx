@@ -35,7 +35,7 @@ const Entries = ({
             'aliasData' in entry ? Math.random() * 1000 : `${entry.id}-${idx}`
           } // Replace 'Math.random() * 1000' with a more specific key if possible
           data={entry.data}
-          id={`${entry.id}-${idx}`}
+          id={`${entry.id}`}
           aliases={'aliasData' in entry ? entry.aliasData : []}
           selectedIndex={'selectedIndex' in entry ? entry.selectedIndex : -1}
           title={entry.metadata.title}
