@@ -1,3 +1,10 @@
+# [1.16.0](https://github.com/bramses/ycb-companion/compare/v1.15.0...v1.16.0) (2024-08-25)
+
+
+### Features
+
+* Update metadata title field in Upload page ([8f4b34c](https://github.com/bramses/ycb-companion/commit/8f4b34c2770a658155ee265d49e3ff8a28a62497)), closes [#123](https://github.com/bramses/ycb-companion/issues/123)
+
 # [1.15.0](https://github.com/bramses/ycb-companion/compare/v1.14.0...v1.15.0) (2024-08-24)
 
 
