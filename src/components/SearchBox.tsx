@@ -2,7 +2,7 @@
 
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import ScrollToTop from 'react-scroll-to-top';
 
 import { getCache, invalidateCache, setCache } from '@/helpers/cache';
@@ -16,14 +16,6 @@ const SearchBox = () => {
   const [showCollection, setShowCollection] = useState(false);
   const [collection, setCollection] = useState<any[]>([]);
   const cache = getCache();
-
-  useEffect(() => {
-    fetch('/api/getCBPath')
-      .then((res) => res.json())
-      .then((data) => {
-        console.log('data:', data);
-      });
-  }, [searchResults]);
 
   const fetchByID = async (id: string) => {
     const cachedAlias = cache.aliases[id];

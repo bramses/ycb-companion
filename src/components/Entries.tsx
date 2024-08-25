@@ -29,11 +29,13 @@ const Entries = ({
 }: EntriesProps) => {
   return (
     <div>
-      {searchResults.map((entry: any) => (
+      {searchResults.map((entry: any, idx: number) => (
         <Entry
-          key={'aliasData' in entry ? Math.random() * 1000 : entry.id} // Replace 'Math.random() * 1000' with a more specific key if possible
+          key={
+            'aliasData' in entry ? Math.random() * 1000 : `${entry.id}-${idx}`
+          } // Replace 'Math.random() * 1000' with a more specific key if possible
           data={entry.data}
-          id={entry.id}
+          id={`${entry.id}-${idx}`}
           aliases={'aliasData' in entry ? entry.aliasData : []}
           selectedIndex={'selectedIndex' in entry ? entry.selectedIndex : -1}
           title={entry.metadata.title}

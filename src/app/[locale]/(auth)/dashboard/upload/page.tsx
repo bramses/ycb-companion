@@ -2,18 +2,34 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useUser } from '@clerk/nextjs';
+import { useEffect, useState } from 'react';
 
 import { clearCache } from '@/helpers/cache';
 
 const Upload = () => {
+  const { user, isLoaded } = useUser();
   const [textAreaValue, setTextAreaValue] = useState('');
   const [metadataFields, setMetadataFields] = useState([
     { key: 'author', value: 'https://ycb-companion.onrender.com/dashboard' },
-    { key: 'title', value: 'by Bram Adams' },
+    { key: 'title', value: 'by me' },
   ]);
   const apiKey = 'apikeyyyy';
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!isLoaded) return;
+    // set first name as title
+    if (user?.firstName) {
+      setMetadataFields([
+        {
+          key: 'author',
+          value: 'https://ycb-companion.onrender.com/dashboard',
+        },
+        { key: 'title', value: `${user.firstName} ${user.lastName}` },
+      ]);
+    }
+  }, [isLoaded, user]);
 
   const addField = () => {
     setMetadataFields([...metadataFields, { key: '', value: '' }]);
