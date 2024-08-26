@@ -1,3 +1,10 @@
+# [1.18.0](https://github.com/bramses/ycb-companion/compare/v1.17.0...v1.18.0) (2024-08-26)
+
+
+### Features
+
+* Add useRouter hook to GardenDaily page ([4ab3f9c](https://github.com/bramses/ycb-companion/commit/4ab3f9c2df0ecbf76361836cabdf9f7036dfb835)), closes [#123](https://github.com/bramses/ycb-companion/issues/123)
+
 # [1.17.0](https://github.com/bramses/ycb-companion/compare/v1.16.0...v1.17.0) (2024-08-26)
 
 
