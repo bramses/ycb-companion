@@ -2,7 +2,8 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import ScrollToTop from 'react-scroll-to-top';
 
 import { getCache, invalidateCache, setCache } from '@/helpers/cache';
@@ -10,6 +11,7 @@ import { getCache, invalidateCache, setCache } from '@/helpers/cache';
 import Entries from './Entries';
 
 const SearchBox = () => {
+  const searchParams = useSearchParams();
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [textAreaValue, setTextAreaValue] = useState('');
   const [showLoading, setShowLoading] = useState(false);
@@ -327,6 +329,14 @@ const SearchBox = () => {
       return { error: err };
     }
   };
+
+  useEffect(() => {
+    const query = searchParams.get('q');
+    if (query) {
+      setTextAreaValue(query);
+      // fetchSearchResults(query);
+    }
+  }, [searchParams]);
 
   return (
     <div>

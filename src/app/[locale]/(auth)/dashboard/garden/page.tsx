@@ -1,5 +1,6 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import Calendar from 'react-calendar';
 
@@ -7,6 +8,7 @@ import Entry from '@/components/Entry';
 import { getCache, invalidateCache, setCache } from '@/helpers/cache';
 
 const GardenDaily = () => {
+  const router = useRouter();
   const [entries, setEntries] = useState<any[]>([]);
   const [selectedDay, setSelectedDay] = useState('');
   const [loading, setLoading] = useState(false);
@@ -210,10 +212,9 @@ const GardenDaily = () => {
 
   const onDelve = async (data: string) => {
     console.log('Delving into:', data);
-    // open the dashboard with the data as the search query
     const search = new URLSearchParams();
     search.set('q', data);
-    window.location.href = `/dashboard?search=${search.toString()}`;
+    router.push(`/dashboard?${search.toString()}`);
   };
 
   return (
