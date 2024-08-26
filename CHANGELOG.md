@@ -1,3 +1,10 @@
+# [1.17.0](https://github.com/bramses/ycb-companion/compare/v1.16.0...v1.17.0) (2024-08-26)
+
+
+### Features
+
+* Add support for Instagram and TikTok embeds in Garden page ([4b1e3df](https://github.com/bramses/ycb-companion/commit/4b1e3dfa4bfa1fcba42137a8c0b9787c9c1a6b84)), closes [#123](https://github.com/bramses/ycb-companion/issues/123)
+
 # [1.16.0](https://github.com/bramses/ycb-companion/compare/v1.15.0...v1.16.0) (2024-08-25)
 
 
