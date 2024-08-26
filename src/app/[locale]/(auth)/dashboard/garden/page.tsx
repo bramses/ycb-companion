@@ -208,6 +208,14 @@ const GardenDaily = () => {
     }
   };
 
+  const onDelve = async (data: string) => {
+    console.log('Delving into:', data);
+    // open the dashboard with the data as the search query
+    const search = new URLSearchParams();
+    search.set('q', data);
+    window.location.href = `/dashboard?search=${search.toString()}`;
+  };
+
   return (
     <div>
       <Calendar onClickDay={(val) => fetchRecords(val)} />
@@ -238,7 +246,7 @@ const GardenDaily = () => {
                 ? entry.metadata.author.split('v=')[1]?.split('&')[0]
                 : ''
             }
-            // displayDelve={false}
+            displayDelve={false}
             displayMetadata={false}
             youtubeStart={
               entry.metadata.author.includes('youtube') &&
@@ -266,6 +274,7 @@ const GardenDaily = () => {
             hasTikTokEmbed={entry.metadata.author.includes('tiktok.com')}
             onAddAlias={handleAliasAdd}
             hasAliases={'aliasData' in entry}
+            onDelve={onDelve}
           />
         ))
       )}

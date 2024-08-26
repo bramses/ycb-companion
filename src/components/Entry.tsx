@@ -7,7 +7,7 @@
 
 import 'react-lite-youtube-embed/dist/LiteYouTubeEmbed.css';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { CiCirclePlus, CiSearch } from 'react-icons/ci';
 import LiteYouTubeEmbed from 'react-lite-youtube-embed';
 import ReactMarkdown from 'react-markdown';
@@ -31,7 +31,7 @@ const Entry = ({
   similarity = 0,
   imageUrl = '',
   id = '',
-  // displayDelve = true,
+  displayDelve = true,
   displayCollections = false,
   displayMetadata = true,
   hasImage = false,
@@ -50,6 +50,10 @@ const Entry = ({
   const [isAddedToCollection, setIsAddedToCollection] = useState(false);
   const [isAddingAlias, setIsAddingAlias] = useState(false);
   const [shownAliases] = useState<string[]>(aliases);
+
+  useEffect(() => {
+    console.log(displayDelve);
+  }, [displayDelve]);
 
   return (
     <div className="m-4 [&_p]:my-6">
