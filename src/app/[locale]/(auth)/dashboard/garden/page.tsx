@@ -238,7 +238,7 @@ const GardenDaily = () => {
                 ? entry.metadata.author.split('v=')[1]?.split('&')[0]
                 : ''
             }
-            displayDelve={false}
+            // displayDelve={false}
             displayMetadata={false}
             youtubeStart={
               entry.metadata.author.includes('youtube') &&
