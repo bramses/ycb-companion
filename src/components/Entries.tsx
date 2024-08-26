@@ -81,6 +81,14 @@ const Entries = ({
               ? entry.metadata.author.split('/').pop()
               : ''
           }
+          hasInstagramEmbed={
+            entry.metadata.author &&
+            entry.metadata.author.includes('instagram.com')
+          }
+          hasTikTokEmbed={
+            entry.metadata.author &&
+            entry.metadata.author.includes('tiktok.com')
+          }
           onDelve={onDelve}
           onAddAlias={onAddAlias}
           onAddToCollection={onAddToCollection}

@@ -8,8 +8,10 @@
 import 'react-lite-youtube-embed/dist/LiteYouTubeEmbed.css';
 
 import { useState } from 'react';
+import { CiCirclePlus, CiSearch } from 'react-icons/ci';
 import LiteYouTubeEmbed from 'react-lite-youtube-embed';
 import ReactMarkdown from 'react-markdown';
+import { InstagramEmbed, TikTokEmbed } from 'react-social-media-embed';
 import { Tweet } from 'react-tweet';
 
 const Entry = ({
@@ -17,6 +19,8 @@ const Entry = ({
   // hasCollections: initialHasCollections = false,
   hasYouTubeEmbed: initialHasYouTubeEmbed = false,
   hasTwitterEmbed: initialHasTwitterEmbed = false,
+  hasInstagramEmbed: initialHasInstagramEmbed = false,
+  hasTikTokEmbed: initialHasTikTokEmbed = false,
   tweetId = '',
   youtubeId = '',
   youtubeStart = '',
@@ -28,6 +32,7 @@ const Entry = ({
   imageUrl = '',
   id = '',
   displayDelve = true,
+  displayCollections = false,
   displayMetadata = true,
   hasImage = false,
   onDelve = (_: string) => {},
@@ -40,8 +45,11 @@ const Entry = ({
   // const [hasCollections] = useState(initialHasCollections);
   const [hasYouTubeEmbed] = useState(initialHasYouTubeEmbed);
   const [hasTwitterEmbed] = useState(initialHasTwitterEmbed);
+  const [hasInstagramEmbed] = useState(initialHasInstagramEmbed);
+  const [hasTikTokEmbed] = useState(initialHasTikTokEmbed);
   const [isAddedToCollection, setIsAddedToCollection] = useState(false);
   const [isAddingAlias, setIsAddingAlias] = useState(false);
+  const [shownAliases] = useState<string[]>(aliases);
 
   return (
     <div className="m-4 [&_p]:my-6">
@@ -50,7 +58,7 @@ const Entry = ({
           <LiteYouTubeEmbed
             id={youtubeId}
             params={`start=${youtubeStart}`}
-            title="Japan is messing up the world economy - YouTube"
+            title="YouTube video"
           />
         )}
 
@@ -60,16 +68,30 @@ const Entry = ({
 
         {hasTwitterEmbed && <Tweet id={tweetId} />}
 
+        {hasInstagramEmbed && <InstagramEmbed url={author} />}
+
+        {hasTikTokEmbed && <TikTokEmbed url={author} />}
+
         {/* <p className="mb-3 font-normal text-gray-500 dark:text-gray-400">
           {data}
         </p> */}
-        <div className="mb-3 overflow-x-auto font-normal text-gray-500 dark:text-gray-400">
+        <div className="mb-3 flex items-center justify-between overflow-x-auto font-normal text-gray-500 dark:text-gray-400">
           <ReactMarkdown className="mb-3 font-normal text-gray-500 dark:text-gray-400">
             {data}
           </ReactMarkdown>
+          <button
+            type="button"
+            className="ml-2"
+            onClick={() => {
+              onDelve(data);
+            }}
+            aria-label="Search data"
+          >
+            <CiSearch />
+          </button>
         </div>
 
-        {displayDelve && (
+        {/* {displayDelve && (
           <button
             className="mb-2 me-2 mt-4 w-full rounded-lg bg-blue-700 px-5 py-2.5 text-sm font-medium text-white hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
             type="button"
@@ -80,7 +102,7 @@ const Entry = ({
           >
             Delve
           </button>
-        )}
+        )} */}
 
         {hasAliases && (
           <div>
@@ -89,24 +111,52 @@ const Entry = ({
             <h2 className="mb-2 text-lg font-semibold text-gray-900 dark:text-white">
               Aliases:
             </h2>
-            <ul className="list-inside list-disc space-y-1 overflow-x-auto text-gray-500 dark:text-gray-400">
-              {aliases.map((alias, index) => (
-                <li key={alias}>
+            <ul className="list-inside list-none space-y-1 overflow-x-auto text-gray-500 dark:text-gray-400">
+              {shownAliases.map((alias, index) => (
+                <li
+                  key={alias}
+                  className="mb-3 flex items-center justify-between"
+                >
                   {index === selectedIndex ? (
-                    <strong className="font-semibold text-gray-900 dark:text-white">
-                      {alias} *
-                    </strong>
+                    <>
+                      <label
+                        htmlFor={`alias-${index}`}
+                        className="font-normal text-gray-500 dark:text-gray-400"
+                      >
+                        <strong className="font-semibold text-gray-900 dark:text-white">
+                          {alias}
+                        </strong>
+                      </label>
+                      <button
+                        type="button"
+                        className="float-right"
+                        onClick={() => {
+                          onDelve(alias);
+                        }}
+                        aria-label={`Search alias ${alias}`}
+                      >
+                        <CiSearch />
+                      </button>
+                    </>
                   ) : (
-                    <button
-                      type="button"
-                      className="font-normal text-blue-600 hover:underline"
-                      onClick={() => {
-                        // search using alias
-                        onDelve(alias);
-                      }}
-                    >
-                      {alias}
-                    </button>
+                    <>
+                      <label
+                        htmlFor={`alias-${index}`}
+                        className="font-normal text-gray-500 dark:text-gray-400"
+                      >
+                        {alias}
+                      </label>
+                      <button
+                        type="button"
+                        className="float-right"
+                        onClick={() => {
+                          onDelve(alias);
+                        }}
+                        aria-label={`Search alias ${alias}`}
+                      >
+                        <CiSearch />
+                      </button>
+                    </>
                   )}
                 </li>
               ))}
@@ -141,17 +191,16 @@ const Entry = ({
                 setIsAddingAlias(false);
                 // clear input field
                 (aliasInput as HTMLInputElement).value = '';
+                // add alias to list
+                // setAliases([...shownAliases, alias]);
               }}
-              className="ms-2.5 rounded-lg bg-blue-700 px-5 py-2.5 text-sm font-medium text-white hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+              className="ml-2"
+              aria-label="Add alias"
             >
-              Add
+              <CiCirclePlus />
             </button>
           ) : (
-            <button
-              disabled
-              type="button"
-              className="me-2 inline-flex items-center rounded-lg bg-blue-700 px-5 py-2.5 text-center text-sm font-medium text-white hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
-            >
+            <button disabled type="button" className="ml-2" aria-label="adding">
               <svg
                 aria-hidden="true"
                 role="status"
@@ -169,34 +218,38 @@ const Entry = ({
                   fill="currentColor"
                 />
               </svg>
-              Adding...
             </button>
           )}
         </div>
 
-        <hr className="mx-auto my-4 h-1 w-48 rounded border-0 bg-gray-100 md:my-10 dark:bg-gray-700" />
+        {displayCollections && (
+          <hr className="mx-auto my-4 h-1 w-48 rounded border-0 bg-gray-100 md:my-10 dark:bg-gray-700" />
+        )}
 
-        <button
-          key={id}
-          id={`add-to-collection-${id}`}
-          className={`mb-2 me-2 mt-4 w-full rounded-lg px-5 py-2.5 text-sm font-medium text-white focus:outline-none focus:ring-4 ${isAddedToCollection ? 'cursor-not-allowed bg-gray-300 text-gray-500' : 'bg-green-700 hover:bg-green-800 focus:ring-green-300 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800'}`}
-          type="button"
-          onClick={() => {
-            // TODO: this doesnt work for alias records
-            // add to collection
-            onAddToCollection(
-              { data, title, author },
-              aliases[selectedIndex] ? aliases[selectedIndex] : '',
-            );
-            setIsAddedToCollection((_) => {
-              return true;
-            });
-          }}
-          disabled={isAddedToCollection}
-        >
-          {isAddedToCollection ? 'Added to collection' : 'Add to collection'}
-        </button>
-        {isAddedToCollection && hasAliases && (
+        {displayCollections && (
+          <button
+            key={id}
+            id={`add-to-collection-${id}`}
+            className={`mb-2 me-2 mt-4 w-full rounded-lg px-5 py-2.5 text-sm font-medium text-white focus:outline-none focus:ring-4 ${isAddedToCollection ? 'cursor-not-allowed bg-gray-300 text-gray-500' : 'bg-green-700 hover:bg-green-800 focus:ring-green-300 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800'}`}
+            type="button"
+            onClick={() => {
+              // TODO: this doesnt work for alias records
+              // add to collection
+              onAddToCollection(
+                { data, title, author },
+                aliases[selectedIndex] ? aliases[selectedIndex] : '',
+              );
+              setIsAddedToCollection((_) => {
+                return true;
+              });
+            }}
+            disabled={isAddedToCollection}
+          >
+            {isAddedToCollection ? 'Added to collection' : 'Add to collection'}
+          </button>
+        )}
+
+        {displayCollections && isAddedToCollection && hasAliases && (
           <p className="mb-3 font-normal text-gray-500 dark:text-gray-400">
             Added to collection
           </p>

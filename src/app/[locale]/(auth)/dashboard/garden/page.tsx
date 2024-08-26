@@ -262,6 +262,8 @@ const GardenDaily = () => {
                 ? entry.metadata.author.split('/').pop()
                 : ''
             }
+            hasInstagramEmbed={entry.metadata.author.includes('instagram.com')}
+            hasTikTokEmbed={entry.metadata.author.includes('tiktok.com')}
             onAddAlias={handleAliasAdd}
             hasAliases={'aliasData' in entry}
           />
