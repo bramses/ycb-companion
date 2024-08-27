@@ -104,6 +104,8 @@ const Entry = ({
           </button>
         )} */}
 
+        {displayDelve ? '' : null}
+
         {hasAliases && (
           <div>
             <hr className="mx-auto my-4 h-1 w-48 rounded border-0 bg-gray-100 md:my-10 dark:bg-gray-700" />
