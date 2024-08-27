@@ -14,7 +14,7 @@ const Upload = () => {
     { key: 'author', value: 'https://ycb-companion.onrender.com/dashboard' },
     { key: 'title', value: 'by me' },
   ]);
-  const apiKey = 'apikeyyyy';
+  const apiKey = 'apikeyyyy'; // todo get from env
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -180,76 +180,6 @@ const Upload = () => {
       >
         Upload
       </button>
-
-      {/* below is code from another app to upload an image. i need a btn here that allows for img upload and that the describe endpoint puts the text from it in the input box above. convert this to react and add it to the app 
-      
-      const fileInput = document.createElement('input');
-      fileInput.type = 'file';
-      fileInput.accept = 'image/*';
-      fileInput.click();
-
-      // post image to server at /cf-images/upload
-      // then take the url and post it to /cf-images/describe
-      // then take the response and post it to /api/insert with title: 'Image' and author: cloudflare image url and data: response from /cf-images/describe
-      fileInput.addEventListener('change', (event) => {
-        const file = event.target.files[0];
-        const formData = new FormData();
-        formData.append('file', file);
-
-        fetch(
-          `https://commonbase-supabase-alpha.onrender.com/cf-images/upload`,
-          {
-            method: 'POST',
-            headers: {
-              Authorization: 'Bearer ' + apiKey,
-            },
-            body: formData,
-          }
-        )
-          .then((response) => response.json())
-          .then((data) => {
-            // console.log('Image uploaded:', data);
-            const pngUrl = data.url + '?format=png';
-            // console.log('PNG URL:', pngUrl);
-            fetch(
-              `https://commonbase-supabase-alpha.onrender.com/cf-images/describe`,
-              {
-                method: 'POST',
-                headers: {
-                  Authorization: 'Bearer ' + apiKey,
-                  'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ imageUrl: pngUrl }),
-              }
-            )
-              .then((response) => response.json())
-              .then((data) => {
-                // console.log('Image description:', data);
-                const metadata = {
-                  title: 'Image',
-                  author: data.metadata.imageUrl,
-                };
-
-                
-                dialog
-                  .querySelector('#insert')
-                  .addEventListener('click', () => {
-                    const editedText = dialog.querySelector('textarea').value;
-                    fetch(`https://api-gateway-electron.onrender.com/add`, {
-                      method: 'POST',
-                      headers: {
-                        Authorization: 'Bearer ' + apiKey,
-                        'Content-Type': 'application/json',
-                      },
-                      body: JSON.stringify({
-                        data: editedText,
-                        metadata,
-                        dbPath: '/var/data/db1.db',
-                      }),
-                    })
-                      .then((response) => response.json())
-      
-      */}
 
       {/* file input */}
       <input type="file" accept="image/*" className="hidden" id="file-input" />

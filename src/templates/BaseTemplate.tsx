@@ -44,7 +44,15 @@ const BaseTemplate = (props: {
             className="text-blue-700 hover:border-b-2 hover:border-blue-700"
             href="https://github.com/bramses/simple-chrome-ycb"
           >
+            {' '}
             Get the Chrome Extension.
+          </a>
+          <a
+            className="text-blue-700 hover:border-b-2 hover:border-blue-700"
+            href="https://forms.gle/e4MPYNiRDCBixi9j8"
+          >
+            {' '}
+            Feedback.
           </a>
           © Copyright {new Date().getFullYear()} {AppConfig.name}. Boilerplate
           created by{' '}

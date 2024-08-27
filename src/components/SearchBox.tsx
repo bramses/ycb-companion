@@ -3,7 +3,7 @@
 'use client';
 
 import { useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import ScrollToTop from 'react-scroll-to-top';
 
 import { getCache, invalidateCache, setCache } from '@/helpers/cache';
@@ -18,6 +18,23 @@ const SearchBox = () => {
   const [showCollection, setShowCollection] = useState(false);
   const [collection, setCollection] = useState<any[]>([]);
   const cache = getCache();
+
+  const textAreaRef = useRef<HTMLTextAreaElement>(null);
+  const [isSticky, setIsSticky] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (textAreaRef.current) {
+        const offsetTop = textAreaRef.current.getBoundingClientRect().top;
+        setIsSticky(offsetTop < 9);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
 
   const fetchByID = async (id: string) => {
     const cachedAlias = cache.aliases[id];
@@ -342,16 +359,25 @@ const SearchBox = () => {
     <div>
       <textarea
         id="message"
-        rows={4}
-        className="mt-4 block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder:text-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
+        ref={textAreaRef}
+        rows={2}
+        className={`sticky top-2 z-50 mt-4 block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder:text-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500 ${
+          isSticky ? 'opacity-50' : 'opacity-100'
+        }`}
         placeholder="Your message..."
         value={textAreaValue}
         onChange={(e) => setTextAreaValue(e.target.value)}
+        onFocus={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') {
+            fetchSearchResults(textAreaValue.trim());
+          }
+        }}
       />
 
       <button
         type="button"
-        onClick={() => fetchSearchResults(textAreaValue)}
+        onClick={() => fetchSearchResults(textAreaValue.trim())}
         className="mb-2 me-2 mt-4 w-full rounded-lg bg-blue-700 px-5 py-2.5 text-sm font-medium text-white hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
       >
         Search

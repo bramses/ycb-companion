@@ -7,8 +7,8 @@
 
 import 'react-lite-youtube-embed/dist/LiteYouTubeEmbed.css';
 
-import { useEffect, useState } from 'react';
-import { CiCirclePlus, CiSearch } from 'react-icons/ci';
+import { useState } from 'react';
+import { CiCirclePlus, CiEdit, CiSearch } from 'react-icons/ci';
 import LiteYouTubeEmbed from 'react-lite-youtube-embed';
 import ReactMarkdown from 'react-markdown';
 import { InstagramEmbed, TikTokEmbed } from 'react-social-media-embed';
@@ -51,12 +51,8 @@ const Entry = ({
   const [isAddingAlias, setIsAddingAlias] = useState(false);
   const [shownAliases] = useState<string[]>(aliases);
 
-  useEffect(() => {
-    console.log(displayDelve);
-  }, [displayDelve]);
-
   return (
-    <div className="m-4 [&_p]:my-6">
+    <div className="my-4 [&_p]:my-6">
       <div className="w-full rounded-lg border border-gray-200 bg-white p-6 shadow dark:border-gray-700 dark:bg-gray-800">
         {hasYouTubeEmbed && (
           <LiteYouTubeEmbed
@@ -117,10 +113,9 @@ const Entry = ({
             </h2>
             <ul className="list-inside list-none space-y-1 overflow-x-auto text-gray-500 dark:text-gray-400">
               {shownAliases.map((alias, index) => (
-                <li
-                  key={alias}
-                  className="mb-3 flex items-center justify-between"
-                >
+                <li key={alias} className="mb-3">
+                  {' '}
+                  {/*  flex items-center justify-between */}
                   {index === selectedIndex ? (
                     <>
                       <label
@@ -131,35 +126,166 @@ const Entry = ({
                           {alias}
                         </strong>
                       </label>
-                      <button
-                        type="button"
-                        className="float-right"
-                        onClick={() => {
-                          onDelve(alias);
-                        }}
-                        aria-label={`Search alias ${alias}`}
-                      >
-                        <CiSearch />
-                      </button>
+                      <div className="mt-2 grid w-full grid-cols-3">
+                        <div /> {/* Empty div to take up the first 33% */}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            onDelve(alias);
+                          }}
+                          aria-label={`Search alias ${alias}`}
+                          className="text-center"
+                        >
+                          <CiSearch />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            // set alias to contenteditable and focus and add a save button
+                            const aliasElement = document.getElementById(
+                              `alias-${id}-${index}`,
+                            );
+                            if (!aliasElement) return;
+                            const aliasText = aliasElement.textContent;
+                            // create form element
+                            const form = document.createElement('form');
+                            form.className =
+                              'w-full mb-4 border border-gray-200 rounded-lg bg-gray-50 dark:bg-gray-700 dark:border-gray-600';
+
+                            // create div for textarea
+                            const divTextarea = document.createElement('div');
+                            divTextarea.className =
+                              'px-4 py-2 bg-white rounded-t-lg dark:bg-gray-800';
+
+                            // create textarea
+                            const textarea = document.createElement('textarea');
+                            textarea.id = `alias-${id}-${index}`;
+                            textarea.rows = 4;
+                            textarea.className =
+                              'w-full px-0 text-sm text-gray-900 bg-white border-0 dark:bg-gray-800 focus:ring-0 dark:text-white dark:placeholder-gray-400';
+                            textarea.placeholder = 'Write a comment...';
+                            textarea.required = true;
+                            textarea.value = aliasText;
+
+                            // append textarea to div
+                            divTextarea.appendChild(textarea);
+
+                            // create div for buttons
+                            const divButtons = document.createElement('div');
+                            divButtons.className =
+                              'flex items-center justify-between px-3 py-2 border-t dark:border-gray-600';
+
+                            // create submit button
+                            const submitButton =
+                              document.createElement('button');
+                            submitButton.type = 'submit';
+                            submitButton.className =
+                              'inline-flex items-center py-2.5 px-4 text-xs font-medium text-center text-white bg-blue-700 rounded-lg focus:ring-4 focus:ring-blue-200 dark:focus:ring-blue-900 hover:bg-blue-800';
+                            submitButton.textContent = 'Edit Alias';
+
+                            // append buttons to div
+                            divButtons.appendChild(submitButton);
+
+                            // append divs to form
+                            form.appendChild(divTextarea);
+                            form.appendChild(divButtons);
+
+                            // clear aliasElement and append form
+                            aliasElement.innerHTML = '';
+                            aliasElement.appendChild(form);
+                          }}
+                          aria-label={`Edit alias ${alias}`}
+                          className="text-center"
+                        >
+                          <CiEdit />
+                        </button>
+                      </div>
+                      <hr className="my-8 h-px border-0 bg-gray-200 dark:bg-gray-700" />
                     </>
                   ) : (
                     <>
                       <label
                         htmlFor={`alias-${index}`}
                         className="font-normal text-gray-500 dark:text-gray-400"
+                        id={`alias-${id}-${index}`}
                       >
                         {alias}
                       </label>
-                      <button
-                        type="button"
-                        className="float-right"
-                        onClick={() => {
-                          onDelve(alias);
-                        }}
-                        aria-label={`Search alias ${alias}`}
-                      >
-                        <CiSearch />
-                      </button>
+                      <div className="mt-2 grid w-full grid-cols-3">
+                        <div /> {/* Empty div to take up the first 33% */}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            onDelve(alias);
+                          }}
+                          aria-label={`Search alias ${alias}`}
+                          className="text-center"
+                        >
+                          <CiSearch />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            // set alias to contenteditable and focus and add a save button
+                            const aliasElement = document.getElementById(
+                              `alias-${id}-${index}`,
+                            );
+                            if (!aliasElement) return;
+                            const aliasText = aliasElement.textContent;
+                            // create form element
+                            const form = document.createElement('form');
+                            form.className =
+                              'w-full mb-4 border border-gray-200 rounded-lg bg-gray-50 dark:bg-gray-700 dark:border-gray-600';
+
+                            // create div for textarea
+                            const divTextarea = document.createElement('div');
+                            divTextarea.className =
+                              'px-4 py-2 bg-white rounded-t-lg dark:bg-gray-800';
+
+                            // create textarea
+                            const textarea = document.createElement('textarea');
+                            textarea.id = `alias-${id}-${index}`;
+                            textarea.rows = 4;
+                            textarea.className =
+                              'w-full px-0 text-sm text-gray-900 bg-white border-0 dark:bg-gray-800 focus:ring-0 dark:text-white dark:placeholder-gray-400';
+                            textarea.placeholder = 'Write a comment...';
+                            textarea.required = true;
+                            textarea.value = aliasText;
+
+                            // append textarea to div
+                            divTextarea.appendChild(textarea);
+
+                            // create div for buttons
+                            const divButtons = document.createElement('div');
+                            divButtons.className =
+                              'flex items-center justify-between px-3 py-2 border-t dark:border-gray-600';
+
+                            // create submit button
+                            const submitButton =
+                              document.createElement('button');
+                            submitButton.type = 'submit';
+                            submitButton.className =
+                              'inline-flex items-center py-2.5 px-4 text-xs font-medium text-center text-white bg-blue-700 rounded-lg focus:ring-4 focus:ring-blue-200 dark:focus:ring-blue-900 hover:bg-blue-800';
+                            submitButton.textContent = 'Edit alias';
+
+                            // append buttons to div
+                            divButtons.appendChild(submitButton);
+
+                            // append divs to form
+                            form.appendChild(divTextarea);
+                            form.appendChild(divButtons);
+
+                            // clear aliasElement and append form
+                            aliasElement.innerHTML = '';
+                            aliasElement.appendChild(form);
+                          }}
+                          aria-label={`Edit alias ${alias}`}
+                          className="text-center"
+                        >
+                          <CiEdit />
+                        </button>
+                      </div>
+                      <hr className="my-8 h-px border-0 bg-gray-200 dark:bg-gray-700" />
                     </>
                   )}
                 </li>
@@ -175,6 +301,24 @@ const Entry = ({
             type="text"
             className="w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder:text-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
             placeholder="Add an alias..."
+            onKeyDown={async (e) => {
+              if (e.key === 'Enter') {
+                const aliasInput = document.getElementById(`alias-input-${id}`);
+                if (!aliasInput) return;
+                // Cast to HTMLInputElement to access value property
+                const alias = (aliasInput as HTMLInputElement).value;
+                setIsAddingAlias(true);
+                await onAddAlias({
+                  id,
+                  alias,
+                  data,
+                  metadata: { title, author },
+                });
+                setIsAddingAlias(false);
+                // clear input field
+                (aliasInput as HTMLInputElement).value = '';
+              }
+            }}
             id={`alias-input-${id}`}
           />
           {!isAddingAlias ? (
@@ -198,7 +342,7 @@ const Entry = ({
                 // add alias to list
                 // setAliases([...shownAliases, alias]);
               }}
-              className="ml-2"
+              className="ml-2 font-normal text-gray-500 dark:text-gray-400"
               aria-label="Add alias"
             >
               <CiCirclePlus />
