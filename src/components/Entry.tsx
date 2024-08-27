@@ -167,7 +167,7 @@ const Entry = ({
                               'w-full px-0 text-sm text-gray-900 bg-white border-0 dark:bg-gray-800 focus:ring-0 dark:text-white dark:placeholder-gray-400';
                             textarea.placeholder = 'Write a comment...';
                             textarea.required = true;
-                            textarea.value = aliasText;
+                            textarea.value = aliasText ?? ''; // Ensure aliasText is not null
 
                             // append textarea to div
                             divTextarea.appendChild(textarea);
@@ -252,7 +252,7 @@ const Entry = ({
                               'w-full px-0 text-sm text-gray-900 bg-white border-0 dark:bg-gray-800 focus:ring-0 dark:text-white dark:placeholder-gray-400';
                             textarea.placeholder = 'Write a comment...';
                             textarea.required = true;
-                            textarea.value = aliasText;
+                            textarea.value = aliasText ?? ''; // Ensure aliasText is not null
 
                             // append textarea to div
                             divTextarea.appendChild(textarea);
