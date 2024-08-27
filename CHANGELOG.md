@@ -1,3 +1,10 @@
+# [1.19.0](https://github.com/bramses/ycb-companion/compare/v1.18.0...v1.19.0) (2024-08-27)
+
+
+### Features
+
+* Add feedback link to BaseTemplate and implement sticky behavior for SearchBox ([7b9b6be](https://github.com/bramses/ycb-companion/commit/7b9b6be8dcc45d6695d21272fc33620275bab380))
+
 # [1.18.0](https://github.com/bramses/ycb-companion/compare/v1.17.0...v1.18.0) (2024-08-26)
 
 
