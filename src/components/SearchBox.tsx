@@ -23,17 +23,20 @@ const SearchBox = () => {
   const [isSticky, setIsSticky] = useState(false);
 
   useEffect(() => {
-    const handleScroll = () => {
-      if (textAreaRef.current) {
-        const offsetTop = textAreaRef.current.getBoundingClientRect().top;
-        setIsSticky(offsetTop < 9);
-      }
-    };
+    if (window.innerWidth > 768) {
+      const handleScroll = () => {
+        if (textAreaRef.current) {
+          const offsetTop = textAreaRef.current.getBoundingClientRect().top;
+          setIsSticky(offsetTop < 9);
+        }
+      };
 
-    window.addEventListener('scroll', handleScroll);
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-    };
+      window.addEventListener('scroll', handleScroll);
+      return () => {
+        window.removeEventListener('scroll', handleScroll);
+      };
+    }
+    return undefined;
   }, []);
 
   const fetchByID = async (id: string) => {
