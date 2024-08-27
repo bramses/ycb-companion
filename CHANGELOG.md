@@ -1,3 +1,10 @@
+# [1.20.0](https://github.com/bramses/ycb-companion/compare/v1.19.0...v1.20.0) (2024-08-27)
+
+
+### Features
+
+* Ensure aliasText is not null in Entry component ([fffedc6](https://github.com/bramses/ycb-companion/commit/fffedc6ad724fb779eabf400ab11b8d0a7152dbe))
+
 # [1.19.0](https://github.com/bramses/ycb-companion/compare/v1.18.0...v1.19.0) (2024-08-27)
 
 
