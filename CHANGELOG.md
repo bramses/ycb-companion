@@ -1,3 +1,10 @@
+# [1.22.0](https://github.com/bramses/ycb-companion/compare/v1.21.0...v1.22.0) (2024-08-28)
+
+
+### Features
+
+* Add react-calendar CSS import to GardenDaily page ([db194eb](https://github.com/bramses/ycb-companion/commit/db194eb9a7e3d6a26c6f80985dc6cc4ca30f418a))
+
 # [1.21.0](https://github.com/bramses/ycb-companion/compare/v1.20.0...v1.21.0) (2024-08-28)
 
 
