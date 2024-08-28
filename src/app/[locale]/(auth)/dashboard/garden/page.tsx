@@ -1,7 +1,7 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useCallback, useEffect, useState } from 'react';
 import Calendar from 'react-calendar';
 
 import Entry from '@/components/Entry';
@@ -9,128 +9,163 @@ import { getCache, invalidateCache, setCache } from '@/helpers/cache';
 
 const GardenDaily = () => {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [entries, setEntries] = useState<any[]>([]);
   const [selectedDay, setSelectedDay] = useState('');
   const [loading, setLoading] = useState(false);
   const cache = getCache();
 
-  const fetchByID = async (id: string) => {
-    const cachedAlias = cache.aliases[id];
-    if (cachedAlias) {
-      // console.log('Returning cached alias:', cachedAlias);
-      return { data: cachedAlias };
-    }
+  const fetchByID = useCallback(
+    async (id: string) => {
+      const cachedAlias = cache.aliases[id];
+      if (cachedAlias) {
+        // console.log('Returning cached alias:', cachedAlias);
+        return { data: cachedAlias };
+      }
 
-    // TODO: this breaks w aliases updating and idk how to fix atm
-    // const cachedParent = cache.parents[id];
-    // if (cachedParent) {
-    //   // console.log('Returning cached parent:', cachedParent);
-    //   return { data: cachedParent };
-    // }
+      // TODO: this breaks w aliases updating and idk how to fix atm
+      // const cachedParent = cache.parents[id];
+      // if (cachedParent) {
+      //   // console.log('Returning cached parent:', cachedParent);
+      //   return { data: cachedParent };
+      // }
 
-    try {
-      const response = await fetch('/api/fetch', {
+      try {
+        const response = await fetch('/api/fetch', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            id,
+          }),
+        });
+        const data = await response.json();
+        const entry = data.data;
+        // parse metadata
+        const metadata = JSON.parse(entry.metadata);
+
+        // cache the entry
+        if (metadata.parent_id) {
+          cache.aliases[id] = entry;
+        } else {
+          cache.parents[id] = entry;
+        }
+
+        setCache(cache);
+
+        return data;
+      } catch (error) {
+        console.error('Error fetching entry by ID:', error);
+        return {};
+      }
+    },
+    [cache],
+  );
+
+  const fetchRecords = useCallback(
+    async (date: Date) => {
+      // convert date to form 2024-01-01
+      const year = date.getFullYear();
+      const month = date.getMonth() + 1;
+      let monthString = month.toString();
+      // put a 0 in front of month if it is less than 10
+      if (month < 10) {
+        monthString = `0${month}`;
+      }
+      const day = date.getDate();
+      let dayString = day.toString();
+      if (day < 10) {
+        dayString = `0${day}`;
+      }
+      const dateString = `${year}-${monthString}-${dayString}`;
+      setSelectedDay(dateString);
+      setLoading(true);
+      // run a post request to fetch records for that date at /api/daily
+      const response = await fetch('/api/daily', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          id,
-        }),
+        body: JSON.stringify({ date: dateString }),
       });
-      const data = await response.json();
-      const entry = data.data;
-      // parse metadata
-      const metadata = JSON.parse(entry.metadata);
+      const responseData = await response.json();
+      console.log('Fetched records:', responseData);
+      // map over the response data and turn metadata into an object
+      // set entries to the mapped data
+      const mappedData = responseData.data.map((entry: any) => {
+        return {
+          ...entry,
+          metadata: JSON.parse(entry.metadata),
+        };
+      });
 
-      // cache the entry
-      if (metadata.parent_id) {
-        cache.aliases[id] = entry;
-      } else {
-        cache.parents[id] = entry;
-      }
+      // get existing aliases for each entry
+      const aliasData = await Promise.all(
+        mappedData.map(async (entry: any) => {
+          if (entry.metadata.alias_ids) {
+            try {
+              const aliasDataMap = await Promise.all(
+                entry.metadata.alias_ids.map(async (aliasId: string) => {
+                  try {
+                    const aliasEntryRes = await fetchByID(aliasId);
+                    const aliasEntry = aliasEntryRes.data;
+                    return aliasEntry.data;
+                  } catch (aliasFetchError) {
+                    console.error(
+                      `Error fetching alias entry with ID ${aliasId}:`,
+                      aliasFetchError,
+                    );
+                    throw aliasFetchError;
+                  }
+                }),
+              );
 
-      setCache(cache);
-
-      return data;
-    } catch (error) {
-      console.error('Error fetching entry by ID:', error);
-      return {};
-    }
-  };
-
-  const fetchRecords = async (date: Date) => {
-    // convert date to form 2024-01-01
-    const year = date.getFullYear();
-    const month = date.getMonth() + 1;
-    let monthString = month.toString();
-    // put a 0 in front of month if it is less than 10
-    if (month < 10) {
-      monthString = `0${month}`;
-    }
-    const day = date.getDate();
-    let dayString = day.toString();
-    if (day < 10) {
-      dayString = `0${day}`;
-    }
-    const dateString = `${year}-${monthString}-${dayString}`;
-    setSelectedDay(dateString);
-    setLoading(true);
-    // run a post request to fetch records for that date at /api/daily
-    const response = await fetch('/api/daily', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ date: dateString }),
-    });
-    const responseData = await response.json();
-    // map over the response data and turn metadata into an object
-    // set entries to the mapped data
-    const mappedData = responseData.data.map((entry: any) => {
-      return {
-        ...entry,
-        metadata: JSON.parse(entry.metadata),
-      };
-    });
-
-    // get existing aliases for each entry
-    const aliasData = await Promise.all(
-      mappedData.map(async (entry: any) => {
-        if (entry.metadata.alias_ids) {
-          try {
-            const aliasDataMap = await Promise.all(
-              entry.metadata.alias_ids.map(async (aliasId: string) => {
-                try {
-                  const aliasEntryRes = await fetchByID(aliasId);
-                  const aliasEntry = aliasEntryRes.data;
-                  return aliasEntry.data;
-                } catch (aliasFetchError) {
-                  console.error(
-                    `Error fetching alias entry with ID ${aliasId}:`,
-                    aliasFetchError,
-                  );
-                  throw aliasFetchError;
-                }
-              }),
-            );
-
-            return {
-              ...entry,
-              aliasData: aliasDataMap,
-            };
-          } catch (aliasError) {
-            console.error('Error fetching aliases:', aliasError);
-            return { ...entry };
+              return {
+                ...entry,
+                aliasData: aliasDataMap,
+              };
+            } catch (aliasError) {
+              console.error('Error fetching aliases:', aliasError);
+              return { ...entry };
+            }
           }
-        }
-        return entry;
-      }),
-    );
+          return entry;
+        }),
+      );
 
-    setLoading(false);
-    setEntries(aliasData);
-  };
+      setLoading(false);
+      setEntries(aliasData);
+    },
+    [fetchByID, setSelectedDay, setLoading, setEntries],
+  );
+
+  // on load page, fetch all entries for the current day
+  useEffect(() => {
+    const today = new Date();
+    let dateParam = today;
+    if (searchParams && searchParams.has('date')) {
+      let searchParamsDate = searchParams.get('date') as string;
+      // if date comes in form 07-31-2024 convert it to 2024-07-31
+      const dateParts = (searchParams.get('date') as string).split('-');
+      if (dateParts.length === 3) {
+        searchParamsDate = `${dateParts[2]}-${dateParts[0]}-${dateParts[1]}`;
+      }
+      // convert 2024-08-26 to Date Sun Aug 26 2024 in UTC
+      // const dateString = searchParams.get('date') as string;
+      // add a day to the date to get the correct date this is so stupid
+      const datePlusOne = new Date(`${searchParamsDate}T00:00:00Z`);
+      dateParam = new Date(datePlusOne.setDate(datePlusOne.getDate() + 1));
+    }
+    const formattedDateParam = `${dateParam.getUTCFullYear()}-${(
+      dateParam.getUTCMonth() + 1
+    )
+      .toString()
+      .padStart(2, '0')}-${dateParam.getUTCDate().toString().padStart(2, '0')}`;
+
+    setSelectedDay(formattedDateParam);
+    fetchRecords(dateParam);
+  }, [searchParams]);
 
   const addEntry = async (data: string, metadata: string) => {
     try {

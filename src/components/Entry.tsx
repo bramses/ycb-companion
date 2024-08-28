@@ -411,7 +411,18 @@ const Entry = ({
           <p className="mb-3 font-normal text-gray-500 dark:text-gray-400">
             Added on{' '}
             <strong className="font-semibold text-gray-900 dark:text-white">
-              {new Date(createdAt).toLocaleDateString()}
+              {/* link to /dashboard/garden?date=yyyy-mm-dd. if day or month is one number prepend a zero */}
+              <a
+                href={`/dashboard/garden?date=${new Date(createdAt)
+                  .toLocaleDateString()
+                  .split('/')
+                  .map((d) => (d.length === 1 ? `0${d}` : d))
+                  .join('-')}
+                `}
+                className="text-blue-600 hover:underline"
+              >
+                {new Date(createdAt).toLocaleDateString()}
+              </a>
             </strong>{' '}
             with a similarity of{' '}
             <strong className="font-semibold text-gray-900 dark:text-white">
