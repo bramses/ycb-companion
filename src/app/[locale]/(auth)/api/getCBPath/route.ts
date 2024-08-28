@@ -2,7 +2,7 @@ import { auth, clerkClient } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
 import NodeCache from 'node-cache';
 
-const cache = new NodeCache({ stdTTL: 600 }); // Cache for 10 minutes
+const cache = new NodeCache({ stdTTL: 15 }); // Cache for 15 seconds
 
 export async function GET(_: Request) {
   const { userId }: { userId: string | null } = auth();
