@@ -1,3 +1,10 @@
+# [1.21.0](https://github.com/bramses/ycb-companion/compare/v1.20.0...v1.21.0) (2024-08-28)
+
+
+### Features
+
+* Disable changing key for title and author fields in Upload page ([c029f79](https://github.com/bramses/ycb-companion/commit/c029f7975b17e3d6c6d4e76164acb31fbd0d9f6f))
+
 # [1.20.0](https://github.com/bramses/ycb-companion/compare/v1.19.0...v1.20.0) (2024-08-27)
 
 
