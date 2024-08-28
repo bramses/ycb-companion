@@ -1,3 +1,10 @@
+# [1.24.0](https://github.com/bramses/ycb-companion/compare/v1.23.0...v1.24.0) (2024-08-28)
+
+
+### Features
+
+* Add onKeyDown event listener to text area in Upload page ([6e95552](https://github.com/bramses/ycb-companion/commit/6e95552548bef7179cbf5b292175ebb7878e48ea))
+
 # [1.23.0](https://github.com/bramses/ycb-companion/compare/v1.22.0...v1.23.0) (2024-08-28)
 
 
