@@ -140,11 +140,6 @@ const Upload = () => {
         className="mt-4 block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder:text-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
         placeholder="Your message..."
         value={textAreaValue}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter') {
-            add(textAreaValue);
-          }
-        }}
         onChange={(e) => setTextAreaValue(e.target.value)}
       />
       {/* input fields and add buttons for key, values that can be optionally added to metadata, put title and author in by default */}
