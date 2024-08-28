@@ -5,6 +5,7 @@ import 'react-calendar/dist/Calendar.css';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 import Calendar from 'react-calendar';
+import ScrollToTop from 'react-scroll-to-top';
 
 import Entry from '@/components/Entry';
 import { getCache, invalidateCache, setCache } from '@/helpers/cache';
@@ -324,6 +325,7 @@ const GardenDaily = () => {
           />
         ))
       )}
+      <ScrollToTop smooth />
     </div>
   );
 };
