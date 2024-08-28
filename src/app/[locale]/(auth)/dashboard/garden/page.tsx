@@ -1,5 +1,7 @@
 'use client';
 
+import 'react-calendar/dist/Calendar.css';
+
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 import Calendar from 'react-calendar';
@@ -12,6 +14,7 @@ const GardenDaily = () => {
   const searchParams = useSearchParams();
   const [entries, setEntries] = useState<any[]>([]);
   const [selectedDay, setSelectedDay] = useState('');
+  const [dateSelected, setDateSelected] = useState(new Date());
   const [loading, setLoading] = useState(false);
   const cache = getCache();
 
@@ -164,6 +167,7 @@ const GardenDaily = () => {
       .padStart(2, '0')}-${dateParam.getUTCDate().toString().padStart(2, '0')}`;
 
     setSelectedDay(formattedDateParam);
+    setDateSelected(dateParam);
     fetchRecords(dateParam);
   }, [searchParams]);
 
@@ -254,7 +258,13 @@ const GardenDaily = () => {
 
   return (
     <div>
-      <Calendar onClickDay={(val) => fetchRecords(val)} />
+      {/* center the calendar */}
+      <div className="my-4 flex justify-center">
+        <Calendar
+          onClickDay={(val) => fetchRecords(val)}
+          value={dateSelected}
+        />
+      </div>
       <h1 className="mb-4 text-4xl font-extrabold leading-none tracking-tight text-gray-900 md:text-5xl lg:text-6xl">
         {selectedDay}
         <small className="ms-2 font-semibold text-gray-500">
