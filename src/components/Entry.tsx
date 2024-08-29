@@ -324,11 +324,16 @@ const Entry = ({
                                 submitButton.textContent = 'Loading...';
                                 // disable button
                                 submitButton.disabled = true;
-                                await onEdit(alias.id, newAlias, {
-                                  title,
-                                  author,
-                                  parent_id: id,
-                                });
+                                await onEdit(
+                                  alias.id,
+                                  newAlias,
+                                  {
+                                    title,
+                                    author,
+                                    parent_id: id,
+                                  },
+                                  true,
+                                );
 
                                 // enable button
                                 submitButton.disabled = false;
@@ -472,11 +477,16 @@ const Entry = ({
                                 submitButton.textContent = 'Loading...';
                                 // disable button
                                 submitButton.disabled = true;
-                                await onEdit(alias.id, newAlias, {
-                                  title,
-                                  author,
-                                  parent_id: id,
-                                });
+                                await onEdit(
+                                  alias.id,
+                                  newAlias,
+                                  {
+                                    title,
+                                    author,
+                                    parent_id: id,
+                                  },
+                                  true,
+                                );
 
                                 // enable button
                                 submitButton.disabled = false;
