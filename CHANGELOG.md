@@ -1,3 +1,11 @@
+# [1.28.0](https://github.com/bramses/ycb-companion/compare/v1.27.0...v1.28.0) (2024-08-29)
+
+
+### Features
+
+* Add date selection to GardenDaily component ([e9b9f44](https://github.com/bramses/ycb-companion/commit/e9b9f447bdee310d126d20ae19a8d31ed3903b0b))
+* Optimize Entry component with memoization and lazy loading for Instagram and TikTok embeds ([f6f4a97](https://github.com/bramses/ycb-companion/commit/f6f4a972168dc3dc17cb0558b112736accbd6b20))
+
 # [1.27.0](https://github.com/bramses/ycb-companion/compare/v1.26.0...v1.27.0) (2024-08-29)
 
 
