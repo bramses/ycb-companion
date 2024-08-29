@@ -139,6 +139,7 @@ const GardenDaily = () => {
       );
 
       setLoading(false);
+      setDateSelected(date);
       setEntries(aliasData);
     },
     [fetchByID, setSelectedDay, setLoading, setEntries],
