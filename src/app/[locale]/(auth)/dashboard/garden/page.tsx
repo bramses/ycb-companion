@@ -217,8 +217,10 @@ const GardenDaily = () => {
       const responseData = await response.json();
 
       if (isAlias) {
+        invalidateCache(id, isAlias);
         cache.aliases[id] = responseData.data;
       } else {
+        invalidateCache(id, isAlias);
         cache.parents[id] = responseData.data;
       }
 
