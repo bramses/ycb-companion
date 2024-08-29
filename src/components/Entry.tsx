@@ -38,6 +38,7 @@ const Entry = ({
   onDelve = (_: string) => {},
   onAddAlias = async (_: any) => {},
   onAddToCollection = (_: any, __: any) => {},
+  onEdit = async (_: any, __: any, ___: any) => {},
   aliases = [],
   selectedIndex = -1,
 }) => {
@@ -49,7 +50,7 @@ const Entry = ({
   const [hasTikTokEmbed] = useState(initialHasTikTokEmbed);
   const [isAddedToCollection, setIsAddedToCollection] = useState(false);
   const [isAddingAlias, setIsAddingAlias] = useState(false);
-  const [shownAliases] = useState<string[]>(aliases);
+  const [shownAliases] = useState<any[]>(aliases);
 
   return (
     <div className="my-4 [&_p]:my-6">
@@ -72,9 +73,6 @@ const Entry = ({
 
         {hasTikTokEmbed && <TikTokEmbed url={author} />}
 
-        {/* <p className="mb-3 font-normal text-gray-500 dark:text-gray-400">
-          {data}
-        </p> */}
         <div className="mb-3 flex items-center justify-between overflow-x-auto font-normal text-gray-500 dark:text-gray-400">
           <ReactMarkdown className="mb-3 font-normal text-gray-500 dark:text-gray-400">
             {data}
@@ -115,7 +113,7 @@ const Entry = ({
             </h2>
             <ul className="list-inside list-none space-y-1 overflow-x-auto text-gray-500 dark:text-gray-400">
               {shownAliases.map((alias, index) => (
-                <li key={alias} className="mb-3">
+                <li key={alias.id} className="mb-3">
                   {' '}
                   {/*  flex items-center justify-between */}
                   {index === selectedIndex ? (
@@ -123,9 +121,10 @@ const Entry = ({
                       <label
                         htmlFor={`alias-${index}`}
                         className="font-normal text-gray-500 dark:text-gray-400"
+                        id={`alias-${id}-${index}`}
                       >
                         <strong className="font-semibold text-gray-900 dark:text-white">
-                          {alias}
+                          {alias.data}
                         </strong>
                       </label>
                       <div className="mt-2 grid w-full grid-cols-3">
@@ -133,9 +132,9 @@ const Entry = ({
                         <button
                           type="button"
                           onClick={() => {
-                            onDelve(alias);
+                            onDelve(alias.data);
                           }}
-                          aria-label={`Search alias ${alias}`}
+                          aria-label={`Search alias ${alias.data}`}
                           className="text-center"
                         >
                           <CiSearch />
@@ -165,7 +164,7 @@ const Entry = ({
                             textarea.rows = 4;
                             textarea.className =
                               'w-full px-0 text-sm text-gray-900 bg-white border-0 dark:bg-gray-800 focus:ring-0 dark:text-white dark:placeholder-gray-400';
-                            textarea.placeholder = 'Write a comment...';
+                            textarea.placeholder = 'Edit alias...';
                             textarea.required = true;
                             textarea.value = aliasText ?? ''; // Ensure aliasText is not null
 
@@ -183,10 +182,73 @@ const Entry = ({
                             submitButton.type = 'submit';
                             submitButton.className =
                               'inline-flex items-center py-2.5 px-4 text-xs font-medium text-center text-white bg-blue-700 rounded-lg focus:ring-4 focus:ring-blue-200 dark:focus:ring-blue-900 hover:bg-blue-800';
-                            submitButton.textContent = 'Edit Alias';
+                            submitButton.textContent = 'Edit alias';
+
+                            submitButton.addEventListener(
+                              'click',
+                              async (e) => {
+                                e.preventDefault();
+                                const newAlias = textarea.value;
+                                if (newAlias === aliasText) {
+                                  // clear aliasElement and append form
+                                  aliasElement.innerHTML = '';
+                                  aliasElement.textContent = aliasText;
+                                  return;
+                                }
+
+                                setIsAddingAlias(true);
+                                // set textcontent of button to loading
+                                submitButton.textContent = 'Loading...';
+                                // disable button
+                                submitButton.disabled = true;
+                                await onEdit(alias.id, newAlias, {
+                                  title,
+                                  author,
+                                  parent_id: id,
+                                });
+
+                                // enable button
+                                submitButton.disabled = false;
+                                // set textcontent of button to loading
+                                submitButton.textContent = 'Edit Alias';
+
+                                setIsAddingAlias(false);
+                                // clear aliasElement and append form
+                                aliasElement.innerHTML = '';
+                                aliasElement.textContent = newAlias;
+
+                                // setIsAddingAlias(true);
+                                // await onAddAlias({
+                                //   id,
+                                //   alias: newAlias,
+                                //   data,
+                                //   metadata: { title, author },
+                                // });
+                                // setIsAddingAlias(false);
+                                // // clear aliasElement and append form
+                                // aliasElement.innerHTML = '';
+                                // aliasElement.textContent = newAlias;
+                              },
+                            );
 
                             // append buttons to div
                             divButtons.appendChild(submitButton);
+
+                            // cancel button
+                            const cancelButton =
+                              document.createElement('button');
+                            cancelButton.type = 'button';
+                            cancelButton.className =
+                              'inline-flex items-center py-2.5 px-4 text-xs font-medium text-center text-white bg-gray-300 rounded-lg focus:ring-4 focus:ring-blue-200 dark:focus:ring-blue-900 hover:bg-gray-400';
+                            cancelButton.textContent = 'Cancel';
+                            cancelButton.addEventListener('click', () => {
+                              // clear aliasElement and append form
+                              aliasElement.innerHTML = '';
+                              aliasElement.textContent = aliasText;
+                            });
+
+                            // append buttons to div
+                            divButtons.appendChild(cancelButton);
 
                             // append divs to form
                             form.appendChild(divTextarea);
@@ -211,16 +273,16 @@ const Entry = ({
                         className="font-normal text-gray-500 dark:text-gray-400"
                         id={`alias-${id}-${index}`}
                       >
-                        {alias}
+                        {alias.data}
                       </label>
                       <div className="mt-2 grid w-full grid-cols-3">
                         <div /> {/* Empty div to take up the first 33% */}
                         <button
                           type="button"
                           onClick={() => {
-                            onDelve(alias);
+                            onDelve(alias.data);
                           }}
-                          aria-label={`Search alias ${alias}`}
+                          aria-label={`Search alias ${alias.data}`}
                           className="text-center"
                         >
                           <CiSearch />
@@ -250,7 +312,7 @@ const Entry = ({
                             textarea.rows = 4;
                             textarea.className =
                               'w-full px-0 text-sm text-gray-900 bg-white border-0 dark:bg-gray-800 focus:ring-0 dark:text-white dark:placeholder-gray-400';
-                            textarea.placeholder = 'Write a comment...';
+                            textarea.placeholder = 'Edit alias...';
                             textarea.required = true;
                             textarea.value = aliasText ?? ''; // Ensure aliasText is not null
 
@@ -270,8 +332,71 @@ const Entry = ({
                               'inline-flex items-center py-2.5 px-4 text-xs font-medium text-center text-white bg-blue-700 rounded-lg focus:ring-4 focus:ring-blue-200 dark:focus:ring-blue-900 hover:bg-blue-800';
                             submitButton.textContent = 'Edit alias';
 
+                            submitButton.addEventListener(
+                              'click',
+                              async (e) => {
+                                e.preventDefault();
+                                const newAlias = textarea.value;
+                                if (newAlias === aliasText) {
+                                  // clear aliasElement and append form
+                                  aliasElement.innerHTML = '';
+                                  aliasElement.textContent = aliasText;
+                                  return;
+                                }
+
+                                setIsAddingAlias(true);
+                                // set textcontent of button to loading
+                                submitButton.textContent = 'Loading...';
+                                // disable button
+                                submitButton.disabled = true;
+                                await onEdit(alias.id, newAlias, {
+                                  title,
+                                  author,
+                                  parent_id: id,
+                                });
+
+                                // enable button
+                                submitButton.disabled = false;
+                                // set textcontent of button to loading
+                                submitButton.textContent = 'Edit Alias';
+
+                                setIsAddingAlias(false);
+                                // clear aliasElement and append form
+                                aliasElement.innerHTML = '';
+                                aliasElement.textContent = newAlias;
+
+                                // setIsAddingAlias(true);
+                                // await onAddAlias({
+                                //   id,
+                                //   alias: newAlias,
+                                //   data,
+                                //   metadata: { title, author },
+                                // });
+                                // setIsAddingAlias(false);
+                                // // clear aliasElement and append form
+                                // aliasElement.innerHTML = '';
+                                // aliasElement.textContent = newAlias;
+                              },
+                            );
+
                             // append buttons to div
                             divButtons.appendChild(submitButton);
+
+                            // cancel button
+                            const cancelButton =
+                              document.createElement('button');
+                            cancelButton.type = 'button';
+                            cancelButton.className =
+                              'inline-flex items-center py-2.5 px-4 text-xs font-medium text-center text-white bg-gray-300 rounded-lg focus:ring-4 focus:ring-blue-200 dark:focus:ring-blue-900 hover:bg-gray-400';
+                            cancelButton.textContent = 'Cancel';
+                            cancelButton.addEventListener('click', () => {
+                              // clear aliasElement and append form
+                              aliasElement.innerHTML = '';
+                              aliasElement.textContent = aliasText;
+                            });
+
+                            // append buttons to div
+                            divButtons.appendChild(cancelButton);
 
                             // append divs to form
                             form.appendChild(divTextarea);

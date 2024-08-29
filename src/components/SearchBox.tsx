@@ -238,7 +238,7 @@ const SearchBox = () => {
                         try {
                           const aliasEntryRes = await fetchByID(aliasId);
                           const aliasEntry = aliasEntryRes.data;
-                          return aliasEntry.data;
+                          return { data: aliasEntry.data, id: aliasId };
                         } catch (aliasFetchError) {
                           console.error(
                             `Error fetching alias entry with ID ${aliasId}:`,
@@ -273,7 +273,7 @@ const SearchBox = () => {
                   try {
                     const aliasEntryRes = await fetchByID(aliasId);
                     const aliasEntry = aliasEntryRes.data;
-                    return aliasEntry.data;
+                    return { data: aliasEntry.data, id: aliasId };
                   } catch (aliasFetchError) {
                     console.error(
                       `Error fetching alias entry with ID ${aliasId}:`,
@@ -510,6 +510,7 @@ const SearchBox = () => {
         searchResults={searchResults}
         onDelve={handleDataFromEntry}
         onAddAlias={handleAliasAdd}
+        onEdit={updateEntry}
         onAddToCollection={addToCollection}
       />
       <ScrollToTop smooth />

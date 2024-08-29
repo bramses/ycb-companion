@@ -18,6 +18,7 @@ interface EntriesProps {
   searchResults: EntryType[];
   onDelve: (data: string) => void;
   onAddAlias: (data: any) => Promise<void>;
+  onEdit: (id: string, data: string, metadata: string) => Promise<void>;
   onAddToCollection: (entry: any, alias: any) => void;
 }
 
@@ -26,6 +27,7 @@ const Entries = ({
   onDelve,
   onAddAlias,
   onAddToCollection,
+  onEdit,
 }: EntriesProps) => {
   return (
     <div>
@@ -91,6 +93,7 @@ const Entries = ({
           }
           onDelve={onDelve}
           onAddAlias={onAddAlias}
+          onEdit={onEdit}
           onAddToCollection={onAddToCollection}
           hasAliases={'aliasData' in entry}
         />

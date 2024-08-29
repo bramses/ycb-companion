@@ -119,9 +119,20 @@ const Grid = () => {
     params.api.setGridOption('datasource', dataSource);
   }, []);
 
-  // const deleteEntry = (id) => {
-  //   console.log('Deleting entry with id:', id);
-  // };
+  const deleteEntry = async (id: string) => {
+    fetch(`/api/delete`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        id,
+      }),
+    })
+      .then((response) => response.json())
+      .then((data) => console.log(data))
+      .catch((error) => console.error('Error:', error));
+  };
 
   const cellRenderer = (props: any) => {
     if (props?.value !== undefined) {
@@ -172,6 +183,7 @@ const Grid = () => {
         suppressHeaderMenuButton: true,
         filter: true,
         flex: 1,
+        minWidth: 200,
       },
       {
         field: 'metadata',
@@ -230,7 +242,8 @@ const Grid = () => {
     <div>
       <main>
         <div>
-          {/* <button
+          <button
+            type="button"
             onClick={() => {
               // if no row is selected then return
               if (!gridApi.getSelectedNodes().length) {
@@ -238,19 +251,20 @@ const Grid = () => {
               }
               // ask for permission to delete
               const result = window.confirm(
-                "Are you sure you want to delete this row?"
+                'Are you sure you want to delete this row?',
               );
               if (!result) {
                 return;
               }
               const selectedNodes = gridApi.getSelectedNodes();
-              const selectedData = selectedNodes.map((node) => node.data);
+              const selectedData = selectedNodes.map((node: any) => node.data);
+              console.log('selectedData:', selectedData);
               deleteEntry(selectedData[0].id);
               gridApi.refreshInfiniteCache();
             }}
           >
             Delete Selected Row
-          </button> */}
+          </button>
           <div
             className="ag-theme-quartz" // applying the Data Grid theme
             style={{ width: '100%', height: '500px' }}
