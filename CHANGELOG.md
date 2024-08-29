@@ -1,3 +1,10 @@
+# [1.26.0](https://github.com/bramses/ycb-companion/compare/v1.25.0...v1.26.0) (2024-08-29)
+
+
+### Features
+
+* Add onEdit function to Entries component ([2733ca0](https://github.com/bramses/ycb-companion/commit/2733ca01bf85bc18d8831451b78fb0574ab6dcad))
+
 # [1.25.0](https://github.com/bramses/ycb-companion/compare/v1.24.0...v1.25.0) (2024-08-28)
 
 
