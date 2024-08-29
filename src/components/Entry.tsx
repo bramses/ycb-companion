@@ -54,6 +54,7 @@ const Entry = ({
   const MemoizedInstagramEmbed = memo(InstagramEmbed);
   const MemoizedTikTokEmbed = memo(TikTokEmbed);
   const [processingAliases, setProcessingAliases] = useState<any[]>([]);
+  const [openIFrame, setOpenIFrame] = useState(false);
 
   return (
     <div className="my-4 [&_p]:my-6">
@@ -65,17 +66,40 @@ const Entry = ({
             title="YouTube video"
           />
         )}
-
         {hasImage && (
           <img className="h-auto w-full" src={imageUrl} alt="Image" />
         )}
-
         {hasTwitterEmbed && <Tweet id={tweetId} />}
-
         {hasInstagramEmbed && <MemoizedInstagramEmbed url={author} />}
-
         {hasTikTokEmbed && <MemoizedTikTokEmbed url={author} />}
+        {openIFrame && (
+          <iframe
+            src={author}
+            title="Embedded content"
+            className="h-96 w-full"
+          />
+        )}
 
+        {author &&
+          !(
+            author.includes('http://localhost:3000/dashboard') ||
+            author.includes('https://ycb-companion.onrender.com/dashboard') ||
+            author.includes('https://imagedelivery.net') ||
+            hasYouTubeEmbed ||
+            hasTwitterEmbed ||
+            hasInstagramEmbed ||
+            hasTikTokEmbed
+          ) && (
+            <button
+              type="button"
+              onClick={() => {
+                setOpenIFrame((prev) => !prev);
+              }}
+              className="mb-4 w-full rounded-lg bg-blue-700 px-5 py-2.5 text-sm font-medium text-white hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+            >
+              {openIFrame ? 'Hide content' : 'Show content'}
+            </button>
+          )}
         <div
           className="flex items-center justify-between overflow-x-auto font-normal text-gray-500 dark:text-gray-400"
           id={`data-${id}`}
@@ -211,7 +235,6 @@ const Entry = ({
             <CiEdit />
           </button>
         </div>
-
         {/* {displayDelve && (
           <button
             className="mb-2 me-2 mt-4 w-full rounded-lg bg-blue-700 px-5 py-2.5 text-sm font-medium text-white hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
@@ -224,9 +247,7 @@ const Entry = ({
             Delve
           </button>
         )} */}
-
         {displayDelve ? '' : null}
-
         {hasAliases && (
           <div>
             <hr className="mx-auto my-4 h-1 w-48 rounded border-0 bg-gray-100 md:my-10 dark:bg-gray-700" />
@@ -564,7 +585,6 @@ const Entry = ({
             <li key={`${p_alias}`}>{p_alias}</li>
           ))}
         </ul>
-
         <div className="flex items-center justify-between">
           <input
             type="text"
@@ -647,11 +667,9 @@ const Entry = ({
             </button>
           )}
         </div>
-
         {displayCollections && (
           <hr className="mx-auto my-4 h-1 w-48 rounded border-0 bg-gray-100 md:my-10 dark:bg-gray-700" />
         )}
-
         {displayCollections && (
           <button
             key={id}
@@ -674,15 +692,12 @@ const Entry = ({
             {isAddedToCollection ? 'Added to collection' : 'Add to collection'}
           </button>
         )}
-
         {displayCollections && isAddedToCollection && hasAliases && (
           <p className="mb-3 font-normal text-gray-500 dark:text-gray-400">
             Added to collection
           </p>
         )}
-
         <hr className="mx-auto my-4 h-1 w-48 rounded border-0 bg-gray-100 md:my-10 dark:bg-gray-700" />
-
         {displayMetadata && (
           <p className="mb-3 font-normal text-gray-500 dark:text-gray-400">
             Added on{' '}
@@ -706,7 +721,6 @@ const Entry = ({
             </strong>
           </p>
         )}
-
         <a
           href={author}
           className="inline-flex items-center font-medium text-blue-600 hover:underline"
