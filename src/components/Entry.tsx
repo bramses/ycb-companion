@@ -73,10 +73,16 @@ const Entry = ({
 
         {hasTikTokEmbed && <TikTokEmbed url={author} />}
 
-        <div className="mb-3 flex items-center justify-between overflow-x-auto font-normal text-gray-500 dark:text-gray-400">
-          <ReactMarkdown className="mb-3 font-normal text-gray-500 dark:text-gray-400">
+        <div
+          className="flex items-center justify-between overflow-x-auto font-normal text-gray-500 dark:text-gray-400"
+          id={`data-${id}`}
+        >
+          <ReactMarkdown className="font-normal text-gray-500 dark:text-gray-400">
             {data}
           </ReactMarkdown>
+        </div>
+        <div className="mb-4 grid w-full grid-cols-3">
+          <div /> {/* Empty div to take up the first 33% */}
           <button
             type="button"
             className="ml-2"
@@ -86,6 +92,120 @@ const Entry = ({
             aria-label="Search data"
           >
             <CiSearch />
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              // set data to contenteditable and focus and add a save button
+              const dataElement = document.getElementById(`data-${id}`);
+              if (!dataElement) return;
+              const dataText = dataElement.textContent;
+              // create form element
+              const form = document.createElement('form');
+              form.className =
+                'w-full mb-4 border border-gray-200 rounded-lg bg-gray-50 dark:bg-gray-700 dark:border-gray-600';
+
+              // create div for textarea
+              const divTextarea = document.createElement('div');
+              divTextarea.className =
+                'px-4 py-2 bg-white rounded-t-lg dark:bg-gray-800';
+
+              // create textarea
+              const textarea = document.createElement('textarea');
+              textarea.id = `data-${id}`;
+              textarea.rows = 4;
+              textarea.className =
+                'w-full px-0 text-sm text-gray-900 bg-white border-0 dark:bg-gray-800 focus:ring-0 dark:text-white dark:placeholder-gray-400';
+              textarea.placeholder = 'Edit data...';
+              textarea.required = true;
+              textarea.value = dataText ?? ''; // Ensure dataText is not null
+
+              // append textarea to div
+              divTextarea.appendChild(textarea);
+
+              // create div for buttons
+              const divButtons = document.createElement('div');
+              divButtons.className =
+                'flex items-center justify-between px-3 py-2 border-t dark:border-gray-600';
+
+              // create submit button
+              const submitButton = document.createElement('button');
+              submitButton.type = 'submit';
+              submitButton.className =
+                'inline-flex items-center py-2.5 px-4 text-xs font-medium text-center text-white bg-blue-700 rounded-lg focus:ring-4 focus:ring-blue-200 dark:focus:ring-blue-900 hover:bg-blue-800';
+              submitButton.textContent = 'Edit data';
+
+              submitButton.addEventListener('click', async (e) => {
+                e.preventDefault();
+                const newData = textarea.value;
+                if (newData === dataText) {
+                  // clear dataElement and append form
+                  dataElement.innerHTML = '';
+                  dataElement.textContent = dataText;
+                  return;
+                }
+
+                setIsAddingAlias(true);
+                // set textcontent of button to loading
+                submitButton.textContent = 'Loading...';
+                // disable button
+                submitButton.disabled = true;
+                console.log('id', id);
+                console.log('newData', newData);
+                const pmetadata: {
+                  title: string;
+                  author: string;
+                  alias_ids?: string[];
+                } = { title, author };
+                // if alias_ids exist and is not empty, add to metadata
+                if (aliases.length > 0) {
+                  pmetadata.alias_ids = aliases.map((alias: any) => alias.id);
+                }
+
+                await onEdit(id, newData, pmetadata);
+
+                // enable button
+                submitButton.disabled = false;
+                // set textcontent of button to loading
+                submitButton.textContent = 'Edit Data';
+
+                setIsAddingAlias(false);
+
+                // clear dataElement and append form
+                dataElement.innerHTML = '';
+                dataElement.textContent = newData;
+              });
+
+              // append buttons to div
+              divButtons.appendChild(submitButton);
+
+              // cancel button
+              const cancelButton = document.createElement('button');
+              cancelButton.type = 'button';
+              cancelButton.className =
+                'inline-flex items-center py-2.5 px-4 text-xs font-medium text-center text-white bg-gray-300 rounded-lg focus:ring-4 focus:ring-blue-200 dark:focus:ring-blue-900 hover:bg-gray-400';
+              cancelButton.textContent = 'Cancel';
+              cancelButton.addEventListener('click', () => {
+                // clear dataElement and append form
+                dataElement.innerHTML = '';
+                dataElement.textContent = dataText;
+              });
+
+              // append buttons to div
+              divButtons.appendChild(cancelButton);
+
+              // append divs to form
+              form.appendChild(divTextarea);
+              form.appendChild(divButtons);
+
+              // clear dataElement and append form
+              dataElement.innerHTML = '';
+              dataElement.appendChild(form);
+            }}
+            aria-label="Edit data"
+            className="text-center"
+          >
+            <CiEdit />
           </button>
         </div>
 

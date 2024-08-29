@@ -114,7 +114,7 @@ const GardenDaily = () => {
                   try {
                     const aliasEntryRes = await fetchByID(aliasId);
                     const aliasEntry = aliasEntryRes.data;
-                    return aliasEntry.data;
+                    return { data: aliasEntry.data, id: aliasEntry.id };
                   } catch (aliasFetchError) {
                     console.error(
                       `Error fetching alias entry with ID ${aliasId}:`,
@@ -322,6 +322,7 @@ const GardenDaily = () => {
             onAddAlias={handleAliasAdd}
             hasAliases={'aliasData' in entry}
             onDelve={onDelve}
+            onEdit={updateEntry}
           />
         ))
       )}
