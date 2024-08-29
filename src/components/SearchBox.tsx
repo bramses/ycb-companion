@@ -20,24 +20,24 @@ const SearchBox = () => {
   const cache = getCache();
 
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
-  const [isSticky, setIsSticky] = useState(false);
+  const [isSticky] = useState(false);
 
-  useEffect(() => {
-    if (window.innerWidth > 768) {
-      const handleScroll = () => {
-        if (textAreaRef.current) {
-          const offsetTop = textAreaRef.current.getBoundingClientRect().top;
-          setIsSticky(offsetTop < 9);
-        }
-      };
+  // useEffect(() => {
+  //   if (window.innerWidth > 768) {
+  //     const handleScroll = () => {
+  //       if (textAreaRef.current) {
+  //         const offsetTop = textAreaRef.current.getBoundingClientRect().top;
+  //         setIsSticky(offsetTop < 9);
+  //       }
+  //     };
 
-      window.addEventListener('scroll', handleScroll);
-      return () => {
-        window.removeEventListener('scroll', handleScroll);
-      };
-    }
-    return undefined;
-  }, []);
+  //     window.addEventListener('scroll', handleScroll);
+  //     return () => {
+  //       window.removeEventListener('scroll', handleScroll);
+  //     };
+  //   }
+  //   return undefined;
+  // }, []);
 
   const fetchByID = async (id: string) => {
     const cachedAlias = cache.aliases[id];

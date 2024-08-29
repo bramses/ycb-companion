@@ -7,7 +7,7 @@
 
 import 'react-lite-youtube-embed/dist/LiteYouTubeEmbed.css';
 
-import { useState } from 'react';
+import { memo, useState } from 'react';
 import { CiCirclePlus, CiEdit, CiSearch } from 'react-icons/ci';
 import LiteYouTubeEmbed from 'react-lite-youtube-embed';
 import ReactMarkdown from 'react-markdown';
@@ -51,6 +51,8 @@ const Entry = ({
   const [isAddedToCollection, setIsAddedToCollection] = useState(false);
   const [isAddingAlias, setIsAddingAlias] = useState(false);
   const [shownAliases] = useState<any[]>(aliases);
+  const MemoizedInstagramEmbed = memo(InstagramEmbed);
+  const MemoizedTikTokEmbed = memo(TikTokEmbed);
 
   return (
     <div className="my-4 [&_p]:my-6">
@@ -69,9 +71,9 @@ const Entry = ({
 
         {hasTwitterEmbed && <Tweet id={tweetId} />}
 
-        {hasInstagramEmbed && <InstagramEmbed url={author} />}
+        {hasInstagramEmbed && <MemoizedInstagramEmbed url={author} />}
 
-        {hasTikTokEmbed && <TikTokEmbed url={author} />}
+        {hasTikTokEmbed && <MemoizedTikTokEmbed url={author} />}
 
         <div
           className="flex items-center justify-between overflow-x-auto font-normal text-gray-500 dark:text-gray-400"
