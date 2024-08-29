@@ -560,7 +560,7 @@ const Entry = ({
           className="list-inside list-disc space-y-1 overflow-x-auto text-gray-500 dark:text-gray-400"
           id={`processingAliases-${id}`}
         >
-          {processingAliases.map((p_alias, index) => (
+          {processingAliases.map((p_alias) => (
             <li key={`${p_alias}`}>{p_alias}</li>
           ))}
         </ul>
