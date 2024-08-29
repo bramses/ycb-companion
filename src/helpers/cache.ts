@@ -40,9 +40,11 @@ export const invalidateCache = (id: string, isAlias: boolean) => {
   const cache = getCache();
   if (isAlias) {
     delete cache.aliases[id];
+    console.log('Deleted alias:', id);
   } else {
     delete cache.parents[id];
   }
+
   console.log('Cache after invalidation:', cache);
   setCache(cache);
 };

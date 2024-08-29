@@ -94,7 +94,7 @@ const GardenDaily = () => {
         body: JSON.stringify({ date: dateString }),
       });
       const responseData = await response.json();
-      console.log('Fetched records:', responseData);
+      // console.log('Fetched records:', responseData);
       // map over the response data and turn metadata into an object
       // set entries to the mapped data
       const mappedData = responseData.data.map((entry: any) => {
@@ -187,7 +187,7 @@ const GardenDaily = () => {
       });
       const responseData = await response.json();
 
-      console.log('Added entry:', responseData);
+      // console.log('Added entry:', responseData);
       return responseData;
     } catch (error) {
       console.error('Error adding entry:', error);
@@ -195,8 +195,14 @@ const GardenDaily = () => {
     }
   };
 
-  const updateEntry = async (id: string, data: string, metadata: string) => {
+  const updateEntry = async (
+    id: string,
+    data: string,
+    metadata: string,
+    isAlias: boolean,
+  ) => {
     try {
+      invalidateCache(id, false);
       const response = await fetch('/api/update', {
         method: 'POST',
         headers: {
@@ -210,8 +216,12 @@ const GardenDaily = () => {
       });
       const responseData = await response.json();
 
-      console.log('Updated entry:', responseData);
-      cache.parents[id] = responseData.data;
+      if (isAlias) {
+        cache.aliases[id] = responseData.data;
+      } else {
+        cache.parents[id] = responseData.data;
+      }
+
       return responseData;
     } catch (error) {
       console.error('Error updating entry:', error);
@@ -242,7 +252,7 @@ const GardenDaily = () => {
         ...data.metadata,
         alias_ids: parentAliases ? [parentAliases, aliasId].flat() : [aliasId],
       };
-      await updateEntry(parentId, data.data, updatedMetadata);
+      await updateEntry(parentId, data.data, updatedMetadata, false);
       invalidateCache(data.id, false);
       return aliasRes;
     } catch (err) {
@@ -252,7 +262,7 @@ const GardenDaily = () => {
   };
 
   const onDelve = async (data: string) => {
-    console.log('Delving into:', data);
+    // console.log('Delving into:', data);
     const search = new URLSearchParams();
     search.set('q', data);
     router.push(`/dashboard?${search.toString()}`);

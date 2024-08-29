@@ -38,7 +38,7 @@ const Entry = ({
   onDelve = (_: string) => {},
   onAddAlias = async (_: any) => {},
   onAddToCollection = (_: any, __: any) => {},
-  onEdit = async (_: any, __: any, ___: any) => {},
+  onEdit = async (_: any, __: any, ___: any, ____: any) => {},
   aliases = [],
   selectedIndex = -1,
 }) => {
@@ -53,6 +53,7 @@ const Entry = ({
   const [shownAliases] = useState<any[]>(aliases);
   const MemoizedInstagramEmbed = memo(InstagramEmbed);
   const MemoizedTikTokEmbed = memo(TikTokEmbed);
+  const [processingAliases, setProcessingAliases] = useState<any[]>([]);
 
   return (
     <div className="my-4 [&_p]:my-6">
@@ -164,7 +165,7 @@ const Entry = ({
                   pmetadata.alias_ids = aliases.map((alias: any) => alias.id);
                 }
 
-                await onEdit(id, newData, pmetadata);
+                await onEdit(id, newData, pmetadata, true);
 
                 // enable button
                 submitButton.disabled = false;
@@ -545,6 +546,15 @@ const Entry = ({
           </div>
         )}
         {/* add alias input field and button */}
+        <ul
+          className="list-inside list-disc space-y-1 overflow-x-auto text-gray-500 dark:text-gray-400"
+          id={`processingAliases-${id}`}
+        >
+          {processingAliases.map((p_alias, index) => (
+            <li key={`${p_alias}`}>{p_alias}</li>
+          ))}
+        </ul>
+
         <div className="flex items-center justify-between">
           <input
             type="text"
@@ -566,6 +576,11 @@ const Entry = ({
                 setIsAddingAlias(false);
                 // clear input field
                 (aliasInput as HTMLInputElement).value = '';
+                setProcessingAliases((prev) => {
+                  return [...prev, alias];
+                });
+                // log processingAliases
+                console.log(processingAliases);
               }
             }}
             id={`alias-input-${id}`}
@@ -588,8 +603,12 @@ const Entry = ({
                 setIsAddingAlias(false);
                 // clear input field
                 (aliasInput as HTMLInputElement).value = '';
-                // add alias to list
-                // setAliases([...shownAliases, alias]);
+                // add alias to span list to show users new aliases
+                setProcessingAliases((prev) => {
+                  return [...prev, alias];
+                });
+                // log processingAliases
+                console.log(processingAliases);
               }}
               className="ml-2 font-normal text-gray-500 dark:text-gray-400"
               aria-label="Add alias"

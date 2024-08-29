@@ -1,5 +1,3 @@
-/* eslint-disable no-console */
-
 'use client';
 
 import { useSearchParams } from 'next/navigation';
@@ -42,18 +40,19 @@ const SearchBox = () => {
   const fetchByID = async (id: string) => {
     const cachedAlias = cache.aliases[id];
     if (cachedAlias) {
-      // console.log('Returning cached alias:', cachedAlias);
+      // console.log('Returning cached alias: ', id);
       return { data: cachedAlias };
     }
 
     // TODO: this breaks w aliases updating and idk how to fix atm
     // const cachedParent = cache.parents[id];
     // if (cachedParent) {
-    //   console.log('Returning cached parent:', cachedParent);
+    //   // console.log('Returning cached parent:', cachedParent);
     //   return { data: cachedParent };
     // }
 
     try {
+      // console.log('Fetching entry by ID:', id);
       const response = await fetch('/api/fetch', {
         method: 'POST',
         headers: {
@@ -98,7 +97,7 @@ const SearchBox = () => {
       });
       const responseData = await response.json();
 
-      console.log('Added entry:', responseData);
+      // console.log('Added entry:', responseData);
       return responseData;
     } catch (error) {
       console.error('Error adding entry:', error);
@@ -112,11 +111,17 @@ const SearchBox = () => {
       setShowCollection(true);
     }
     setCollection([...collection, { entry, alias, query: textAreaValue }]);
-    console.log('Collection:', collection);
+    // console.log('Collection:', collection);
   };
 
-  const updateEntry = async (id: string, data: string, metadata: string) => {
+  const updateEntry = async (
+    id: string,
+    data: string,
+    metadata: string,
+    isAlias: boolean = true,
+  ) => {
     try {
+      invalidateCache(id, isAlias);
       const response = await fetch('/api/update', {
         method: 'POST',
         headers: {
@@ -130,8 +135,14 @@ const SearchBox = () => {
       });
       const responseData = await response.json();
 
-      console.log('Updated entry:', responseData);
-      cache.parents[id] = responseData.data;
+      // console.log('Updated entry:', responseData);
+      if (isAlias) {
+        invalidateCache(id, isAlias);
+        cache.aliases[id] = responseData.data;
+      } else {
+        invalidateCache(id, isAlias);
+        cache.parents[id] = responseData.data;
+      }
       return responseData;
     } catch (error) {
       console.error('Error updating entry:', error);
@@ -152,9 +163,9 @@ const SearchBox = () => {
           query,
         }),
       });
-      console.log('response:', response);
+      // console.log('response:', response);
       const data = await response.json();
-      console.log('Fetched search results:', data);
+      // console.log('Fetched search results:', data);
 
       // convert each metadata string to an object
       const updatedData = data.data.map((entry: any) => {
@@ -220,9 +231,9 @@ const SearchBox = () => {
                 const aliasIds = parentMetadataJSON.alias_ids.map(Number);
 
                 if (aliasIds.includes(Number(entry.id))) {
-                  // console.log('aliasIds:', aliasIds);
-                  // console.log('entry.id:', entry.id);
-                  // console.log(
+                  // // console.log('aliasIds:', aliasIds);
+                  // // console.log('entry.id:', entry.id);
+                  // // console.log(
                   //   'aliasIds.indexOf(Number(entry.id)):',
                   //   aliasIds.indexOf(Number(entry.id)),
                   // );
@@ -301,7 +312,7 @@ const SearchBox = () => {
         }),
       );
 
-      console.log('Setting search results:', updatedDataWithAliases);
+      // console.log('Setting search results:', updatedDataWithAliases);
       setShowLoading(false);
       setSearchResults(updatedDataWithAliases);
     } catch (error) {
@@ -342,7 +353,7 @@ const SearchBox = () => {
         ...data.metadata,
         alias_ids: parentAliases ? [parentAliases, aliasId].flat() : [aliasId],
       };
-      await updateEntry(parentId, data.data, updatedMetadata);
+      await updateEntry(parentId, data.data, updatedMetadata, false);
 
       return aliasRes;
     } catch (err) {
@@ -414,7 +425,7 @@ const SearchBox = () => {
               },
             });
             const data = await response.json();
-            console.log('Random data:', data);
+            // console.log('Random data:', data);
             setTextAreaValue(data.data.data);
           }}
           className="mb-2 me-2 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4 focus:ring-gray-300"

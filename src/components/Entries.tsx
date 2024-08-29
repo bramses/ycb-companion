@@ -18,7 +18,12 @@ interface EntriesProps {
   searchResults: EntryType[];
   onDelve: (data: string) => void;
   onAddAlias: (data: any) => Promise<void>;
-  onEdit: (id: string, data: string, metadata: string) => Promise<void>;
+  onEdit: (
+    id: string,
+    data: string,
+    metadata: string,
+    isAlias: boolean,
+  ) => Promise<void>;
   onAddToCollection: (entry: any, alias: any) => void;
 }
 
