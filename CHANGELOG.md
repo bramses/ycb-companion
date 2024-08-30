@@ -1,3 +1,10 @@
+# [1.29.0](https://github.com/bramses/ycb-companion/compare/v1.28.0...v1.29.0) (2024-08-30)
+
+
+### Features
+
+* Update package dependencies ([d105730](https://github.com/bramses/ycb-companion/commit/d10573012caea913a0f3152fdb1315568a57c24d))
+
 # [1.28.0](https://github.com/bramses/ycb-companion/compare/v1.27.0...v1.28.0) (2024-08-29)
 
 
