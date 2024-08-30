@@ -177,35 +177,6 @@ const SearchBox = () => {
         }
       });
 
-      // for each entry, fetch the if metadata has a parent ID fetch the parent entry and its aliases and then fetch them
-      /*
-      ex: 
-      {
-  "title": "Your Commonbase Dashboard",
-  "author": "",
-  "_display": "right after chq talk kind of depressed was looking fwd to this and a bit empty now its over in terms of next goal. also afraid of medicine that i promised myself id start taking",
-  "parent_id": 2575
-}
-
-  fetchByID(2575).then((parentEntry) => {
-  "title": "Your Commonbase Dashboard",
-  "author": "",
-  "alias_ids": [
-    2580
-  ]
-}).then((parentEntry) => {
-  let aliasData = [];
-  for (let i = 0; i < parentEntry.alias_ids.length; i++) {
-    fetchByID(parentEntry.alias_ids[i]);
-    aliasData.push(aliasData.data);
-  }
-
-  updatedMetadataWAliases = {
-    ...parentEntry,
-    aliasData: [...],
-    selectedIndex: (index of the alias entry that was in the first step)
-      */
-
       const updatedDataWithAliases = await Promise.all(
         updatedData.map(async (entry: any) => {
           if (entry.metadata.parent_id) {
@@ -369,6 +340,23 @@ const SearchBox = () => {
     }
   }, [searchParams]);
 
+  // focus on the textarea when the user presses cmd-k  or ctrl-k
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        if (textAreaRef.current) {
+          e.preventDefault();
+          textAreaRef.current.focus();
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
+
   return (
     <div>
       <textarea
@@ -378,7 +366,7 @@ const SearchBox = () => {
         className={`sticky top-2 z-50 mt-4 block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder:text-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500 ${
           isSticky ? 'opacity-50' : 'opacity-100'
         }`}
-        placeholder="Your message..."
+        placeholder="Your message... (Press Enter to search) (Press cmd-k to focus) (Press cmd + u anywhere on website to fast upload)"
         value={textAreaValue}
         onChange={(e) => setTextAreaValue(e.target.value)}
         onFocus={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
@@ -397,7 +385,6 @@ const SearchBox = () => {
         Search
       </button>
 
-      {/* a container to hold the buttons in the same row */}
       {/* a container to hold the buttons in the same row */}
       <div className="mt-4 flex space-x-2">
         {/* a btn to take the text in textarea and search google with it in a new tab */}
