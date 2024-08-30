@@ -1,3 +1,10 @@
+# [1.30.0](https://github.com/bramses/ycb-companion/compare/v1.29.0...v1.30.0) (2024-08-30)
+
+
+### Features
+
+* Update "@types/react-modal" dependency to version 3.16.3 ([9e9efde](https://github.com/bramses/ycb-companion/commit/9e9efde49a6e50f93aede5c9b8b94bacab28d02b))
+
 # [1.29.0](https://github.com/bramses/ycb-companion/compare/v1.28.0...v1.29.0) (2024-08-30)
 
 
