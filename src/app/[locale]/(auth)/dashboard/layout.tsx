@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 import Modal from 'react-modal';
@@ -12,6 +13,7 @@ import { BaseTemplate } from '@/templates/BaseTemplate';
 
 export default function DashboardLayout(props: { children: React.ReactNode }) {
   const t = useTranslations('DashboardLayout');
+  const router = useRouter();
 
   const [isModalOpen, setModalOpen] = useState(false);
 
@@ -39,6 +41,21 @@ export default function DashboardLayout(props: { children: React.ReactNode }) {
 
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
+
+  // route to dashboard when user presses cmd+k using next/router
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        router.push('/dashboard/');
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
     };
   }, []);
 

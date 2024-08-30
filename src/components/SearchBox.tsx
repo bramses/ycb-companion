@@ -16,6 +16,7 @@ const SearchBox = () => {
   const [showCollection, setShowCollection] = useState(false);
   const [collection, setCollection] = useState<any[]>([]);
   const cache = getCache();
+  const [rndmBtnText, setRndmBtnText] = useState('Random');
 
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
   const [isSticky] = useState(false);
@@ -340,13 +341,14 @@ const SearchBox = () => {
     }
   }, [searchParams]);
 
-  // focus on the textarea when the user presses cmd-k  or ctrl-k
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
         if (textAreaRef.current) {
           e.preventDefault();
           textAreaRef.current.focus();
+          // highlight the text in the textarea
+          textAreaRef.current.select();
         }
       }
     };
@@ -356,6 +358,15 @@ const SearchBox = () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
   }, []);
+
+  // if routed to with no params focus the textarea
+  useEffect(() => {
+    if (searchParams.toString() === '') {
+      if (textAreaRef.current) {
+        textAreaRef.current.focus();
+      }
+    }
+  }, [searchParams]);
 
   return (
     <div>
@@ -405,6 +416,7 @@ const SearchBox = () => {
         <button
           type="button"
           onClick={async () => {
+            setRndmBtnText('Loading...');
             const response = await fetch('/api/random', {
               method: 'POST',
               headers: {
@@ -414,10 +426,11 @@ const SearchBox = () => {
             const data = await response.json();
             // console.log('Random data:', data);
             setTextAreaValue(data.data.data);
+            setRndmBtnText('Random');
           }}
           className="mb-2 me-2 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4 focus:ring-gray-300"
         >
-          Random
+          {rndmBtnText}
         </button>
       </div>
 
