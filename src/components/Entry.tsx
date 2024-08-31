@@ -8,7 +8,6 @@
 import 'react-lite-youtube-embed/dist/LiteYouTubeEmbed.css';
 
 import { memo, useState } from 'react';
-import { CiCirclePlus, CiEdit, CiSearch } from 'react-icons/ci';
 import LiteYouTubeEmbed from 'react-lite-youtube-embed';
 import ReactMarkdown from 'react-markdown';
 import { InstagramEmbed, TikTokEmbed } from 'react-social-media-embed';
@@ -35,10 +34,13 @@ const Entry = ({
   displayCollections = false,
   displayMetadata = true,
   hasImage = false,
+  hasLinks = false,
+  links = [],
   onDelve = (_: string) => {},
   onAddAlias = async (_: any) => {},
   onAddToCollection = (_: any, __: any) => {},
   onEdit = async (_: any, __: any, ___: any, ____: any) => {},
+  onAddLink = async (_: string, __: string, ___: string) => {},
   aliases = [],
   selectedIndex = -1,
 }) => {
@@ -50,15 +52,55 @@ const Entry = ({
   const [hasTikTokEmbed] = useState(initialHasTikTokEmbed);
   const [isAddedToCollection, setIsAddedToCollection] = useState(false);
   const [isAddingAlias, setIsAddingAlias] = useState(false);
+  const [isAddingLink, setIsAddingLink] = useState(false);
   const [shownAliases] = useState<any[]>(aliases);
   const MemoizedInstagramEmbed = memo(InstagramEmbed);
   const MemoizedTikTokEmbed = memo(TikTokEmbed);
   const [processingAliases, setProcessingAliases] = useState<any[]>([]);
   const [openIFrame, setOpenIFrame] = useState(false);
+  // const [showEmbeds, setShowEmbeds] = useState(false);
 
   return (
     <div className="my-4 [&_p]:my-6">
       <div className="w-full rounded-lg border border-gray-200 bg-white p-6 shadow dark:border-gray-700 dark:bg-gray-800">
+        {/*
+        {(hasYouTubeEmbed ||
+          hasImage ||
+          hasTwitterEmbed ||
+          hasInstagramEmbed ||
+          hasTikTokEmbed) && (
+          <button
+            id={`embed-button-${id}`}
+            type="button"
+            onClick={() => {
+              setShowEmbeds(true);
+              // remove button
+              const button = document.getElementById(`embed-button-${id}`);
+              if (button) button.remove();
+            }}
+            className="mb-4 w-full rounded-lg bg-blue-700 px-5 py-2.5 text-sm font-medium text-white hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+          >
+            Load Embed
+          </button>
+        )}
+        {showEmbeds && (
+          <>
+            {hasYouTubeEmbed && (
+              <LiteYouTubeEmbed
+                id={youtubeId}
+                params={`start=${youtubeStart}`}
+                title="YouTube video"
+              />
+            )}
+            {hasImage && (
+              <img className="h-auto w-full" src={imageUrl} alt="Image" />
+            )}
+            {hasTwitterEmbed && <Tweet id={tweetId} />}
+            {hasInstagramEmbed && <MemoizedInstagramEmbed url={author} />}
+            {hasTikTokEmbed && <MemoizedTikTokEmbed url={author} />}
+          </>
+        )} */}
+
         {hasYouTubeEmbed && (
           <LiteYouTubeEmbed
             id={youtubeId}
@@ -108,17 +150,16 @@ const Entry = ({
             {data}
           </ReactMarkdown>
         </div>
-        <div className="mb-4 grid w-full grid-cols-3">
-          <div /> {/* Empty div to take up the first 33% */}
+        <div className="my-4 flex w-full grid-cols-2 space-x-2">
           <button
             type="button"
-            className="ml-2"
+            className="mb-2 me-2 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4 focus:ring-gray-300"
             onClick={() => {
               onDelve(data);
             }}
             aria-label="Search data"
           >
-            <CiSearch />
+            Search
           </button>
           <button
             type="button"
@@ -230,9 +271,9 @@ const Entry = ({
               dataElement.appendChild(form);
             }}
             aria-label="Edit data"
-            className="text-center"
+            className="mb-2 me-2 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4 focus:ring-gray-300"
           >
-            <CiEdit />
+            Edit
           </button>
         </div>
         {/* {displayDelve && (
@@ -271,17 +312,16 @@ const Entry = ({
                           {alias.data}
                         </strong>
                       </label>
-                      <div className="mt-2 grid w-full grid-cols-3">
-                        <div /> {/* Empty div to take up the first 33% */}
+                      <div className="my-4 flex w-full grid-cols-2 space-x-2">
                         <button
                           type="button"
                           onClick={() => {
                             onDelve(alias.data);
                           }}
                           aria-label={`Search alias ${alias.data}`}
-                          className="text-center"
+                          className="mb-2 me-2 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4 focus:ring-gray-300"
                         >
-                          <CiSearch />
+                          Search
                         </button>
                         <button
                           type="button"
@@ -408,9 +448,9 @@ const Entry = ({
                             aliasElement.appendChild(form);
                           }}
                           aria-label={`Edit alias ${alias}`}
-                          className="text-center"
+                          className="mb-2 me-2 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4 focus:ring-gray-300"
                         >
-                          <CiEdit />
+                          Edit
                         </button>
                       </div>
                       <hr className="my-8 h-px border-0 bg-gray-200 dark:bg-gray-700" />
@@ -424,17 +464,16 @@ const Entry = ({
                       >
                         {alias.data}
                       </label>
-                      <div className="mt-2 grid w-full grid-cols-3">
-                        <div /> {/* Empty div to take up the first 33% */}
+                      <div className="my-4 flex w-full grid-cols-2 space-x-2">
                         <button
                           type="button"
                           onClick={() => {
                             onDelve(alias.data);
                           }}
                           aria-label={`Search alias ${alias.data}`}
-                          className="text-center"
+                          className="mb-2 me-2 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4 focus:ring-gray-300"
                         >
-                          <CiSearch />
+                          Search
                         </button>
                         <button
                           type="button"
@@ -561,9 +600,9 @@ const Entry = ({
                             aliasElement.appendChild(form);
                           }}
                           aria-label={`Edit alias ${alias}`}
-                          className="text-center"
+                          className="mb-2 me-2 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4 focus:ring-gray-300"
                         >
-                          <CiEdit />
+                          Edit
                         </button>
                       </div>
                       <hr className="my-8 h-px border-0 bg-gray-200 dark:bg-gray-700" />
@@ -585,7 +624,7 @@ const Entry = ({
             <li key={`${p_alias}`}>{p_alias}</li>
           ))}
         </ul>
-        <div className="flex items-center justify-between">
+        <div className="">
           <input
             type="text"
             className="w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder:text-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
@@ -601,7 +640,7 @@ const Entry = ({
                   id,
                   alias,
                   data,
-                  metadata: { title, author },
+                  metadata: { title, author, links },
                 });
                 setIsAddingAlias(false);
                 // clear input field
@@ -609,8 +648,6 @@ const Entry = ({
                 setProcessingAliases((prev) => {
                   return [...prev, alias];
                 });
-                // log processingAliases
-                console.log(processingAliases);
               }
             }}
             id={`alias-input-${id}`}
@@ -628,7 +665,7 @@ const Entry = ({
                   id,
                   alias,
                   data,
-                  metadata: { title, author },
+                  metadata: { title, author, links },
                 });
                 setIsAddingAlias(false);
                 // clear input field
@@ -637,13 +674,11 @@ const Entry = ({
                 setProcessingAliases((prev) => {
                   return [...prev, alias];
                 });
-                // log processingAliases
-                console.log(processingAliases);
               }}
-              className="ml-2 font-normal text-gray-500 dark:text-gray-400"
+              className="mb-2 me-2 mt-4 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4 focus:ring-gray-300"
               aria-label="Add alias"
             >
-              <CiCirclePlus />
+              Add Alias (or press enter)
             </button>
           ) : (
             <button disabled type="button" className="ml-2" aria-label="adding">
@@ -698,6 +733,91 @@ const Entry = ({
           </p>
         )}
         <hr className="mx-auto my-4 h-1 w-48 rounded border-0 bg-gray-100 md:my-10 dark:bg-gray-700" />
+
+        {hasLinks && (
+          <div>
+            <h2 className="mb-2 text-lg font-semibold text-gray-900 dark:text-white">
+              Links:
+            </h2>
+            <ul className="list-inside list-none space-y-1 overflow-x-auto text-gray-500 dark:text-gray-400">
+              {links.map((link: any) => (
+                <li key={`${link.name}`} className="mb-3">
+                  <a
+                    href={`${link.url}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="font-medium text-blue-600 hover:underline"
+                  >
+                    {link.name}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        <input
+          type="text"
+          className="w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder:text-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
+          placeholder="Add a link..."
+          id={`link-input-${id}`}
+          onKeyDown={async (e) => {
+            if (e.key === 'Enter') {
+              const linkInput = document.getElementById(`link-input-${id}`);
+              if (!linkInput) return;
+              // Cast to HTMLInputElement to access value property
+              const link = (linkInput as HTMLInputElement).value;
+              setIsAddingLink(true);
+              await onAddLink(id, link, link);
+              setIsAddingLink(false);
+              // clear input field
+              (linkInput as HTMLInputElement).value = '';
+            }
+          }}
+        />
+
+        {!isAddingLink ? (
+          <button
+            type="button"
+            onClick={async () => {
+              const linkInput = document.getElementById(`link-input-${id}`);
+              if (!linkInput) return;
+              // Cast to HTMLInputElement to access value property
+              const link = (linkInput as HTMLInputElement).value;
+              setIsAddingLink(true);
+              await onAddLink(id, link, link);
+              // clear input field
+              setIsAddingLink(false);
+              (linkInput as HTMLInputElement).value = '';
+            }}
+            className="mb-2 me-2 mt-4 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4 focus:ring-gray-300"
+          >
+            Add link (or press enter)
+          </button>
+        ) : (
+          <button disabled type="button" className="ml-2" aria-label="adding">
+            <svg
+              aria-hidden="true"
+              role="status"
+              className="me-3 inline size-4 animate-spin text-white"
+              viewBox="0 0 100 101"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
+                fill="#E5E7EB"
+              />
+              <path
+                d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z"
+                fill="currentColor"
+              />
+            </svg>
+          </button>
+        )}
+
+        <hr className="mx-auto my-4 h-1 w-48 rounded border-0 bg-gray-100 md:my-10 dark:bg-gray-700" />
+
         {displayMetadata && (
           <p className="mb-3 font-normal text-gray-500 dark:text-gray-400">
             Added on{' '}

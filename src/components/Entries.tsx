@@ -25,6 +25,7 @@ interface EntriesProps {
     isAlias: boolean,
   ) => Promise<void>;
   onAddToCollection: (entry: any, alias: any) => void;
+  onAddLink: (id: string, name: string, url: string) => Promise<void>;
 }
 
 const Entries = ({
@@ -33,6 +34,7 @@ const Entries = ({
   onAddAlias,
   onAddToCollection,
   onEdit,
+  onAddLink,
 }: EntriesProps) => {
   return (
     <div>
@@ -101,6 +103,9 @@ const Entries = ({
           onEdit={onEdit}
           onAddToCollection={onAddToCollection}
           hasAliases={'aliasData' in entry}
+          hasLinks={'links' in entry}
+          links={'links' in entry ? entry.links : []}
+          onAddLink={onAddLink}
         />
       ))}
     </div>

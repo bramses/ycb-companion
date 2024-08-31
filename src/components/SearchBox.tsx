@@ -171,7 +171,11 @@ const SearchBox = () => {
       // convert each metadata string to an object
       const updatedData = data.data.map((entry: any) => {
         try {
-          return { ...entry, metadata: JSON.parse(entry.metadata) };
+          const metadata = JSON.parse(entry.metadata);
+          if (metadata.links) {
+            return { ...entry, metadata, links: metadata.links };
+          }
+          return { ...entry, metadata };
         } catch (err) {
           console.error('Error parsing metadata:', err);
           return entry;
@@ -213,6 +217,12 @@ const SearchBox = () => {
                 }
               }
 
+              // if parent has links, add them to the parent entry
+              let links = [];
+              if (parentMetadataJSON.links) {
+                links = parentMetadataJSON.links;
+              }
+
               // Fetch all alias entries by alias_ids
               const aliasData = parentMetadataJSON.alias_ids
                 ? await Promise.all(
@@ -238,6 +248,7 @@ const SearchBox = () => {
               return {
                 ...parentEntry,
                 aliasData,
+                links,
                 similarity: entry.similarity,
                 selectedIndex,
               };
@@ -333,6 +344,42 @@ const SearchBox = () => {
     }
   };
 
+  const addLink = async (id: string, url: string, name: string) => {
+    // update metadata with new link added to metadata.links
+    // fetch the entry by id
+    // update the entry with the new metadata
+    // add the link to the entry's data
+
+    try {
+      const entryRes = await fetchByID(id);
+      const entry = entryRes.data;
+      const { data } = entry;
+      let metadataJSON = entry.metadata;
+      try {
+        metadataJSON = JSON.parse(entry.metadata);
+      } catch (err) {
+        console.error('Error parsing metadata:', err);
+      }
+
+      // add the link to the metadata
+      metadataJSON.links = metadataJSON.links
+        ? [...metadataJSON.links, { url, name }]
+        : [{ url, name }];
+
+      console.log('metadataJSON:', metadataJSON);
+      console.log('metadataJSON.links:', metadataJSON.links);
+      console.log('data:', data);
+      console.log('id:', id);
+
+      // update the entry with the new metadata
+      await updateEntry(id, data, metadataJSON, false);
+
+      return metadataJSON;
+    } catch (err) {
+      return { error: err };
+    }
+  };
+
   useEffect(() => {
     const query = searchParams.get('q');
     if (query) {
@@ -377,7 +424,7 @@ const SearchBox = () => {
         className={`sticky top-2 z-50 mt-4 block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder:text-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500 ${
           isSticky ? 'opacity-50' : 'opacity-100'
         }`}
-        placeholder="Your message... (Press Enter to search) (Press cmd-k to focus) (Press cmd + u anywhere on website to fast upload)"
+        placeholder="Your query... (Press Enter to search) (Press cmd-k to focus) (Press cmd + u anywhere on website to fast upload)"
         value={textAreaValue}
         onChange={(e) => setTextAreaValue(e.target.value)}
         onFocus={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
@@ -523,6 +570,7 @@ const SearchBox = () => {
         onAddAlias={handleAliasAdd}
         onEdit={updateEntry}
         onAddToCollection={addToCollection}
+        onAddLink={addLink}
       />
       <ScrollToTop smooth />
     </div>

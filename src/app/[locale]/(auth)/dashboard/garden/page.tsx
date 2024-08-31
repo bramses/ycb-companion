@@ -85,6 +85,7 @@ const GardenDaily = () => {
       const dateString = `${year}-${monthString}-${dayString}`;
       setSelectedDay(dateString);
       setLoading(true);
+
       // run a post request to fetch records for that date at /api/daily
       const response = await fetch('/api/daily', {
         method: 'POST',
@@ -97,10 +98,19 @@ const GardenDaily = () => {
       // console.log('Fetched records:', responseData);
       // map over the response data and turn metadata into an object
       // set entries to the mapped data
+
       const mappedData = responseData.data.map((entry: any) => {
+        const metadata = JSON.parse(entry.metadata);
+        let links = [];
+
+        if (metadata.links) {
+          links = metadata.links;
+        }
+
         return {
           ...entry,
           metadata: JSON.parse(entry.metadata),
+          links,
         };
       });
 
@@ -231,6 +241,42 @@ const GardenDaily = () => {
     }
   };
 
+  const addLink = async (id: string, url: string, name: string) => {
+    // update metadata with new link added to metadata.links
+    // fetch the entry by id
+    // update the entry with the new metadata
+    // add the link to the entry's data
+
+    try {
+      const entryRes = await fetchByID(id);
+      const entry = entryRes.data;
+      const { data } = entry;
+      let metadataJSON = entry.metadata;
+      try {
+        metadataJSON = JSON.parse(entry.metadata);
+      } catch (err) {
+        console.error('Error parsing metadata:', err);
+      }
+
+      // add the link to the metadata
+      metadataJSON.links = metadataJSON.links
+        ? [...metadataJSON.links, { url, name }]
+        : [{ url, name }];
+
+      console.log('metadataJSON:', metadataJSON);
+      console.log('metadataJSON.links:', metadataJSON.links);
+      console.log('data:', data);
+      console.log('id:', id);
+
+      // update the entry with the new metadata
+      await updateEntry(id, data, metadataJSON, false);
+
+      return metadataJSON;
+    } catch (err) {
+      return { error: err };
+    }
+  };
+
   // TODO: extract these into helper logic for better reusability bw here and SearchBox component
   const handleAliasAdd = async (data: any) => {
     // get id of the selected alias
@@ -336,6 +382,9 @@ const GardenDaily = () => {
             hasAliases={'aliasData' in entry}
             onDelve={onDelve}
             onEdit={updateEntry}
+            hasLinks={'links' in entry}
+            links={'links' in entry ? entry.links : []}
+            onAddLink={addLink}
           />
         ))
       )}
