@@ -62,7 +62,7 @@ const Entry = ({
 
   return (
     <div className="my-4 [&_p]:my-6">
-      <div className="w-full rounded-lg border border-gray-200 bg-white p-6 shadow dark:border-gray-700 dark:bg-gray-800">
+      <div className="w-full rounded-lg border border-gray-200 bg-white p-6 shadow">
         {/*
         {(hasYouTubeEmbed ||
           hasImage ||
@@ -137,16 +137,16 @@ const Entry = ({
               onClick={() => {
                 setOpenIFrame((prev) => !prev);
               }}
-              className="mb-4 w-full rounded-lg bg-blue-700 px-5 py-2.5 text-sm font-medium text-white hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+              className="mb-4 w-full rounded-lg bg-blue-700 px-5 py-2.5 text-sm font-medium text-white hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300"
             >
               {openIFrame ? 'Hide content' : 'Show content'}
             </button>
           )}
         <div
-          className="flex items-center justify-between overflow-x-auto font-normal text-gray-500 dark:text-gray-400"
+          className="flex items-center justify-between overflow-x-auto font-normal text-gray-500"
           id={`data-${id}`}
         >
-          <ReactMarkdown className="font-normal text-gray-500 dark:text-gray-400">
+          <ReactMarkdown className="font-normal text-gray-500">
             {data}
           </ReactMarkdown>
         </div>
@@ -171,19 +171,18 @@ const Entry = ({
               // create form element
               const form = document.createElement('form');
               form.className =
-                'w-full mb-4 border border-gray-200 rounded-lg bg-gray-50 dark:bg-gray-700 dark:border-gray-600';
+                'w-full mb-4 border border-gray-200 rounded-lg bg-gray-50';
 
               // create div for textarea
               const divTextarea = document.createElement('div');
-              divTextarea.className =
-                'px-4 py-2 bg-white rounded-t-lg dark:bg-gray-800';
+              divTextarea.className = 'px-4 py-2 bg-white rounded-t-lg';
 
               // create textarea
               const textarea = document.createElement('textarea');
               textarea.id = `data-${id}`;
               textarea.rows = 4;
               textarea.className =
-                'w-full px-0 text-sm text-gray-900 bg-white border-0 dark:bg-gray-800 focus:ring-0 dark:text-white dark:placeholder-gray-400';
+                'w-full px-0 text-sm text-gray-900 bg-white border-0';
               textarea.placeholder = 'Edit data...';
               textarea.required = true;
               textarea.value = dataText ?? ''; // Ensure dataText is not null
@@ -194,13 +193,13 @@ const Entry = ({
               // create div for buttons
               const divButtons = document.createElement('div');
               divButtons.className =
-                'flex items-center justify-between px-3 py-2 border-t dark:border-gray-600';
+                'flex items-center justify-between px-3 py-2 border-t';
 
               // create submit button
               const submitButton = document.createElement('button');
               submitButton.type = 'submit';
               submitButton.className =
-                'inline-flex items-center py-2.5 px-4 text-xs font-medium text-center text-white bg-blue-700 rounded-lg focus:ring-4 focus:ring-blue-200 dark:focus:ring-blue-900 hover:bg-blue-800';
+                'inline-flex items-center py-2.5 px-4 text-xs font-medium text-center text-white bg-blue-700 rounded-lg focus:ring-4 focus:ring-blue-200  hover:bg-blue-800';
               submitButton.textContent = 'Edit data';
 
               submitButton.addEventListener('click', async (e) => {
@@ -251,7 +250,7 @@ const Entry = ({
               const cancelButton = document.createElement('button');
               cancelButton.type = 'button';
               cancelButton.className =
-                'inline-flex items-center py-2.5 px-4 text-xs font-medium text-center text-white bg-gray-300 rounded-lg focus:ring-4 focus:ring-blue-200 dark:focus:ring-blue-900 hover:bg-gray-400';
+                'inline-flex items-center py-2.5 px-4 text-xs font-medium text-center text-white bg-gray-300 rounded-lg focus:ring-4 focus:ring-blue-200 hover:bg-gray-400';
               cancelButton.textContent = 'Cancel';
               cancelButton.addEventListener('click', () => {
                 // clear dataElement and append form
@@ -291,12 +290,12 @@ const Entry = ({
         {displayDelve ? '' : null}
         {hasAliases && (
           <div>
-            <hr className="mx-auto my-4 h-1 w-48 rounded border-0 bg-gray-100 md:my-10 dark:bg-gray-700" />
+            <hr className="mx-auto my-4 h-1 w-48 rounded border-0 bg-gray-100 md:my-10" />
 
-            <h2 className="mb-2 text-lg font-semibold text-gray-900 dark:text-white">
+            <h2 className="mb-2 text-lg font-semibold text-gray-900">
               Aliases:
             </h2>
-            <ul className="list-inside list-none space-y-1 overflow-x-auto text-gray-500 dark:text-gray-400">
+            <ul className="list-inside list-none space-y-1 overflow-x-auto text-gray-500">
               {shownAliases.map((alias, index) => (
                 <li key={alias.id} className="mb-3">
                   {' '}
@@ -305,10 +304,10 @@ const Entry = ({
                     <>
                       <label
                         htmlFor={`alias-${index}`}
-                        className="font-normal text-gray-500 dark:text-gray-400"
+                        className="font-normal text-gray-500"
                         id={`alias-${id}-${index}`}
                       >
-                        <strong className="font-semibold text-gray-900 dark:text-white">
+                        <strong className="font-semibold text-gray-900">
                           {alias.data}
                         </strong>
                       </label>
@@ -335,19 +334,19 @@ const Entry = ({
                             // create form element
                             const form = document.createElement('form');
                             form.className =
-                              'w-full mb-4 border border-gray-200 rounded-lg bg-gray-50 dark:bg-gray-700 dark:border-gray-600';
+                              'w-full mb-4 border border-gray-200 rounded-lg bg-gray-50';
 
                             // create div for textarea
                             const divTextarea = document.createElement('div');
                             divTextarea.className =
-                              'px-4 py-2 bg-white rounded-t-lg dark:bg-gray-800';
+                              'px-4 py-2 bg-white rounded-t-lg';
 
                             // create textarea
                             const textarea = document.createElement('textarea');
                             textarea.id = `alias-${id}-${index}`;
                             textarea.rows = 4;
                             textarea.className =
-                              'w-full px-0 text-sm text-gray-900 bg-white border-0 dark:bg-gray-800 focus:ring-0 dark:text-white dark:placeholder-gray-400';
+                              'w-full px-0 text-sm text-gray-900 bg-white border-0';
                             textarea.placeholder = 'Edit alias...';
                             textarea.required = true;
                             textarea.value = aliasText ?? ''; // Ensure aliasText is not null
@@ -358,14 +357,14 @@ const Entry = ({
                             // create div for buttons
                             const divButtons = document.createElement('div');
                             divButtons.className =
-                              'flex items-center justify-between px-3 py-2 border-t dark:border-gray-600';
+                              'flex items-center justify-between px-3 py-2 border-t';
 
                             // create submit button
                             const submitButton =
                               document.createElement('button');
                             submitButton.type = 'submit';
                             submitButton.className =
-                              'inline-flex items-center py-2.5 px-4 text-xs font-medium text-center text-white bg-blue-700 rounded-lg focus:ring-4 focus:ring-blue-200 dark:focus:ring-blue-900 hover:bg-blue-800';
+                              'inline-flex items-center py-2.5 px-4 text-xs font-medium text-center text-white bg-blue-700 rounded-lg focus:ring-4 focus:ring-blue-200 hover:bg-blue-800';
                             submitButton.textContent = 'Edit alias';
 
                             submitButton.addEventListener(
@@ -428,7 +427,7 @@ const Entry = ({
                               document.createElement('button');
                             cancelButton.type = 'button';
                             cancelButton.className =
-                              'inline-flex items-center py-2.5 px-4 text-xs font-medium text-center text-white bg-gray-300 rounded-lg focus:ring-4 focus:ring-blue-200 dark:focus:ring-blue-900 hover:bg-gray-400';
+                              'inline-flex items-center py-2.5 px-4 text-xs font-medium text-center text-white bg-gray-300 rounded-lg focus:ring-4 focus:ring-blue-200 hover:bg-gray-400';
                             cancelButton.textContent = 'Cancel';
                             cancelButton.addEventListener('click', () => {
                               // clear aliasElement and append form
@@ -453,13 +452,13 @@ const Entry = ({
                           Edit
                         </button>
                       </div>
-                      <hr className="my-8 h-px border-0 bg-gray-200 dark:bg-gray-700" />
+                      <hr className="my-8 h-px border-0 bg-gray-200" />
                     </>
                   ) : (
                     <>
                       <label
                         htmlFor={`alias-${index}`}
-                        className="font-normal text-gray-500 dark:text-gray-400"
+                        className="font-normal text-gray-50"
                         id={`alias-${id}-${index}`}
                       >
                         {alias.data}
@@ -487,19 +486,19 @@ const Entry = ({
                             // create form element
                             const form = document.createElement('form');
                             form.className =
-                              'w-full mb-4 border border-gray-200 rounded-lg bg-gray-50 dark:bg-gray-700 dark:border-gray-600';
+                              'w-full mb-4 border border-gray-200 rounded-lg bg-gray-50';
 
                             // create div for textarea
                             const divTextarea = document.createElement('div');
                             divTextarea.className =
-                              'px-4 py-2 bg-white rounded-t-lg dark:bg-gray-800';
+                              'px-4 py-2 bg-white rounded-t-lg';
 
                             // create textarea
                             const textarea = document.createElement('textarea');
                             textarea.id = `alias-${id}-${index}`;
                             textarea.rows = 4;
                             textarea.className =
-                              'w-full px-0 text-sm text-gray-900 bg-white border-0 dark:bg-gray-800 focus:ring-0 dark:text-white dark:placeholder-gray-400';
+                              'w-full px-0 text-sm text-gray-900 bg-white border-0';
                             textarea.placeholder = 'Edit alias...';
                             textarea.required = true;
                             textarea.value = aliasText ?? ''; // Ensure aliasText is not null
@@ -510,14 +509,14 @@ const Entry = ({
                             // create div for buttons
                             const divButtons = document.createElement('div');
                             divButtons.className =
-                              'flex items-center justify-between px-3 py-2 border-t dark:border-gray-600';
+                              'flex items-center justify-between px-3 py-2 border-t';
 
                             // create submit button
                             const submitButton =
                               document.createElement('button');
                             submitButton.type = 'submit';
                             submitButton.className =
-                              'inline-flex items-center py-2.5 px-4 text-xs font-medium text-center text-white bg-blue-700 rounded-lg focus:ring-4 focus:ring-blue-200 dark:focus:ring-blue-900 hover:bg-blue-800';
+                              'inline-flex items-center py-2.5 px-4 text-xs font-medium text-center text-white bg-blue-700 rounded-lg focus:ring-4 focus:ring-blue-200 hover:bg-blue-800';
                             submitButton.textContent = 'Edit alias';
 
                             submitButton.addEventListener(
@@ -580,7 +579,7 @@ const Entry = ({
                               document.createElement('button');
                             cancelButton.type = 'button';
                             cancelButton.className =
-                              'inline-flex items-center py-2.5 px-4 text-xs font-medium text-center text-white bg-gray-300 rounded-lg focus:ring-4 focus:ring-blue-200 dark:focus:ring-blue-900 hover:bg-gray-400';
+                              'inline-flex items-center py-2.5 px-4 text-xs font-medium text-center text-white bg-gray-300 rounded-lg focus:ring-4 focus:ring-blue-200 hover:bg-gray-400';
                             cancelButton.textContent = 'Cancel';
                             cancelButton.addEventListener('click', () => {
                               // clear aliasElement and append form
@@ -605,19 +604,19 @@ const Entry = ({
                           Edit
                         </button>
                       </div>
-                      <hr className="my-8 h-px border-0 bg-gray-200 dark:bg-gray-700" />
+                      <hr className="my-8 h-px border-0 bg-gray-200" />
                     </>
                   )}
                 </li>
               ))}
             </ul>
 
-            <hr className="mx-auto my-4 h-1 w-48 rounded border-0 bg-gray-100 md:my-10 dark:bg-gray-700" />
+            <hr className="mx-auto my-4 h-1 w-48 rounded border-0 bg-gray-100 md:my-10" />
           </div>
         )}
         {/* add alias input field and button */}
         <ul
-          className="list-inside list-disc space-y-1 overflow-x-auto text-gray-500 dark:text-gray-400"
+          className="list-inside list-disc space-y-1 overflow-x-auto text-gray-500"
           id={`processingAliases-${id}`}
         >
           {processingAliases.map((p_alias) => (
@@ -627,7 +626,7 @@ const Entry = ({
         <div className="">
           <input
             type="text"
-            className="w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder:text-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
+            className="w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500"
             placeholder="Add an alias..."
             onKeyDown={async (e) => {
               if (e.key === 'Enter') {
@@ -703,13 +702,13 @@ const Entry = ({
           )}
         </div>
         {displayCollections && (
-          <hr className="mx-auto my-4 h-1 w-48 rounded border-0 bg-gray-100 md:my-10 dark:bg-gray-700" />
+          <hr className="mx-auto my-4 h-1 w-48 rounded border-0 bg-gray-100 md:my-10" />
         )}
         {displayCollections && (
           <button
             key={id}
             id={`add-to-collection-${id}`}
-            className={`mb-2 me-2 mt-4 w-full rounded-lg px-5 py-2.5 text-sm font-medium text-white focus:outline-none focus:ring-4 ${isAddedToCollection ? 'cursor-not-allowed bg-gray-300 text-gray-500' : 'bg-green-700 hover:bg-green-800 focus:ring-green-300 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800'}`}
+            className={`mb-2 me-2 mt-4 w-full rounded-lg px-5 py-2.5 text-sm font-medium text-white focus:outline-none focus:ring-4 ${isAddedToCollection ? 'cursor-not-allowed bg-gray-300 text-gray-500' : 'bg-green-700 hover:bg-green-800 focus:ring-green-300'}`}
             type="button"
             onClick={() => {
               // TODO: this doesnt work for alias records
@@ -728,18 +727,14 @@ const Entry = ({
           </button>
         )}
         {displayCollections && isAddedToCollection && hasAliases && (
-          <p className="mb-3 font-normal text-gray-500 dark:text-gray-400">
-            Added to collection
-          </p>
+          <p className="mb-3 font-normal text-gray-500 ">Added to collection</p>
         )}
-        <hr className="mx-auto my-4 h-1 w-48 rounded border-0 bg-gray-100 md:my-10 dark:bg-gray-700" />
+        <hr className="mx-auto my-4 h-1 w-48 rounded border-0 bg-gray-100 md:my-10 " />
 
         {hasLinks && (
           <div>
-            <h2 className="mb-2 text-lg font-semibold text-gray-900 dark:text-white">
-              Links:
-            </h2>
-            <ul className="list-inside list-none space-y-1 overflow-x-auto text-gray-500 dark:text-gray-400">
+            <h2 className="mb-2 text-lg font-semibold text-gray-900">Links:</h2>
+            <ul className="list-inside list-none space-y-1 overflow-x-auto text-gray-500 ">
               {links.map((link: any) => (
                 <li key={`${link.name}`} className="mb-3">
                   <a
@@ -758,7 +753,7 @@ const Entry = ({
 
         <input
           type="text"
-          className="w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder:text-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
+          className="w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 "
           placeholder="Add a link..."
           id={`link-input-${id}`}
           onKeyDown={async (e) => {
@@ -816,7 +811,7 @@ const Entry = ({
           </button>
         )}
 
-        <hr className="mx-auto my-4 h-1 w-48 rounded border-0 bg-gray-100 md:my-10 dark:bg-gray-700" />
+        <hr className="mx-auto my-4 h-1 w-48 rounded border-0 bg-gray-100 md:my-10 " />
 
         {displayMetadata && (
           <p className="mb-3 font-normal text-gray-500 dark:text-gray-400">
