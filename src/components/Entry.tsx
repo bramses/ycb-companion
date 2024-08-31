@@ -143,10 +143,10 @@ const Entry = ({
             </button>
           )}
         <div
-          className="flex items-center justify-between overflow-x-auto font-normal text-gray-500"
+          className="flex items-center justify-between overflow-x-auto font-normal text-gray-900"
           id={`data-${id}`}
         >
-          <ReactMarkdown className="font-normal text-gray-500">
+          <ReactMarkdown className="font-normal text-gray-900">
             {data}
           </ReactMarkdown>
         </div>
@@ -304,7 +304,7 @@ const Entry = ({
                     <>
                       <label
                         htmlFor={`alias-${index}`}
-                        className="font-normal text-gray-500"
+                        className="font-normal text-gray-900"
                         id={`alias-${id}-${index}`}
                       >
                         <strong className="font-semibold text-gray-900">
@@ -458,7 +458,7 @@ const Entry = ({
                     <>
                       <label
                         htmlFor={`alias-${index}`}
-                        className="font-normal text-gray-50"
+                        className="font-normal text-gray-900"
                         id={`alias-${id}-${index}`}
                       >
                         {alias.data}
