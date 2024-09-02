@@ -28,7 +28,7 @@
   },
   "dependencies": {
     "@clerk/localizations": "^2.4.8",
-    "@clerk/nextjs": "^5.2.4",
+    "@clerk/nextjs": "^5.3.7",
     "@electric-sql/pglite": "^0.1.5",
     "@hookform/resolvers": "^3.9.0",
     "@logtail/pino": "^0.4.22",

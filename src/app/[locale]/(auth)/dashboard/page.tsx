@@ -1,7 +1,8 @@
-import SearchBox from '@/components/SearchBox';
+// import SearchBox from '@/components/SearchBox';
+import SearchResults from '@/components/SearchResults';
 
 const Dashboard = () => {
-  return <SearchBox />;
+  return <SearchResults />;
 };
 
 export default Dashboard;
