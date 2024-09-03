@@ -21,23 +21,6 @@ const SearchBox = () => {
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
   const [isSticky] = useState(false);
 
-  // useEffect(() => {
-  //   if (window.innerWidth > 768) {
-  //     const handleScroll = () => {
-  //       if (textAreaRef.current) {
-  //         const offsetTop = textAreaRef.current.getBoundingClientRect().top;
-  //         setIsSticky(offsetTop < 9);
-  //       }
-  //     };
-
-  //     window.addEventListener('scroll', handleScroll);
-  //     return () => {
-  //       window.removeEventListener('scroll', handleScroll);
-  //     };
-  //   }
-  //   return undefined;
-  // }, []);
-
   const fetchByID = async (id: string) => {
     const cachedAlias = cache.aliases[id];
     if (cachedAlias) {
