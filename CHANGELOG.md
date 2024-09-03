@@ -1,3 +1,10 @@
+# [1.31.0](https://github.com/bramses/ycb-companion/compare/v1.30.0...v1.31.0) (2024-09-03)
+
+
+### Features
+
+* Optimize EntryPage component with lazy loading for images ([606283a](https://github.com/bramses/ycb-companion/commit/606283ab61ad95efde4c0e81c94a821bce5ff756))
+
 # [1.30.0](https://github.com/bramses/ycb-companion/compare/v1.29.0...v1.30.0) (2024-08-30)
 
 
