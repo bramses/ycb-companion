@@ -1,3 +1,10 @@
+# [1.36.0](https://github.com/bramses/ycb-companion/compare/v1.35.0...v1.36.0) (2024-09-03)
+
+
+### Features
+
+* Optimize EntryPage and SearchResults components ([3c1e4bc](https://github.com/bramses/ycb-companion/commit/3c1e4bc8012fc7f728186439a8090fd3d95693c4))
+
 # [1.35.0](https://github.com/bramses/ycb-companion/compare/v1.34.0...v1.35.0) (2024-09-03)
 
 
