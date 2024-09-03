@@ -1,3 +1,10 @@
+# [1.32.0](https://github.com/bramses/ycb-companion/compare/v1.31.0...v1.32.0) (2024-09-03)
+
+
+### Features
+
+* Add search functionality to EntryPage ([2b8027d](https://github.com/bramses/ycb-companion/commit/2b8027da61cacf48053a1d1df9f97b8b360da8db))
+
 # [1.31.0](https://github.com/bramses/ycb-companion/compare/v1.30.0...v1.31.0) (2024-09-03)
 
 
