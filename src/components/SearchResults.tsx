@@ -83,7 +83,7 @@ const SearchResults = () => {
         id="message"
         rows={2}
         style={{ fontSize: '17px' }}
-        className="sticky top-2 z-50 mt-4 block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500"
+        className="sticky top-2 z-50 mt-4 block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-gray-900 focus:border-blue-500 focus:ring-blue-500"
         placeholder="Your query... (Press Enter to search) (Press cmd-k to focus) (Press cmd + u anywhere on website to fast upload)"
         value={textAreaValue}
         onChange={(e) => setTextAreaValue(e.target.value)}
