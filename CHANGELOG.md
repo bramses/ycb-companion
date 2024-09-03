@@ -1,3 +1,10 @@
+# [1.34.0](https://github.com/bramses/ycb-companion/compare/v1.33.0...v1.34.0) (2024-09-03)
+
+
+### Features
+
+* Update viewport meta tag for better responsiveness ([ff7fde2](https://github.com/bramses/ycb-companion/commit/ff7fde248d9b23ef115fac6498522e367a4c1b31))
+
 # [1.33.0](https://github.com/bramses/ycb-companion/compare/v1.32.0...v1.33.0) (2024-09-03)
 
 
