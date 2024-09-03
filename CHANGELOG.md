@@ -1,3 +1,10 @@
+# [1.35.0](https://github.com/bramses/ycb-companion/compare/v1.34.0...v1.35.0) (2024-09-03)
+
+
+### Features
+
+* Update font size for search input in SearchResults component ([298b330](https://github.com/bramses/ycb-companion/commit/298b3309f6c749ea63d15befb49302c38d6a8265))
+
 # [1.34.0](https://github.com/bramses/ycb-companion/compare/v1.33.0...v1.34.0) (2024-09-03)
 
 
