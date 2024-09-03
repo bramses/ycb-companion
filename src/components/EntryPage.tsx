@@ -209,7 +209,13 @@ const EntryPage = () => {
             Search for related entries
           </button>
           <h3 className="my-4 text-2xl font-bold">Title</h3>
-          <p className="text-md my-4 text-gray-500">{data.metadata.title}</p>
+          <Link
+            href={data.metadata.author}
+            className=" overflow-auto text-blue-600 hover:underline"
+            target="_blank"
+          >
+            {data.metadata.title}
+          </Link>
           <button
             onClick={() => toDashboard(data.metadata.title)}
             className="mb-2 me-2 mt-4 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4 focus:ring-gray-300"
@@ -218,29 +224,6 @@ const EntryPage = () => {
           >
             Search for related entries
           </button>
-          <h3 className="my-4 text-2xl font-bold">URL</h3>
-          <Link
-            href={data.metadata.author}
-            className=" overflow-auto text-blue-600 hover:underline"
-            target="_blank"
-          >
-            {data.metadata.author}{' '}
-            <svg
-              className="ms-2.5 size-3 rtl:rotate-[270deg]"
-              aria-hidden="true"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 18 18"
-            >
-              <path
-                stroke="currentColor"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M15 11v4.833A1.166 1.166 0 0 1 13.833 17H2.167A1.167 1.167 0 0 1 1 15.833V4.167A1.166 1.166 0 0 1 2.167 3h4.618m4.447-2H17v5.768M9.111 8.889l7.778-7.778"
-              />
-            </svg>
-          </Link>
           <h3 className="my-4 text-2xl font-bold">Created At</h3>
           <a
             href={`/dashboard/garden?date=${new Date(data.createdAt)
@@ -284,7 +267,8 @@ const EntryPage = () => {
       <div className="">
         <input
           type="text"
-          className="w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500"
+          style={{ fontSize: '17px' }}
+          className="w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-gray-900 focus:border-blue-500 focus:ring-blue-500"
           placeholder="Add an alias..."
           onKeyDown={async (e) => {
             if (e.key === 'Enter') {
@@ -423,6 +407,41 @@ const EntryPage = () => {
               )}
             </div>
           </Link>
+          {/* when was the entry created and updated */}
+          <div className="text-sm text-gray-500">
+            Created: {new Date(result.createdAt).toLocaleString()}
+            {result.createdAt !== result.updatedAt && (
+              <>
+                {' '}
+                | Last Updated: {new Date(
+                  result.updatedAt,
+                ).toLocaleString()}{' '}
+              </>
+            )}
+          </div>
+          <a
+            target="_blank"
+            href={result.metadata.author}
+            rel="noopener noreferrer"
+            className="inline-flex items-center font-medium text-blue-600 hover:underline"
+          >
+            {new URL(result.metadata.author).hostname}
+            <svg
+              className="ms-2.5 size-3 rtl:rotate-[270deg]"
+              aria-hidden="true"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 18 18"
+            >
+              <path
+                stroke="currentColor"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M15 11v4.833A1.166 1.166 0 0 1 13.833 17H2.167A1.167 1.167 0 0 1 1 15.833V4.167A1.166 1.166 0 0 1 2.167 3h4.618m4.447-2H17v5.768M9.111 8.889l7.778-7.778"
+              />
+            </svg>
+          </a>
         </div>
       ))}
 
