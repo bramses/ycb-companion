@@ -77,7 +77,7 @@ const SearchResults = () => {
   }, [searchParams]);
 
   return (
-    <div>
+    <div className="min-w-full">
       <textarea
         ref={textAreaRef}
         id="message"

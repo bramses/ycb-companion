@@ -53,6 +53,7 @@ const EntryPage = () => {
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [isAddingAlias, setIsAddingAlias] = useState(false);
   const router = useRouter();
+  const [showAliasError, setAliasShowError] = useState(false);
 
   function checkEmbeds(
     res: { data: any; metadata: any },
@@ -152,7 +153,6 @@ const EntryPage = () => {
                 aliasCreatedAt: formatDate(ad.createdAt),
               };
             });
-            console.log(res);
             setData(res);
             return res;
           });
@@ -176,15 +176,15 @@ const EntryPage = () => {
         // set author to the URL
         setAuthor(res.metadata.author);
 
-        // search for related entries
+        // search for related entries (Commented out for development)
         handleSearch(res.data, res.id);
       };
       asyncFn();
     }
   }, [pathname, data]);
 
-  return (
-    <div className="my-4">
+  return data ? (
+    <div className="my-4 min-w-full max-w-full">
       {hasYouTubeEmbed && (
         <LiteYouTubeEmbed
           id={youtubeId}
@@ -199,8 +199,7 @@ const EntryPage = () => {
 
       {data ? (
         <div>
-          <h2 className="my-4 text-4xl font-extrabold">Data</h2>
-          <p className="my-4 text-lg text-gray-500">{data.data}</p>
+          <p className="text-md my-4 text-gray-500">{data.data}</p>
           <button
             onClick={() => toDashboard(data.data)}
             className="mb-2 me-2 mt-4 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4 focus:ring-gray-300"
@@ -209,9 +208,8 @@ const EntryPage = () => {
           >
             Search for related entries
           </button>
-          <h2 className="my-4 text-4xl font-extrabold">Metadata</h2>
           <h3 className="my-4 text-2xl font-bold">Title</h3>
-          <p className="my-4 text-lg text-gray-500">{data.metadata.title}</p>
+          <p className="text-md my-4 text-gray-500">{data.metadata.title}</p>
           <button
             onClick={() => toDashboard(data.metadata.title)}
             className="mb-2 me-2 mt-4 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4 focus:ring-gray-300"
@@ -223,7 +221,7 @@ const EntryPage = () => {
           <h3 className="my-4 text-2xl font-bold">URL</h3>
           <Link
             href={data.metadata.author}
-            className=" text-blue-600 hover:underline"
+            className=" overflow-auto text-blue-600 hover:underline"
             target="_blank"
           >
             {data.metadata.author}{' '}
@@ -321,30 +319,41 @@ const EntryPage = () => {
           <button
             type="button"
             onClick={async () => {
-              const aliasInput = document.getElementById(
-                `alias-input-${data?.id}`,
-              );
-              if (!aliasInput) return;
-              // Cast to HTMLInputElement to access value property
-              const alias = (aliasInput as HTMLInputElement).value;
-              setIsAddingAlias(true);
-              await handleAliasAdd({
-                id: data?.id,
-                alias,
-                data,
-                metadata: {
-                  title: data?.metadata.title,
-                  author: data?.metadata.author,
-                  links: data?.metadata.links,
-                },
-              });
-              setIsAddingAlias(false);
-              // clear input field
-              (aliasInput as HTMLInputElement).value = '';
-              // add alias to span list to show users new aliases
-              // setProcessingAliases((prev) => {
-              //   return [...prev, alias];
-              // });
+              try {
+                const aliasInput = document.getElementById(
+                  `alias-input-${data?.id}`,
+                );
+                if (!aliasInput) return;
+                // Cast to HTMLInputElement to access value property
+                const alias = (aliasInput as HTMLInputElement).value;
+                setIsAddingAlias(true);
+                const aliasAdded = await handleAliasAdd({
+                  id: data?.id,
+                  alias,
+                  data,
+                  metadata: {
+                    title: data?.metadata.title,
+                    author: data?.metadata.author,
+                    links: data?.metadata.links,
+                  },
+                });
+                if (!aliasAdded) throw new Error('Error adding alias');
+                if (aliasAdded.error)
+                  throw new Error(`Error adding alias ${aliasAdded.error}`);
+                setIsAddingAlias(false);
+                // clear input field
+                (aliasInput as HTMLInputElement).value = '';
+                // add alias to span list to show users new aliases
+                // setProcessingAliases((prev) => {
+                //   return [...prev, alias];
+                // });
+              } catch (err) {
+                // show error message for 5 seconds
+                setAliasShowError(true);
+                setTimeout(() => {
+                  setAliasShowError(false);
+                }, 5000);
+              }
             }}
             className="mb-2 me-2 mt-4 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4 focus:ring-gray-300"
             aria-label="Add alias"
@@ -373,6 +382,9 @@ const EntryPage = () => {
           </button>
         )}
       </div>
+      {showAliasError && (
+        <div className="text-red-500">Error adding alias. Try again.</div>
+      )}
 
       <h2 className="my-4 text-4xl font-extrabold">Related Entries</h2>
 
@@ -420,6 +432,50 @@ const EntryPage = () => {
       >
         Back to dashboard
       </Link>
+    </div>
+  ) : (
+    <div className="flex justify-center">
+      <div
+        role="status"
+        className="my-4 max-w-md animate-pulse space-y-4 divide-y divide-gray-200 rounded border border-gray-200 p-4 shadow md:p-6 "
+      >
+        <div className="flex items-center justify-between">
+          <div>
+            <div className="mb-2.5 h-2.5 w-24 rounded-full bg-gray-300" />
+            <div className="h-2 w-32 rounded-full bg-gray-200" />
+          </div>
+          <div className="h-2.5 w-12 rounded-full bg-gray-300" />
+        </div>
+        <div className="flex items-center justify-between pt-4">
+          <div>
+            <div className="mb-2.5 h-2.5 w-24 rounded-full bg-gray-300" />
+            <div className="h-2 w-32 rounded-full bg-gray-200" />
+          </div>
+          <div className="h-2.5 w-12 rounded-full bg-gray-300" />
+        </div>
+        <div className="flex items-center justify-between pt-4">
+          <div>
+            <div className="mb-2.5 h-2.5 w-24 rounded-full bg-gray-300" />
+            <div className="h-2 w-32 rounded-full bg-gray-200" />
+          </div>
+          <div className="h-2.5 w-12 rounded-full bg-gray-300" />
+        </div>
+        <div className="flex items-center justify-between pt-4">
+          <div>
+            <div className="mb-2.5 h-2.5 w-24 rounded-full bg-gray-300" />
+            <div className="h-2 w-32 rounded-full bg-gray-200" />
+          </div>
+          <div className="h-2.5 w-12 rounded-full bg-gray-300" />
+        </div>
+        <div className="flex items-center justify-between pt-4">
+          <div>
+            <div className="mb-2.5 h-2.5 w-24 rounded-full bg-gray-300" />
+            <div className="h-2 w-32 rounded-full bg-gray-200" />
+          </div>
+          <div className="h-2.5 w-12 rounded-full bg-gray-300" />
+        </div>
+        <span className="sr-only">Loading...</span>
+      </div>
     </div>
   );
 };
