@@ -7,7 +7,7 @@ import 'react-lite-youtube-embed/dist/LiteYouTubeEmbed.css';
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import {
   type Dispatch,
   memo,
@@ -52,6 +52,7 @@ const EntryPage = () => {
   const [hasAliases, setHasAliases] = useState(false);
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [isAddingAlias, setIsAddingAlias] = useState(false);
+  const router = useRouter();
 
   function checkEmbeds(
     res: { data: any; metadata: any },
@@ -100,6 +101,22 @@ const EntryPage = () => {
   const handleSearch = async (entryData: string, _: string) => {
     const parsedEntries = await fetchSearchEntries(entryData, setSearchResults);
     setSearchResults(parsedEntries);
+  };
+
+  const toDashboard = (query: string) => {
+    if (query === '') {
+      return router.push('/dashboard');
+    }
+
+    // if query is longer than url max length, truncate it
+    if (query.length > 2000) {
+      const truncatedQuery = query.slice(0, 2000);
+      return router.push(
+        `/dashboard?query=${encodeURIComponent(truncatedQuery)}`,
+      );
+    }
+
+    return router.push(`/dashboard?query=${encodeURIComponent(query)}`);
   };
 
   useEffect(() => {
@@ -184,9 +201,25 @@ const EntryPage = () => {
         <div>
           <h2 className="my-4 text-4xl font-extrabold">Data</h2>
           <p className="my-4 text-lg text-gray-500">{data.data}</p>
+          <button
+            onClick={() => toDashboard(data.data)}
+            className="mb-2 me-2 mt-4 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4 focus:ring-gray-300"
+            aria-label="Add alias"
+            type="button"
+          >
+            Search for related entries
+          </button>
           <h2 className="my-4 text-4xl font-extrabold">Metadata</h2>
           <h3 className="my-4 text-2xl font-bold">Title</h3>
           <p className="my-4 text-lg text-gray-500">{data.metadata.title}</p>
+          <button
+            onClick={() => toDashboard(data.metadata.title)}
+            className="mb-2 me-2 mt-4 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4 focus:ring-gray-300"
+            aria-label="Add alias"
+            type="button"
+          >
+            Search for related entries
+          </button>
           <h3 className="my-4 text-2xl font-bold">URL</h3>
           <Link
             href={data.metadata.author}
@@ -236,6 +269,14 @@ const EntryPage = () => {
               <p className="text-sm text-gray-500">
                 Created at: {alias.aliasCreatedAt}
               </p>
+              <button
+                onClick={() => toDashboard(alias.aliasData)}
+                className="mb-2 me-2 mt-4 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4 focus:ring-gray-300"
+                aria-label="Add alias"
+                type="button"
+              >
+                Search for related entries
+              </button>
             </div>
           ))}
         </div>
