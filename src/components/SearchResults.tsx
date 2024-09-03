@@ -27,6 +27,14 @@ const SearchResults = () => {
     [searchParams],
   );
 
+  const toHostname = (url: string) => {
+    try {
+      return new URL(url).hostname;
+    } catch (err) {
+      return url;
+    }
+  };
+
   useEffect(() => {
     const query = searchParams.get('query');
     if (query) {
@@ -192,7 +200,7 @@ const SearchResults = () => {
             rel="noopener noreferrer"
             className="inline-flex items-center font-medium text-blue-600 hover:underline"
           >
-            {new URL(result.metadata.author).hostname}
+            {toHostname(result.metadata.author)}
             <svg
               className="ms-2.5 size-3 rtl:rotate-[270deg]"
               aria-hidden="true"
