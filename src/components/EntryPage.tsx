@@ -1,3 +1,6 @@
+/* eslint-disable @next/next/no-img-element */
+/* eslint-disable jsx-a11y/img-redundant-alt */
+
 'use client';
 
 import 'react-lite-youtube-embed/dist/LiteYouTubeEmbed.css';
@@ -172,16 +175,7 @@ const EntryPage = () => {
           title="YouTube video"
         />
       )}
-      {hasImage && (
-        <Image
-          className="h-auto w-full"
-          src={author}
-          alt="Image"
-          layout="responsive"
-          width={700} // Adjust width as needed
-          height={475} // Adjust height as needed
-        />
-      )}
+      {hasImage && <img className="h-auto w-full" src={author} alt="Image" />}
       {hasTwitterEmbed && <Tweet id={tweetId} />}
       {hasInstagramEmbed && <MemoizedInstagramEmbed url={author} />}
       {hasTikTokEmbed && <MemoizedTikTokEmbed url={author} />}
