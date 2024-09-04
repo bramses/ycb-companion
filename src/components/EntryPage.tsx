@@ -245,7 +245,7 @@ const EntryPage = () => {
 
       {hasAliases && (
         <div>
-          <h2 className="my-4 text-4xl font-extrabold">Aliases</h2>
+          <h2 className="my-4 text-4xl font-extrabold">Comments</h2>
           {data?.metadata?.aliasData?.map((alias: any) => (
             <div key={alias.aliasId} className="mb-4">
               <button
@@ -272,7 +272,7 @@ const EntryPage = () => {
         </div>
       )}
 
-      <h2 className="my-4 text-4xl font-extrabold">Add Alias</h2>
+      <h2 className="my-4 text-4xl font-extrabold">Add Comment</h2>
       <div className="">
         <input
           type="text"
@@ -351,7 +351,7 @@ const EntryPage = () => {
             className="mb-2 me-2 mt-4 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4 focus:ring-gray-300"
             aria-label="Add alias"
           >
-            Add Alias (or press enter)
+            Add Comment (or press enter)
           </button>
         ) : (
           <button disabled type="button" className="ml-2" aria-label="adding">
