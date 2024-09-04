@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { appendSearchToCache, getCache } from '@/helpers/cache';
+import { appendSearchToCache, clearCache, getCache } from '@/helpers/cache';
 
 import { fetchSearchEntries, splitIntoWords } from '../helpers/functions';
 
@@ -43,6 +43,11 @@ const SearchResults = () => {
   };
 
   const handleSearch = async (query: string) => {
+    if (query === '') return;
+    if (query === '_clear_cache') {
+      clearCache();
+      return;
+    }
     const searchQuery = query || textAreaValue;
 
     console.log('Searching for:', searchQuery);
