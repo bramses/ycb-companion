@@ -83,8 +83,6 @@ export async function fetchSearchEntries(
       return entry;
     });
 
-    console.log('updatedEntries:', updatedEntries);
-
     // Return updated entries immediately
     setSearchResults(updatedEntries);
 
@@ -207,4 +205,16 @@ export const handleAliasAdd = async (data: any) => {
     console.error('Error adding alias:', err);
     return { error: err };
   }
+};
+
+export const splitIntoWords = (
+  text: string,
+  numWords: number,
+  startIndex: number,
+) => {
+  const words = text.split(' ');
+  if (startIndex) {
+    return words.slice(startIndex, numWords + startIndex).join(' ');
+  }
+  return words.slice(0, numWords).join(' ');
 };

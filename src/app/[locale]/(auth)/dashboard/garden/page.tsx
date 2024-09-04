@@ -8,7 +8,7 @@ import Calendar from 'react-calendar';
 import ScrollToTop from 'react-scroll-to-top';
 
 import Entry from '@/components/Entry';
-import { getCache, invalidateCache, setCache } from '@/helpers/cache';
+import { getCache, invalidateCache, setCache } from '@/helpers/old_cache';
 
 const GardenDaily = () => {
   const router = useRouter();

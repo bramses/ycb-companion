@@ -154,13 +154,15 @@ const EntryPage = () => {
             res.metadata.alias_ids.map((aliasId: string) => fetchByID(aliasId)),
           ).then((aliasData) => {
             // replace alias_ids with aliasData
-            res.metadata.aliasData = aliasData.map((ad) => {
-              return {
-                aliasData: ad.data,
-                aliasId: ad.id,
-                aliasCreatedAt: formatDate(ad.createdAt),
-              };
-            });
+            res.metadata.aliasData = aliasData
+              .map((ad) => {
+                return {
+                  aliasData: ad.data,
+                  aliasId: ad.id,
+                  aliasCreatedAt: formatDate(ad.createdAt),
+                };
+              })
+              .reverse();
             setData(res);
             return res;
           });
@@ -208,14 +210,6 @@ const EntryPage = () => {
       {data ? (
         <div>
           <p className="text-md my-4 text-gray-500">{data.data}</p>
-          <button
-            onClick={() => toDashboard(data.data)}
-            className="mb-2 me-2 mt-4 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4 focus:ring-gray-300"
-            aria-label="Add alias"
-            type="button"
-          >
-            Search for related entries
-          </button>
           <h3 className="my-4 text-2xl font-bold">Title</h3>
           <Link
             href={data.metadata.author}
@@ -254,18 +248,25 @@ const EntryPage = () => {
           <h2 className="my-4 text-4xl font-extrabold">Aliases</h2>
           {data?.metadata?.aliasData?.map((alias: any) => (
             <div key={alias.aliasId} className="mb-4">
-              <p>{alias.aliasData}</p>
-              <p className="text-sm text-gray-500">
-                Created at: {alias.aliasCreatedAt}
-              </p>
               <button
+                className=" text-blue-600 hover:underline"
+                type="button"
+                onClick={() => toDashboard(alias.aliasData)}
+              >
+                {alias.aliasData}
+              </button>
+              <br />
+              <span className="text-sm text-gray-500">
+                Created at: {alias.aliasCreatedAt}
+              </span>
+              {/* <button
                 onClick={() => toDashboard(alias.aliasData)}
                 className="mb-2 me-2 mt-4 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4 focus:ring-gray-300"
                 aria-label="Add alias"
                 type="button"
               >
                 Search for related entries
-              </button>
+              </button> */}
             </div>
           ))}
         </div>

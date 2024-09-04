@@ -2,10 +2,12 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { fetchSearchEntries } from '../helpers/functions';
+import { appendSearchToCache, getCache } from '@/helpers/cache';
+
+import { fetchSearchEntries, splitIntoWords } from '../helpers/functions';
 
 const SearchResults = () => {
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
@@ -13,14 +15,19 @@ const SearchResults = () => {
   const [showLoading, setShowLoading] = useState(false);
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const searchParams = useSearchParams();
-  const router = useRouter();
+  // const router = useRouter();
   const pathname = usePathname();
   const [rndmBtnText, setRndmBtnText] = useState('Random');
+  const cache = getCache();
 
   const createQueryString = useCallback(
-    (name: string, value: string) => {
+    (name: string, value: string, basePath: string) => {
       const params = new URLSearchParams(searchParams.toString());
       params.set(name, value);
+
+      if (basePath) {
+        return `${basePath}?${params.toString()}`;
+      }
 
       return params.toString();
     },
@@ -35,20 +42,23 @@ const SearchResults = () => {
     }
   };
 
-  useEffect(() => {
-    const query = searchParams.get('query');
-    if (query) {
-      setTextAreaValue(query);
-    }
-  }, [searchParams]);
+  const handleSearch = async (query: string) => {
+    const searchQuery = query || textAreaValue;
 
-  const handleSearch = async () => {
-    router.push(`${pathname}?${createQueryString('query', textAreaValue)}`);
-
+    console.log('Searching for:', searchQuery);
     setShowLoading(true);
 
+    // check if the query is in cache
+    if (cache.searches[searchQuery]) {
+      console.log('Cache hit!');
+      console.log('cache.searches[searchQuery]:', cache.searches[searchQuery]);
+      setSearchResults(cache.searches[searchQuery]);
+      setShowLoading(false);
+      return;
+    }
+
     const parsedEntries = await fetchSearchEntries(
-      textAreaValue,
+      searchQuery,
       setSearchResults,
     );
 
@@ -56,6 +66,21 @@ const SearchResults = () => {
 
     setShowLoading(false);
   };
+
+  useEffect(() => {
+    const query = searchParams.get('query');
+    console.log('query:', query);
+    if (query) {
+      setTextAreaValue(query);
+      handleSearch(query);
+    }
+  }, [searchParams]);
+
+  // when searchResults change, append to cache
+  useEffect(() => {
+    if (searchResults.length > 0)
+      appendSearchToCache(textAreaValue, searchResults);
+  }, [searchResults]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -98,14 +123,14 @@ const SearchResults = () => {
         onFocus={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
         onKeyDown={(e) => {
           if (e.key === 'Enter') {
-            handleSearch();
+            handleSearch(textAreaValue);
           }
         }}
       />
 
       <button
         type="button"
-        onClick={() => handleSearch()}
+        onClick={() => handleSearch(textAreaValue)}
         className="mb-2 me-2 mt-4 w-full rounded-lg bg-blue-700 px-5 py-2.5 text-sm font-medium text-white hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300"
       >
         Search
@@ -154,6 +179,13 @@ const SearchResults = () => {
               pathname: `/dashboard/entry/${result.id}`,
             }}
             className="block"
+            onClick={() => {
+              window.history.pushState(
+                {},
+                '',
+                createQueryString('query', textAreaValue, pathname),
+              );
+            }}
           >
             <div className="flex items-center text-blue-600 hover:underline">
               <Image
@@ -164,11 +196,11 @@ const SearchResults = () => {
                 className="mr-2"
               />
               <span className="font-medium">
-                {result.data.length > 50 ? (
+                {result.data.split(' ').length > 12 ? (
                   <>
-                    {result.data.slice(0, 50)}...
+                    {splitIntoWords(result.data, 12, 0)}...
                     <span className="mt-1 block text-sm text-gray-500">
-                      ...{result.data.slice(50)}
+                      ...{splitIntoWords(result.data, 20, 12)}...
                     </span>
                   </>
                 ) : (

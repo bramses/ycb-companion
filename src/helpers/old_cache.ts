@@ -1,9 +1,9 @@
-const CACHE_KEY = 'entryAndSearchResultCache';
-const CACHE_EXPIRATION = 10 * 60 * 1000;
+const CACHE_KEY = 'entryCache';
+const CACHE_EXPIRATION = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
 
 export const getCache = () => {
   if (typeof window === 'undefined' || typeof localStorage === 'undefined') {
-    return { searches: {}, entries: {} }; // Check for client-side and localStorage
+    return { aliases: {}, parents: {} }; // Check for client-side and localStorage
   }
   const cache = localStorage.getItem(CACHE_KEY);
   if (cache) {
@@ -12,7 +12,7 @@ export const getCache = () => {
       return parsedCache.data;
     }
   }
-  return { searches: {}, entries: {} };
+  return { aliases: {}, parents: {} };
 };
 
 export const setCache = (data: any) => {
@@ -25,19 +25,27 @@ export const setCache = (data: any) => {
   localStorage.setItem(CACHE_KEY, JSON.stringify(cache));
 };
 
-export const appendSearchToCache = (query: string, results: any) => {
+export const appendCache = (id: string, entry: any, isAlias: boolean) => {
   const cache = getCache();
-
-  cache.searches[query] = results;
-
+  if (isAlias) {
+    cache.aliases[id] = entry;
+  } else {
+    cache.parents[id] = entry;
+  }
   setCache(cache);
 };
 
-export const invalidateSearchFromCache = (query: string) => {
+export const invalidateCache = (id: string, isAlias: boolean) => {
+  console.log('Invalidating cache for:', id);
   const cache = getCache();
+  if (isAlias) {
+    delete cache.aliases[id];
+    console.log('Deleted alias:', id);
+  } else {
+    delete cache.parents[id];
+  }
 
-  delete cache.searches[query];
-
+  console.log('Cache after invalidation:', cache);
   setCache(cache);
 };
 

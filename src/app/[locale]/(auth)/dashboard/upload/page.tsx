@@ -5,7 +5,7 @@
 import { useUser } from '@clerk/nextjs';
 import { useEffect, useState } from 'react';
 
-import { clearCache } from '@/helpers/cache';
+import { clearCache } from '@/helpers/old_cache';
 
 const Upload = () => {
   const { user, isLoaded } = useUser();

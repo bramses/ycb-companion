@@ -4,7 +4,7 @@ import { useSearchParams } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import ScrollToTop from 'react-scroll-to-top';
 
-import { getCache, invalidateCache, setCache } from '@/helpers/cache';
+import { getCache, invalidateCache, setCache } from '@/helpers/old_cache';
 
 import Entries from './Entries';
 
