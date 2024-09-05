@@ -59,6 +59,7 @@
     "**/*.tsx",
     ".storybook/*.ts",
     ".next/types/**/*.ts",
-    "**/*.mts"
+    "**/*.mts",
+    "public/imageWorker.js"
   ]
 }

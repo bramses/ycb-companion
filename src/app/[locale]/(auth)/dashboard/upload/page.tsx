@@ -47,13 +47,21 @@ const Upload = () => {
     }
   };
 
-  const add = async (data: string) => {
+  const add = async (
+    data: string,
+    argMetadata: Record<string, string> = {},
+  ) => {
     // get value from input fields and add to metadata
-    const metadata: Record<string, string> = {};
-    for (const field of metadataFields) {
-      if (field.key && field.value) {
-        metadata[field.key] = field.value;
+    let metadata: Record<string, string>;
+    if (!argMetadata || Object.keys(argMetadata).length === 0) {
+      metadata = {};
+      for (const field of metadataFields) {
+        if (field.key && field.value) {
+          metadata[field.key] = field.value;
+        }
       }
+    } else {
+      metadata = argMetadata;
     }
 
     const response = await fetch('/api/add', {
@@ -74,6 +82,70 @@ const Upload = () => {
   };
 
   const uploadImage = async () => {
+    // const fileInput = document.getElementById('file-input');
+    // if (!fileInput) return;
+    // (fileInput as HTMLInputElement).click();
+
+    // fileInput.addEventListener('change', async (event) => {
+    //   const file = (event.target as HTMLInputElement).files?.[0];
+    //   if (!file) return;
+
+    //   const formData = new FormData();
+    //   formData.append('file', file);
+    //   setLoading(true);
+
+    //   const worker = new Worker('/uploadWorker.js');
+    //   worker.postMessage({ formData, apiKey });
+
+    //   worker.onmessage = (e) => {
+    //     const { success, data, error } = e.data;
+    //     if (success) {
+    //       console.log('Image description:', data);
+    //       add(data.data, {
+    //         author: data.metadata.imageUrl,
+    //         title: 'Image',
+    //       });
+    //     } else {
+    //       console.error('Error:', error);
+    //     }
+    //     setLoading(false);
+    //   };
+    //   // const response = await fetch(
+    //   //   'https://commonbase-supabase-alpha.onrender.com/cf-images/upload',
+    //   //   {
+    //   //     method: 'POST',
+    //   //     headers: {
+    //   //       Authorization: `Bearer ${apiKey}`,
+    //   //     },
+    //   //     body: formData,
+    //   //   },
+    //   // );
+    //   // const data = await response.json();
+    //   // console.log('Image uploaded:', data);
+    //   // const pngUrl = `${data.url}?format=png`;
+    //   // console.log('PNG URL:', pngUrl);
+
+    //   // const response2 = await fetch(
+    //   //   'https://commonbase-supabase-alpha.onrender.com/cf-images/describe',
+    //   //   {
+    //   //     method: 'POST',
+    //   //     headers: {
+    //   //       Authorization: `Bearer ${apiKey}`,
+    //   //       'Content-Type': 'application/json',
+    //   //     },
+    //   //     body: JSON.stringify({ imageUrl: pngUrl }),
+    //   //   },
+    //   // );
+    //   // const data2 = await response2.json();
+    //   // console.log('Image description:', data2);
+
+    //   // add(data2.data, {
+    //   //   author: data2.metadata.imageUrl,
+    //   //   title: 'Image',
+    //   // });
+
+    //   // setLoading(false);
+    // });
     const fileInput = document.getElementById('file-input');
     if (!fileInput) return;
     (fileInput as HTMLInputElement).click();
@@ -82,49 +154,29 @@ const Upload = () => {
       const file = (event.target as HTMLInputElement).files?.[0];
       if (!file) return;
 
-      const formData = new FormData();
-      formData.append('file', file);
-      setLoading(true);
-      const response = await fetch(
-        'https://commonbase-supabase-alpha.onrender.com/cf-images/upload',
-        {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${apiKey}`,
-          },
-          body: formData,
-        },
-      );
-      const data = await response.json();
-      console.log('Image uploaded:', data);
-      const pngUrl = `${data.url}?format=png`;
-      console.log('PNG URL:', pngUrl);
+      const reader = new FileReader();
+      reader.onload = () => {
+        const arrayBuffer = reader.result;
+        setLoading(true);
 
-      const response2 = await fetch(
-        'https://commonbase-supabase-alpha.onrender.com/cf-images/describe',
-        {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${apiKey}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ imageUrl: pngUrl }),
-        },
-      );
-      const data2 = await response2.json();
-      console.log('Image description:', data2);
-      // put img description in text area
-      setTextAreaValue(data2.data);
+        const worker = new Worker('/imageWorker.js');
+        worker.postMessage({ file: arrayBuffer, apiKey });
 
-      // set metadata fields
-      setMetadataFields([
-        { key: 'author', value: data2.metadata.imageUrl },
-        { key: 'title', value: 'Image' },
-      ]);
-
-      setLoading(false);
-
-      // add(data2.description);
+        worker.onmessage = (e) => {
+          const { success, data, error } = e.data;
+          if (success) {
+            console.log('Image description:', data);
+            add(data.data, {
+              author: data.metadata.imageUrl,
+              title: 'Image',
+            });
+          } else {
+            console.error('Error:', error);
+          }
+          setLoading(false);
+        };
+      };
+      reader.readAsArrayBuffer(file);
     });
   };
 
