@@ -1,3 +1,10 @@
+# [1.37.0](https://github.com/bramses/ycb-companion/compare/v1.36.0...v1.37.0) (2024-09-05)
+
+
+### Features
+
+* Optimize rendering of author URLs in EntryPage and SearchResults components ([07f60d4](https://github.com/bramses/ycb-companion/commit/07f60d40e9495b6388b93069d522508cb6723627))
+
 # [1.36.0](https://github.com/bramses/ycb-companion/compare/v1.35.0...v1.36.0) (2024-09-03)
 
 
