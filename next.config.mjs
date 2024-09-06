@@ -28,6 +28,22 @@ export default withSentryConfig(
       experimental: {
         serverComponentsExternalPackages: ['@electric-sql/pglite'],
       },
+      devIndicators: {
+        autoPrerender: false, // Disable auto-prerendering
+      },
+      async headers() {
+        return [
+          {
+            source: '/ws',
+            headers: [
+              {
+                key: 'Upgrade',
+                value: 'websocket',
+              },
+            ],
+          },
+        ];
+      },
     }),
   ),
   {
@@ -46,11 +62,8 @@ export default withSentryConfig(
     // Upload a larger set of source maps for prettier stack traces (increases build time)
     widenClientFileUpload: true,
 
-    // Route browser requests to Sentry through a Next.js rewrite to circumvent ad-blockers.
-    // This can increase your server load as well as your hosting bill.
-    // Note: Check that the configured route will not match with your Next.js middleware, otherwise reporting of client-
-    // side errors will fail.
-    tunnelRoute: '/monitoring',
+    // Disable tunnel route for Sentry to avoid WebSocket issues
+    tunnelRoute: false,
 
     // Hides source maps from generated client bundles
     hideSourceMaps: true,
