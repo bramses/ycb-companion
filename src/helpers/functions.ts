@@ -218,3 +218,63 @@ export const splitIntoWords = (
   }
   return words.slice(0, numWords).join(' ');
 };
+
+export const addToCollection = (
+  id: string,
+  title: string,
+  buildingCollection: boolean,
+  setBuildingCollection: Dispatch<SetStateAction<boolean>>,
+  setCheckedButtons: Dispatch<SetStateAction<{ [key: string]: boolean }>>,
+) => {
+  // add to collection
+  // check if the id is already in the collection and skip if it is
+  if (localStorage.getItem('buildingCollection')) {
+    const collection = JSON.parse(
+      localStorage.getItem('buildingCollection') as string,
+    );
+    if (collection.find((entry: any) => entry.id === id)) {
+      return;
+    }
+    collection.push({
+      id,
+      title,
+      link: `https://ycb-companion.onrender.com/dashboard/entry/${id}`,
+    });
+    localStorage.setItem('buildingCollection', JSON.stringify(collection));
+  } else {
+    if (!buildingCollection) setBuildingCollection(true);
+    localStorage.setItem(
+      'buildingCollection',
+      JSON.stringify([
+        {
+          id,
+          title,
+          link: `https://ycb-companion.onrender.com/dashboard/entry/${id}`,
+        },
+      ]),
+    );
+  }
+  setCheckedButtons((prev) => ({
+    ...prev,
+    [id]: !prev[id],
+  }));
+};
+
+export const downloadCollection = (
+  setCheckedButtons: Dispatch<SetStateAction<{ [key: string]: boolean }>>,
+) => {
+  const collection = JSON.parse(
+    localStorage.getItem('buildingCollection') as string,
+  );
+  const blob = new Blob([JSON.stringify(collection, null, 2)], {
+    type: 'application/json',
+  });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `collection-${new Date().toLocaleDateString()}-${new Date().toLocaleTimeString()}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  localStorage.removeItem('buildingCollection');
+  setCheckedButtons({});
+};

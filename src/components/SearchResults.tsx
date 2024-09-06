@@ -7,7 +7,12 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { appendSearchToCache, clearCache, getCache } from '@/helpers/cache';
 
-import { fetchSearchEntries, splitIntoWords } from '../helpers/functions';
+import {
+  addToCollection,
+  downloadCollection,
+  fetchSearchEntries,
+  splitIntoWords,
+} from '../helpers/functions';
 
 const SearchResults = () => {
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
@@ -18,34 +23,6 @@ const SearchResults = () => {
     [key: string]: boolean;
   }>({});
   const [buildingCollection, setBuildingCollection] = useState(false);
-
-  const addToCollection = (id: string, title: string) => {
-    // add to collection
-    // check if the id is already in the collection and skip if it is
-    if (localStorage.getItem('buildingCollection')) {
-      const collection = JSON.parse(
-        localStorage.getItem('buildingCollection') as string,
-      );
-      if (collection.find((entry: any) => entry.id === id)) {
-        return;
-      }
-      collection.push({
-        id,
-        title,
-        link: `https://ycb-companion.onrender.com/dashboard/entry/${id}`,
-      });
-      localStorage.setItem('buildingCollection', JSON.stringify(collection));
-    } else {
-      localStorage.setItem(
-        'buildingCollection',
-        JSON.stringify([{ id, title }]),
-      );
-    }
-    setCheckedButtons((prev) => ({
-      ...prev,
-      [id]: !prev[id],
-    }));
-  };
 
   const searchParams = useSearchParams();
   // const router = useRouter();
@@ -79,6 +56,7 @@ const SearchResults = () => {
     if (query === '') return;
     if (query === '_clear_cache') {
       clearCache();
+      alert('Cache cleared!');
       return;
     }
     const searchQuery = query || textAreaValue;
@@ -119,7 +97,7 @@ const SearchResults = () => {
     if (localStorage.getItem('buildingCollection')) {
       setBuildingCollection(true);
     }
-  }, []);
+  }, [buildingCollection]);
 
   // when searchResults change, append to cache
   useEffect(() => {
@@ -222,19 +200,7 @@ const SearchResults = () => {
           type="button"
           onClick={() => {
             // clear the buildingCollection key from localStorage and download the collection as a json file
-            const collection = JSON.parse(
-              localStorage.getItem('buildingCollection') as string,
-            );
-            const blob = new Blob([JSON.stringify(collection)], {
-              type: 'application/json',
-            });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `collection-${new Date().toISOString()}.json`;
-            a.click();
-            URL.revokeObjectURL(url);
-            localStorage.removeItem('buildingCollection');
+            downloadCollection(setCheckedButtons);
             setBuildingCollection(false);
           }}
           className="mb-2 me-2 mt-4 w-full rounded-lg bg-blue-700 px-5 py-2.5 text-sm font-medium text-white hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
@@ -326,7 +292,15 @@ const SearchResults = () => {
             className={`ml-4 rounded-full p-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-300 ${
               checkedButtons[result.id] ? 'bg-green-500' : 'bg-blue-500'
             }`}
-            onClick={() => addToCollection(result.id, result.data)}
+            onClick={() =>
+              addToCollection(
+                result.id,
+                result.data,
+                buildingCollection,
+                setBuildingCollection,
+                setCheckedButtons,
+              )
+            }
           >
             {checkedButtons[result.id] ? (
               <svg
