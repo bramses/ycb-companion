@@ -14,6 +14,39 @@ const SearchResults = () => {
   const [textAreaValue, setTextAreaValue] = useState('');
   const [showLoading, setShowLoading] = useState(false);
   const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [checkedButtons, setCheckedButtons] = useState<{
+    [key: string]: boolean;
+  }>({});
+  const [buildingCollection, setBuildingCollection] = useState(false);
+
+  const addToCollection = (id: string, title: string) => {
+    // add to collection
+    // check if the id is already in the collection and skip if it is
+    if (localStorage.getItem('buildingCollection')) {
+      const collection = JSON.parse(
+        localStorage.getItem('buildingCollection') as string,
+      );
+      if (collection.find((entry: any) => entry.id === id)) {
+        return;
+      }
+      collection.push({
+        id,
+        title,
+        link: `https://ycb-companion.onrender.com/dashboard/entry/${id}`,
+      });
+      localStorage.setItem('buildingCollection', JSON.stringify(collection));
+    } else {
+      localStorage.setItem(
+        'buildingCollection',
+        JSON.stringify([{ id, title }]),
+      );
+    }
+    setCheckedButtons((prev) => ({
+      ...prev,
+      [id]: !prev[id],
+    }));
+  };
+
   const searchParams = useSearchParams();
   // const router = useRouter();
   const pathname = usePathname();
@@ -80,6 +113,13 @@ const SearchResults = () => {
       handleSearch(query);
     }
   }, [searchParams]);
+
+  // check local storage for collection being built (ar array of objects)
+  useEffect(() => {
+    if (localStorage.getItem('buildingCollection')) {
+      setBuildingCollection(true);
+    }
+  }, []);
 
   // when searchResults change, append to cache
   useEffect(() => {
@@ -176,84 +216,150 @@ const SearchResults = () => {
           {rndmBtnText}
         </button>
       </div>
+      {/* download collection btn only if buildingCollection is true */}
+      {buildingCollection && (
+        <button
+          type="button"
+          onClick={() => {
+            // clear the buildingCollection key from localStorage and download the collection as a json file
+            const collection = JSON.parse(
+              localStorage.getItem('buildingCollection') as string,
+            );
+            const blob = new Blob([JSON.stringify(collection)], {
+              type: 'application/json',
+            });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `collection-${new Date().toISOString()}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            localStorage.removeItem('buildingCollection');
+            setBuildingCollection(false);
+          }}
+          className="mb-2 me-2 mt-4 w-full rounded-lg bg-blue-700 px-5 py-2.5 text-sm font-medium text-white hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+        >
+          Download Collection
+        </button>
+      )}
       {showLoading && <div>Loading...</div>}
       {searchResults.map((result) => (
-        <div key={result.id} className="mb-4">
-          <Link
-            href={{
-              pathname: `/dashboard/entry/${result.id}`,
-            }}
-            className="block"
-            onClick={() => {
-              window.history.pushState(
-                {},
-                '',
-                createQueryString('query', textAreaValue, pathname),
-              );
-            }}
-          >
-            <div className="flex items-center text-blue-600 hover:underline">
-              <Image
-                src={result.favicon}
-                alt="favicon"
-                width={16}
-                height={16}
-                className="mr-2"
-              />
-              <span className="font-medium">
-                {result.data.split(' ').length > 12 ? (
-                  <>
-                    {splitIntoWords(result.data, 12, 0)}...
-                    <span className="mt-1 block text-sm text-gray-500">
-                      ...{splitIntoWords(result.data, 20, 12)}...
-                    </span>
-                  </>
-                ) : (
-                  result.data
+        <div key={result.id} className="mb-4 flex items-center justify-between">
+          <div className="grow">
+            <Link
+              href={{
+                pathname: `/dashboard/entry/${result.id}`,
+              }}
+              className="block"
+              onClick={() => {
+                window.history.pushState(
+                  {},
+                  '',
+                  createQueryString('query', textAreaValue, pathname),
+                );
+              }}
+            >
+              <div className="flex items-center text-blue-600 hover:underline">
+                <Image
+                  src={result.favicon}
+                  alt="favicon"
+                  width={16}
+                  height={16}
+                  className="mr-2"
+                />
+                <span className="font-medium">
+                  {result.data.split(' ').length > 12 ? (
+                    <>
+                      {splitIntoWords(result.data, 12, 0)}...
+                      <span className="mt-1 block text-sm text-gray-500">
+                        ...{splitIntoWords(result.data, 20, 12)}...
+                      </span>
+                    </>
+                  ) : (
+                    result.data
+                  )}
+                </span>
+              </div>
+              <div className="text-sm text-gray-500">
+                {result.parentData && (
+                  <span className="mt-1 block">{result.parentData.data}</span>
                 )}
-              </span>
-            </div>
+              </div>
+            </Link>
             <div className="text-sm text-gray-500">
-              {result.parentData && (
-                <span className="mt-1 block">{result.parentData.data}</span>
+              Created: {new Date(result.createdAt).toLocaleString()}
+              {result.createdAt !== result.updatedAt && (
+                <>
+                  {' '}
+                  | Last Updated: {new Date(
+                    result.updatedAt,
+                  ).toLocaleString()}{' '}
+                </>
               )}
             </div>
-          </Link>
-          {/* when was the entry created and updated */}
-          <div className="text-sm text-gray-500">
-            Created: {new Date(result.createdAt).toLocaleString()}
-            {result.createdAt !== result.updatedAt && (
-              <>
-                {' '}
-                | Last Updated: {new Date(
-                  result.updatedAt,
-                ).toLocaleString()}{' '}
-              </>
-            )}
-          </div>
-          <a
-            target="_blank"
-            href={result.metadata.author}
-            rel="noopener noreferrer"
-            className="inline-flex items-center font-medium text-blue-600 hover:underline"
-          >
-            {toHostname(result.metadata.author)}
-            <svg
-              className="ms-2.5 size-3 rtl:rotate-[270deg]"
-              aria-hidden="true"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 18 18"
+            <a
+              target="_blank"
+              href={result.metadata.author}
+              rel="noopener noreferrer"
+              className="inline-flex items-center font-medium text-blue-600 hover:underline"
             >
-              <path
+              {toHostname(result.metadata.author)}
+              <svg
+                className="ms-2.5 size-3 rtl:rotate-[270deg]"
+                aria-hidden="true"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 18 18"
+              >
+                <path
+                  stroke="currentColor"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M15 11v4.833A1.166 1.166 0 0 1 13.833 17H2.167A1.167 1.167 0 0 1 1 15.833V4.167A1.166 1.166 0 0 1 2.167 3h4.618m4.447-2H17v5.768M9.111 8.889l7.778-7.778"
+                />
+              </svg>
+            </a>
+          </div>
+          <button
+            type="button"
+            className={`ml-4 rounded-full p-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-300 ${
+              checkedButtons[result.id] ? 'bg-green-500' : 'bg-blue-500'
+            }`}
+            onClick={() => addToCollection(result.id, result.data)}
+          >
+            {checkedButtons[result.id] ? (
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
                 stroke="currentColor"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M15 11v4.833A1.166 1.166 0 0 1 13.833 17H2.167A1.167 1.167 0 0 1 1 15.833V4.167A1.166 1.166 0 0 1 2.167 3h4.618m4.447-2H17v5.768M9.111 8.889l7.778-7.778"
-              />
-            </svg>
-          </a>
+                className="size-5"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M5 13l4 4L19 7"
+                />
+              </svg>
+            ) : (
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                className="size-5"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M12 4v16m8-8H4"
+                />
+              </svg>
+            )}
+          </button>
         </div>
       ))}
     </div>
