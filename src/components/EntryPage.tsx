@@ -77,6 +77,8 @@ const EntryPage = () => {
       id: data.id,
       createdAt: data.createdAt,
     });
+    console.log('newData:', newData);
+    console.log('newMetadata:', newMetadata);
     updateEntry(data.id, newData, newMetadata);
   };
 

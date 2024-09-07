@@ -23,6 +23,7 @@ const EditModal = ({
       <textarea
         id="edit-modal-textarea"
         rows={4}
+        style={{ fontSize: '17px' }}
         className="my-4 block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500"
       >
         {data}
@@ -38,6 +39,7 @@ const EditModal = ({
           <input
             id={key}
             type="text"
+            style={{ fontSize: '17px' }}
             className="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500"
             defaultValue={String(value)}
           />
@@ -69,13 +71,34 @@ const EditModal = ({
               closeModalFn();
               return;
             }
+            // if metadata.alias_ids exists and users empty it, return err
+            if (newMetadata.alias_ids && newMetadata.alias_ids.length === 0) {
+              console.error('alias_ids cannot be empty');
+              return;
+              // throw new Error('alias_ids cannot be empty');
+            }
             // if metadata.alias_ids is not a correct array, do not save
             if (
               newMetadata.alias_ids &&
               !Array.isArray(newMetadata.alias_ids)
             ) {
-              return;
+              // try to parse it from comma-separated string
+              try {
+                newMetadata.alias_ids = newMetadata.alias_ids
+                  .split(',')
+                  .map((id: any) => id.trim());
+              } catch (err) {
+                console.error('Error parsing alias_ids:', err);
+                return;
+                // return;
+                // throw new Error('Error parsing alias_ids');
+              }
             }
+
+            if (newMetadata.aliasData) {
+              delete newMetadata.aliasData;
+            }
+
             // send data to parent
             onSave(newData, newMetadata);
             closeModalFn();
