@@ -165,11 +165,11 @@ const GardenDaily = () => {
             </div>
             <a
               target="_blank"
-              href={result.metadata.author}
+              href={JSON.parse(result.metadata).author}
               rel="noopener noreferrer"
               className="inline-flex items-center font-medium text-blue-600 hover:underline"
             >
-              {toHostname(result.metadata.author)}
+              {toHostname(JSON.parse(result.metadata).author)}
               <svg
                 className="ms-2.5 size-3 rtl:rotate-[270deg]"
                 aria-hidden="true"

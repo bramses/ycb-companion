@@ -64,6 +64,7 @@ const EntryPage = () => {
   }>({});
   const [buildingCollection, setBuildingCollection] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [temporaryAliases, setTemporaryAliases] = useState<string[]>([]);
 
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => setIsModalOpen(false);
@@ -281,6 +282,25 @@ const EntryPage = () => {
       {hasAliases && (
         <div>
           <h2 className="my-4 text-4xl font-extrabold">Comments</h2>
+          {temporaryAliases.length > 0 && (
+            <div>
+              {temporaryAliases.map((alias) => (
+                <div key={alias} className="mb-4">
+                  <button
+                    className=" text-blue-600 hover:underline"
+                    type="button"
+                    onClick={() => toDashboard(alias)}
+                  >
+                    {alias}
+                  </button>
+                  <br />
+                  <span className="text-sm text-gray-500">
+                    Added to yCb: {new Date().toLocaleString()}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
           {data?.metadata?.aliasData?.map((alias: any) => (
             <div key={alias.aliasId} className="mb-4">
               <button
@@ -328,9 +348,11 @@ const EntryPage = () => {
               setIsAddingAlias(false);
               // clear input field
               (aliasInput as HTMLInputElement).value = '';
-              // setProcessingAliases((prev) => {
-              //   return [...prev, alias];
-              // });
+              // set temporaryAliases to show users new aliases without refreshing the page
+              // prepend new alias to the list
+              setTemporaryAliases((prev) => {
+                return [alias, ...prev];
+              });
             }
           }}
           id={`alias-input-${data?.id}`}
