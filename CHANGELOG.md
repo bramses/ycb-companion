@@ -1,3 +1,10 @@
+# [1.38.0](https://github.com/bramses/ycb-companion/compare/v1.37.0...v1.38.0) (2024-09-07)
+
+
+### Features
+
+* Update button label to "Download Trail" in SearchResults component ([42f59e1](https://github.com/bramses/ycb-companion/commit/42f59e1047b41d027646849352cf0e47b7b0ea03))
+
 # [1.37.0](https://github.com/bramses/ycb-companion/compare/v1.36.0...v1.37.0) (2024-09-05)
 
 
