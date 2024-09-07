@@ -1,3 +1,10 @@
+## [1.38.1](https://github.com/bramses/ycb-companion/compare/v1.38.0...v1.38.1) (2024-09-07)
+
+
+### Bug Fixes
+
+* Update author URL rendering in EntryPage component ([4bcf2ce](https://github.com/bramses/ycb-companion/commit/4bcf2ce60f25bbf1e3dd96182e39329eac6268e4))
+
 # [1.38.0](https://github.com/bramses/ycb-companion/compare/v1.37.0...v1.38.0) (2024-09-07)
 
 
