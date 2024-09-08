@@ -1,3 +1,10 @@
+# [1.39.0](https://github.com/bramses/ycb-companion/compare/v1.38.1...v1.39.0) (2024-09-08)
+
+
+### Features
+
+* Add splitIntoWords function for truncating search result text ([c598067](https://github.com/bramses/ycb-companion/commit/c5980675da6c7153332cc96bd8f550582aaf5426))
+
 ## [1.38.1](https://github.com/bramses/ycb-companion/compare/v1.38.0...v1.38.1) (2024-09-07)
 
 
