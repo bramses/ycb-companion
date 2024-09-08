@@ -8,6 +8,7 @@ import Modal from 'react-modal';
 
 import LocaleSwitcher from '@/components/LocaleSwitcher';
 import { LogOutButton } from '@/components/LogOutButton';
+import SpeedDial from '@/components/SpeedDial';
 import Uploader from '@/components/Uploader';
 import { BaseTemplate } from '@/templates/BaseTemplate';
 
@@ -20,6 +21,8 @@ export default function DashboardLayout(props: { children: React.ReactNode }) {
   const openModal = () => setModalOpen(true);
 
   const closeModal = () => setModalOpen(false);
+
+  const handleOpenModal = () => setModalOpen(true);
 
   const afterOpenModal = () => {
     // focus on the textarea
@@ -172,6 +175,7 @@ export default function DashboardLayout(props: { children: React.ReactNode }) {
         </button> */}
         <Uploader />
       </Modal>
+      <SpeedDial onOpenModal={handleOpenModal} />
       {props.children}
     </BaseTemplate>
   );

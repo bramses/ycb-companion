@@ -7,8 +7,8 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 import Calendar from 'react-calendar';
-import ScrollToTop from 'react-scroll-to-top';
 
+// import ScrollToTop from 'react-scroll-to-top';
 import { addToCollection, splitIntoWords } from '@/helpers/functions';
 
 const GardenDaily = () => {
@@ -236,7 +236,7 @@ const GardenDaily = () => {
           </button>
         </div>
       ))}
-      <ScrollToTop smooth />
+      {/* <ScrollToTop smooth /> */}
     </div>
   );
 };
