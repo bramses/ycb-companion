@@ -202,9 +202,10 @@ const Uploader = () => {
         placeholder={title}
         onChange={(e) => setTitle(e.target.value)}
         onKeyDown={(e) => {
-          if (e.key === 'Enter' && e.metaKey) {
-            add(textAreaValue);
-          }
+          add(textAreaValue, {
+            author,
+            title,
+          });
         }}
         value={title}
       />
