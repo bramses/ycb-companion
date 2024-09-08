@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-const SpeedDial = ({ onOpenModal }) => {
+const SpeedDial = ({ onOpenModal }: { onOpenModal: () => void }) => {
   const [isOpen, setIsOpen] = useState(false);
 
   const toggleMenu = () => {
