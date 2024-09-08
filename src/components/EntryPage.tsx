@@ -282,25 +282,6 @@ const EntryPage = () => {
       {hasAliases && (
         <div>
           <h2 className="my-4 text-4xl font-extrabold">Comments</h2>
-          {temporaryAliases.length > 0 && (
-            <div>
-              {temporaryAliases.map((alias) => (
-                <div key={alias} className="mb-4">
-                  <button
-                    className=" text-blue-600 hover:underline"
-                    type="button"
-                    onClick={() => toDashboard(alias)}
-                  >
-                    {alias}
-                  </button>
-                  <br />
-                  <span className="text-sm text-gray-500">
-                    Added to yCb: {new Date().toLocaleString()}
-                  </span>
-                </div>
-              ))}
-            </div>
-          )}
           {data?.metadata?.aliasData?.map((alias: any) => (
             <div key={alias.aliasId} className="mb-4">
               <button
@@ -313,6 +294,26 @@ const EntryPage = () => {
               <br />
               <span className="text-sm text-gray-500">
                 Added to yCb: {alias.aliasCreatedAt}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {temporaryAliases.length > 0 && (
+        <div>
+          {temporaryAliases.map((alias) => (
+            <div key={alias} className="mb-4">
+              <button
+                className=" text-blue-600 hover:underline"
+                type="button"
+                onClick={() => toDashboard(alias)}
+              >
+                {alias}
+              </button>
+              <br />
+              <span className="text-sm text-gray-500">
+                Added to yCb: {new Date().toLocaleString()}
               </span>
             </div>
           ))}
@@ -358,50 +359,74 @@ const EntryPage = () => {
           id={`alias-input-${data?.id}`}
         />
         {!isAddingAlias ? (
-          <button
-            type="button"
-            onClick={async () => {
-              try {
+          <>
+            <button
+              type="button"
+              onClick={() => {
                 const aliasInput = document.getElementById(
                   `alias-input-${data?.id}`,
                 );
                 if (!aliasInput) return;
-                // Cast to HTMLInputElement to access value property
-                const alias = (aliasInput as HTMLInputElement).value;
-                setIsAddingAlias(true);
-                const aliasAdded = await handleAliasAdd({
-                  id: data?.id,
-                  alias,
-                  data,
-                  metadata: {
-                    title: data?.metadata.title,
-                    author: data?.metadata.author,
-                    links: data?.metadata.links,
-                  },
-                });
-                if (!aliasAdded) throw new Error('Error adding alias');
-                if (aliasAdded.error)
-                  throw new Error(`Error adding alias ${aliasAdded.error}`);
-                setIsAddingAlias(false);
-                // clear input field
-                (aliasInput as HTMLInputElement).value = '';
-                // add alias to span list to show users new aliases
-                // setProcessingAliases((prev) => {
-                //   return [...prev, alias];
-                // });
-              } catch (err) {
-                // show error message for 5 seconds
-                setAliasShowError(true);
-                setTimeout(() => {
-                  setAliasShowError(false);
-                }, 5000);
-              }
-            }}
-            className="mb-2 me-2 mt-4 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4 focus:ring-gray-300"
-            aria-label="Add alias"
-          >
-            Add Comment (or press enter)
-          </button>
+                const suggestions = [
+                  'I think this is about...',
+                  'I think this is related to...',
+                  'This reminds me of...',
+                ];
+
+                (aliasInput as HTMLInputElement).value =
+                  suggestions[Math.floor(Math.random() * suggestions.length)] ||
+                  '';
+              }}
+              className="mb-2 me-2 mt-4 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4 focus:ring-gray-300"
+              aria-label="Suggest Comment"
+            >
+              Suggest Comment
+            </button>
+            <button
+              type="button"
+              onClick={async () => {
+                try {
+                  const aliasInput = document.getElementById(
+                    `alias-input-${data?.id}`,
+                  );
+                  if (!aliasInput) return;
+                  // Cast to HTMLInputElement to access value property
+                  const alias = (aliasInput as HTMLInputElement).value;
+                  setIsAddingAlias(true);
+                  const aliasAdded = await handleAliasAdd({
+                    id: data?.id,
+                    alias,
+                    data,
+                    metadata: {
+                      title: data?.metadata.title,
+                      author: data?.metadata.author,
+                      links: data?.metadata.links,
+                    },
+                  });
+                  if (!aliasAdded) throw new Error('Error adding alias');
+                  if (aliasAdded.error)
+                    throw new Error(`Error adding alias ${aliasAdded.error}`);
+                  setIsAddingAlias(false);
+                  // clear input field
+                  (aliasInput as HTMLInputElement).value = '';
+                  // add alias to span list to show users new aliases
+                  // setProcessingAliases((prev) => {
+                  //   return [...prev, alias];
+                  // });
+                } catch (err) {
+                  // show error message for 5 seconds
+                  setAliasShowError(true);
+                  setTimeout(() => {
+                    setAliasShowError(false);
+                  }, 5000);
+                }
+              }}
+              className="mb-2 me-2 mt-4 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4 focus:ring-gray-300"
+              aria-label="Add alias"
+            >
+              Add Comment (or press enter)
+            </button>
+          </>
         ) : (
           <button disabled type="button" className="ml-2" aria-label="adding">
             <svg
