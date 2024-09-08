@@ -17,7 +17,7 @@ const Uploader = () => {
     lastName: '',
   });
 
-  // const apiKey = 'apikeyyyy'; // todo get from env
+  const apiKey = 'apikeyyyy'; // todo get from env
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -32,14 +32,28 @@ const Uploader = () => {
     }
   }, [isLoaded, user]);
 
-  const add = async (data: string) => {
+  const add = async (
+    data: string,
+    argMetadata: Record<string, string> = {
+      author: '',
+      title: '',
+    },
+  ) => {
     // get value from input fields and add to metadata
     // set to loading
     setLoading(true);
-    const metadata = {
-      author,
-      title,
-    };
+    // const metadata = {
+    //   author,
+    //   title,
+    // };
+
+    const metadata: Record<string, string> = {};
+    console.log('argMetadata:', argMetadata);
+    for (const field of Object.keys(argMetadata)) {
+      if (argMetadata[field] !== undefined) {
+        metadata[field] = argMetadata[field]!;
+      }
+    }
 
     const response = await fetch('/api/add', {
       method: 'POST',
@@ -75,7 +89,7 @@ const Uploader = () => {
   // TODO: implement image upload
 
   // const uploadImage = async () => {
-  //   const fileInput = document.getElementById('file-input');
+  //   const fileInput = document.getElementById('file-input-modal');
   //   if (!fileInput) return;
   //   (fileInput as HTMLInputElement).click();
 
@@ -125,6 +139,41 @@ const Uploader = () => {
   //   });
   // };
 
+  const uploadImage = async () => {
+    const fileInput = document.getElementById('file-input-modal');
+    if (!fileInput) return;
+    (fileInput as HTMLInputElement).click();
+
+    fileInput.addEventListener('change', async (event) => {
+      const file = (event.target as HTMLInputElement).files?.[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = () => {
+        const arrayBuffer = reader.result;
+        setLoading(true);
+
+        const worker = new Worker('/imageWorker.js');
+        worker.postMessage({ file: arrayBuffer, apiKey });
+
+        worker.onmessage = (e) => {
+          const { success, data, error } = e.data;
+          if (success) {
+            console.log('Image description:', data);
+            add(data.data, {
+              author: data.metadata.imageUrl,
+              title: 'Image',
+            });
+          } else {
+            console.error('Error:', error);
+          }
+          setLoading(false);
+        };
+      };
+      reader.readAsArrayBuffer(file);
+    });
+  };
+
   return (
     <div className="[&_p]:my-6">
       {/* an input field for your name and then a textarea and a button to submit to /api/add */}
@@ -132,18 +181,23 @@ const Uploader = () => {
       <textarea
         id="modal-message"
         rows={4}
+        style={{ fontSize: '17px' }}
         className="mt-4 block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder:text-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
         placeholder="Your message..."
         value={textAreaValue}
         onKeyDown={(e) => {
           if (e.key === 'Enter' && e.metaKey) {
-            add(textAreaValue);
+            add(textAreaValue, {
+              author,
+              title,
+            });
           }
         }}
         onChange={(e) => setTextAreaValue(e.target.value)}
       />
       <input
         type="text"
+        style={{ fontSize: '17px' }}
         className="mt-2 block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder:text-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
         placeholder={title}
         onChange={(e) => setTitle(e.target.value)}
@@ -156,6 +210,7 @@ const Uploader = () => {
       />
       <input
         type="text"
+        style={{ fontSize: '17px' }}
         className="mt-2 block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder:text-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
         placeholder={author}
         onChange={(e) => setAuthor(e.target.value)}
@@ -180,9 +235,24 @@ const Uploader = () => {
         </span>
       </div>
 
-      <p>
+      <input
+        type="file"
+        accept="image/*"
+        className="hidden"
+        id="file-input-modal"
+      />
+      <button
+        type="button"
+        onClick={uploadImage}
+        className="mt-2 block rounded-lg bg-blue-700 px-5 py-2.5 text-sm font-medium text-white hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+      >
+        Upload Image
+      </button>
+      {/* {loading && <p>Loading...</p>} */}
+
+      {/* <p>
         <em>image upload coming soon, use /dashboard/upload for now</em>
-      </p>
+      </p> */}
 
       {/* <div className="inline-flex w-full items-center justify-center">
         <hr className="my-8 h-px w-64 border-0 bg-gray-200 dark:bg-gray-700" />
