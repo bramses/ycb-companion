@@ -10,9 +10,11 @@ import { appendSearchToCache, clearCache, getCache } from '@/helpers/cache';
 import {
   addToCollection,
   downloadCollection,
+  fetchList,
   fetchSearchEntries,
   splitIntoWords,
 } from '../helpers/functions';
+import Loading from './Loading';
 
 const SearchResults = () => {
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
@@ -132,6 +134,18 @@ const SearchResults = () => {
     }
   }, [searchParams]);
 
+  // on load page, fetch recent entries using fetchList function and set searchResults to the data
+  useEffect(() => {
+    const fetchRecentEntries = async () => {
+      // only run if searchResults is empty and no query in searchParams
+      if (searchResults.length > 0 || searchParams.has('query')) return;
+      setShowLoading(true);
+      await fetchList(setSearchResults as any, 1);
+      setShowLoading(false);
+    };
+    fetchRecentEntries();
+  }, []);
+
   return (
     <div className="min-w-full">
       <textarea
@@ -208,7 +222,7 @@ const SearchResults = () => {
           Download Trail
         </button>
       )}
-      {showLoading && <div>Loading...</div>}
+      {showLoading && <Loading />}
       {searchResults.map((result) => (
         <div key={result.id} className="mb-4 flex items-center justify-between">
           <div className="grow">

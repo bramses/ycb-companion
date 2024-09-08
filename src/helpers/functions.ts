@@ -278,3 +278,87 @@ export const downloadCollection = (
   localStorage.removeItem('buildingCollection');
   setCheckedButtons({});
 };
+
+export const fetchList = async (
+  setSearchResults: Dispatch<SetStateAction<any[]>>,
+  page: number,
+  limit: number = 20,
+  sortModel: any = [{ colId: 'updatedAt', sort: 'desc' }],
+  filterModel: any = { items: [] },
+) => {
+  const response = await fetch(`/api/list`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      page,
+      limit,
+      sortModel,
+      filterModel,
+    }),
+  });
+
+  const dataRes = await response.json();
+  const entries = dataRes.data;
+
+  const parsedEntries = entries.map((entry: any) => {
+    let metadata;
+    try {
+      metadata = JSON.parse(entry.metadata);
+    } catch (err) {
+      metadata = entry.metadata; // fallback to original metadata if parsing fails
+    }
+
+    return { ...entry, metadata, favicon: '/favicon.ico' };
+  });
+
+  // Return parsed entries immediately
+  setSearchResults(parsedEntries);
+
+  // for all entries with a parent_id, fetch parent_id data and append data as parentData key
+  const parentPromises = parsedEntries.map((entry: any) => {
+    if ('parent_id' in entry.metadata) {
+      return fetchByID(entry.metadata.parent_id);
+    }
+    return Promise.resolve(null); // Return null for entries without parent_id
+  });
+
+  Promise.allSettled(parentPromises).then((results) => {
+    const updatedEntries = parsedEntries.map((entry: any, index: any) => {
+      if (!results[index]) {
+        return entry;
+      }
+      if (results[index].status === 'fulfilled' && results[index].value) {
+        return { ...entry, parentData: results[index].value };
+      }
+      return entry;
+    });
+
+    // Return updated entries immediately
+    setSearchResults(updatedEntries);
+
+    // fetch favicon for each entry
+    const faviconPromises = updatedEntries.map((entry: any) => {
+      if (!entry.metadata) {
+        return { favicon: '/favicon.ico' };
+      }
+
+      return fetchFavicon(entry.metadata.author);
+    });
+
+    Promise.all(faviconPromises).then((favicons) => {
+      const updatedEntriesFavicon = updatedEntries.map(
+        (entry: any, index: any) => {
+          const favicon = favicons[index].favicon
+            ? favicons[index].favicon
+            : '/favicon.ico';
+          return { ...entry, favicon };
+        },
+      );
+
+      // Update search results with favicons
+      setSearchResults(updatedEntriesFavicon);
+    });
+  });
+};

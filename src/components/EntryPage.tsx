@@ -25,6 +25,7 @@ import {
   fetchSearchEntries,
   formatDate,
   handleAliasAdd,
+  splitIntoWords,
   updateEntry,
 } from '../helpers/functions';
 import EditModal from './EditModal';
@@ -472,11 +473,11 @@ const EntryPage = () => {
                   className="mr-2"
                 />
                 <span className="font-medium">
-                  {result.data.length > 50 ? (
+                  {result.data.split(' ').length > 12 ? (
                     <>
-                      {result.data.slice(0, 50)}...
+                      {splitIntoWords(result.data, 12, 0)}...
                       <span className="mt-1 block text-sm text-gray-500">
-                        ...{result.data.slice(50)}
+                        ...{splitIntoWords(result.data, 20, 12)}...
                       </span>
                     </>
                   ) : (
