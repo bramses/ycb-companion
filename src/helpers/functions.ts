@@ -113,6 +113,83 @@ export async function fetchSearchEntries(
   return parsedEntries;
 }
 
+export async function fetchSearchEntriesOriginal(
+  query: string,
+  setSearchResults: Dispatch<SetStateAction<any[]>>,
+) {
+  const response = await fetch('/api/search', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ query }),
+  });
+  const data = await response.json();
+  const entries = data.data;
+  // map entries.metadata to json
+  const parsedEntries = entries.map((entry: any) => {
+    let metadata;
+    try {
+      metadata = JSON.parse(entry.metadata);
+    } catch (err) {
+      metadata = entry.metadata; // fallback to original metadata if parsing fails
+    }
+
+    return { ...entry, metadata, favicon: '/favicon.ico' };
+  });
+
+  // Return parsed entries immediately
+  setSearchResults(parsedEntries);
+
+  // for all entries with a parent_id, fetch parent_id data and append data as parentData key
+  const parentPromises = parsedEntries.map((entry: any) => {
+    if ('parent_id' in entry.metadata) {
+      return fetchByID(entry.metadata.parent_id);
+    }
+    return Promise.resolve(null); // Return null for entries without parent_id
+  });
+
+  Promise.allSettled(parentPromises).then((results) => {
+    const updatedEntries = parsedEntries.map((entry: any, index: any) => {
+      if (!results[index]) {
+        return entry;
+      }
+      if (results[index].status === 'fulfilled' && results[index].value) {
+        return { ...entry, parentData: results[index].value };
+      }
+      return entry;
+    });
+
+    // Return updated entries immediately
+    setSearchResults(updatedEntries);
+
+    // fetch favicon for each entry
+    const faviconPromises = updatedEntries.map((entry: any) => {
+      if (!entry.metadata) {
+        return { favicon: '/favicon.ico' };
+      }
+
+      return fetchFavicon(entry.metadata.author);
+    });
+
+    Promise.all(faviconPromises).then((favicons) => {
+      const updatedEntriesFavicon = updatedEntries.map(
+        (entry: any, index: any) => {
+          const favicon = favicons[index].favicon
+            ? favicons[index].favicon
+            : '/favicon.ico';
+          return { ...entry, favicon };
+        },
+      );
+
+      // Update search results with favicons
+      setSearchResults(updatedEntriesFavicon);
+    });
+  });
+
+  return parsedEntries;
+}
+
 export const formatDate = (isoString: string) => {
   const date = new Date(isoString);
   return date.toLocaleString(); // You can customize the locale and options as needed

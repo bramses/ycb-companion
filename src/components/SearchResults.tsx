@@ -1,5 +1,6 @@
 'use client';
 
+import { useUser } from '@clerk/nextjs';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname, useSearchParams } from 'next/navigation';
@@ -17,6 +18,7 @@ import {
 import Loading from './Loading';
 
 const SearchResults = () => {
+  const { user, isLoaded } = useUser();
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
   const [textAreaValue, setTextAreaValue] = useState('');
   const [showLoading, setShowLoading] = useState(false);
@@ -25,6 +27,11 @@ const SearchResults = () => {
     [key: string]: boolean;
   }>({});
   const [buildingCollection, setBuildingCollection] = useState(false);
+
+  const [firstLastName, setFirstLastName] = useState({
+    firstName: '',
+    lastName: '',
+  });
 
   const searchParams = useSearchParams();
   // const router = useRouter();
@@ -84,6 +91,34 @@ const SearchResults = () => {
 
     setShowLoading(false);
   };
+
+  const renderResultData = (result: any) => {
+    if (result.parentData) {
+      return result.parentData.data;
+    }
+    if (result.data.split(' ').length > 2200) {
+      return (
+        <>
+          {splitIntoWords(result.data, 22, 0)}...
+          <span className="mt-1 block text-sm text-gray-500">
+            ...{splitIntoWords(result.data, 22, 22)}...
+          </span>
+        </>
+      );
+    }
+    return result.data;
+  };
+
+  useEffect(() => {
+    if (!isLoaded) return;
+    // set first name as title
+    if (user?.firstName && user?.lastName) {
+      setFirstLastName({
+        firstName: user.firstName,
+        lastName: user.lastName,
+      });
+    }
+  }, [isLoaded, user]);
 
   useEffect(() => {
     const query = searchParams.get('query');
@@ -153,7 +188,7 @@ const SearchResults = () => {
         id="message"
         rows={2}
         style={{ fontSize: '17px' }}
-        className="sticky top-2 z-50 mt-4 block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-gray-900 focus:border-blue-500 focus:ring-blue-500"
+        className="top-2 mt-4 block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-gray-900 focus:border-blue-500 focus:ring-blue-500"
         placeholder="Your query... (Press Enter to search) (Press cmd-k to focus) (Press cmd + u anywhere on website to fast upload)"
         value={textAreaValue}
         onChange={(e) => setTextAreaValue(e.target.value)}
@@ -232,6 +267,9 @@ const SearchResults = () => {
               }}
               className="block"
               onClick={() => {
+                if (textAreaValue === '') {
+                  return;
+                }
                 window.history.pushState(
                   {},
                   '',
@@ -239,31 +277,38 @@ const SearchResults = () => {
                 );
               }}
             >
-              <div className="flex items-center text-blue-600 hover:underline">
+              <div className="relative text-blue-600 hover:underline">
                 <Image
                   src={result.favicon}
                   alt="favicon"
                   width={16}
                   height={16}
-                  className="mr-2"
+                  className="float-left mr-2"
                 />
-                <span className="font-medium">
-                  {result.data.split(' ').length > 12 ? (
-                    <>
-                      {splitIntoWords(result.data, 12, 0)}...
-                      <span className="mt-1 block text-sm text-gray-500">
-                        ...{splitIntoWords(result.data, 20, 12)}...
-                      </span>
-                    </>
-                  ) : (
-                    result.data
-                  )}
-                </span>
+                <span className="font-medium">{renderResultData(result)}</span>
               </div>
-              <div className="text-sm text-gray-500">
-                {result.parentData && (
-                  <span className="mt-1 block">{result.parentData.data}</span>
-                )}
+              <div className="ml-6 flex items-center">
+                {result.parentData ? (
+                  <div className="mr-2 flex size-6 shrink-0 items-center justify-center rounded-full bg-gray-300 text-xs font-bold text-white">
+                    {firstLastName.firstName && firstLastName.lastName ? (
+                      <>
+                        {firstLastName.firstName[0]}
+                        {firstLastName.lastName[0]}
+                      </>
+                    ) : (
+                      'YCB'
+                    )}
+                  </div>
+                ) : null}
+                <span className="font-medium">
+                  {result.parentData
+                    ? result.data
+                    : result.parentData && (
+                        <span className="mt-1 block text-sm text-gray-500">
+                          {result.parentData.data}
+                        </span>
+                      )}
+                </span>
               </div>
             </Link>
             <div className="text-sm text-gray-500">
