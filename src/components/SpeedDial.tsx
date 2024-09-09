@@ -1,14 +1,28 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
-const SpeedDial = ({ onOpenModal }: { onOpenModal: () => void }) => {
+const SpeedDial = ({
+  onOpenModal,
+  onSearch,
+}: {
+  onOpenModal: () => void;
+  onSearch: () => void;
+}) => {
   const [isOpen, setIsOpen] = useState(false);
 
   const toggleMenu = () => {
     setIsOpen(!isOpen);
   };
 
+  useEffect(() => {
+    if (isOpen) {
+      document.body.classList.add('modal-open');
+    } else {
+      document.body.classList.remove('modal-open');
+    }
+  }, [isOpen]);
+
   return (
-    <div data-dial-init className="group fixed bottom-6 end-6">
+    <div data-dial-init className="speed-dial group fixed bottom-6 end-6 z-50">
       <div
         id="speed-dial-menu-text-outside-button"
         className={`flex flex-col items-center ${isOpen ? 'flex' : 'hidden'} mb-4 space-y-2`}
@@ -47,10 +61,14 @@ const SpeedDial = ({ onOpenModal }: { onOpenModal: () => void }) => {
           <span className="absolute -start-14 top-1/2 mb-px block -translate-y-1/2 text-sm font-medium">
             Print
           </span>
-        </button>
+        </button> */}
         <button
           type="button"
           className="relative size-[52px] rounded-lg border border-gray-200 bg-white text-gray-500 shadow-sm hover:bg-gray-50 hover:text-gray-900 focus:outline-none focus:ring-4 focus:ring-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-400 dark:hover:bg-gray-600 dark:hover:text-white dark:focus:ring-gray-400"
+          onClick={() => {
+            onSearch();
+            setIsOpen(false);
+          }}
         >
           <svg
             className="mx-auto size-5"
@@ -63,9 +81,9 @@ const SpeedDial = ({ onOpenModal }: { onOpenModal: () => void }) => {
             <path d="M18 12h-2.55l-2.975 2.975a3.5 3.5 0 0 1-4.95 0L4.55 12H2a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-4a2 2 0 0 0-2-2Zm-3 5a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z" />
           </svg>
           <span className="absolute -start-14 top-1/2 mb-px block -translate-y-1/2 text-sm font-medium">
-            Save
+            Search
           </span>
-        </button> */}
+        </button>
         <button
           type="button"
           className="relative size-[52px] rounded-lg border border-gray-200 bg-white text-gray-500 shadow-sm hover:bg-gray-50 hover:text-gray-900 focus:outline-none focus:ring-4 focus:ring-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-400 dark:hover:bg-gray-600 dark:hover:text-white dark:focus:ring-gray-400"

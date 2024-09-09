@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 import Modal from 'react-modal';
@@ -15,6 +15,7 @@ import { BaseTemplate } from '@/templates/BaseTemplate';
 export default function DashboardLayout(props: { children: React.ReactNode }) {
   const t = useTranslations('DashboardLayout');
   const router = useRouter();
+  const pathname = usePathname();
 
   const [isModalOpen, setModalOpen] = useState(false);
 
@@ -27,6 +28,21 @@ export default function DashboardLayout(props: { children: React.ReactNode }) {
   const afterOpenModal = () => {
     // focus on the textarea
     const message = document.getElementById('modal-message');
+    if (message) {
+      message.focus();
+    }
+  };
+
+  const handleSearch = () => {
+    // redirect to dashboard if not on dashboard
+
+    if (pathname !== '/dashboard') {
+      router.push('/dashboard');
+      return;
+    }
+
+    // focus on the textarea
+    const message = document.getElementById('message');
     if (message) {
       message.focus();
     }
@@ -175,7 +191,7 @@ export default function DashboardLayout(props: { children: React.ReactNode }) {
         </button> */}
         <Uploader />
       </Modal>
-      <SpeedDial onOpenModal={handleOpenModal} />
+      <SpeedDial onOpenModal={handleOpenModal} onSearch={handleSearch} />
       {props.children}
     </BaseTemplate>
   );
