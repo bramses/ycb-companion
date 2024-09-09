@@ -169,15 +169,20 @@ const SearchResults = () => {
     }
   }, [searchParams]);
 
+  const fetchRecentEntries = async (calledManually = false) => {
+    // only run if searchResults is empty and no query in searchParams
+    if (
+      !calledManually &&
+      (searchResults.length > 0 || searchParams.has('query'))
+    )
+      return;
+    setShowLoading(true);
+    await fetchList(setSearchResults as any, 1);
+    setShowLoading(false);
+  };
+
   // on load page, fetch recent entries using fetchList function and set searchResults to the data
   useEffect(() => {
-    const fetchRecentEntries = async () => {
-      // only run if searchResults is empty and no query in searchParams
-      if (searchResults.length > 0 || searchParams.has('query')) return;
-      setShowLoading(true);
-      await fetchList(setSearchResults as any, 1);
-      setShowLoading(false);
-    };
     fetchRecentEntries();
   }, []);
 
@@ -243,6 +248,17 @@ const SearchResults = () => {
           {rndmBtnText}
         </button>
       </div>
+      {/* refresh feed btn (empty textarea and fetch recent entries) */}
+      <button
+        type="button"
+        onClick={() => {
+          setTextAreaValue('');
+          fetchRecentEntries(true);
+        }}
+        className="mb-2 me-2 mt-4 w-full rounded-lg bg-blue-700 px-5 py-2.5 text-sm font-medium text-white hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+      >
+        Refresh Feed
+      </button>
       {/* download collection btn only if buildingCollection is true */}
       {buildingCollection && (
         <button
