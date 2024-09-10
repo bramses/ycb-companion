@@ -255,7 +255,7 @@ const SearchResults = () => {
           setTextAreaValue('');
           fetchRecentEntries(true);
         }}
-        className="mb-2 me-2 mt-4 w-full rounded-lg bg-blue-700 px-5 py-2.5 text-sm font-medium text-white hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+        className="mb-8 me-2 mt-4 w-full rounded-lg bg-blue-700 px-5 py-2.5 text-sm font-medium text-white hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
       >
         Refresh Feed
       </button>
@@ -413,7 +413,7 @@ const SearchResults = () => {
         <>
           <div
             key={result.id}
-            className="mx-2 mb-4 flex items-center justify-between"
+            className="mx-2 my-4 flex items-center justify-between"
           >
             <div className="grow">
               <Link
@@ -446,26 +446,20 @@ const SearchResults = () => {
                 </div>
                 <div className="ml-6 flex items-center">
                   {result.parentData ? (
-                    <div className="mr-2 flex size-6 shrink-0 items-center justify-center rounded-full bg-gray-300 text-xs font-bold text-white">
-                      {firstLastName.firstName && firstLastName.lastName ? (
-                        <>
-                          {firstLastName.firstName[0]}
-                          {firstLastName.lastName[0]}
-                        </>
-                      ) : (
-                        'YCB'
-                      )}
-                    </div>
-                  ) : null}
-                  <span className="font-normal">
-                    {result.parentData
-                      ? result.data
-                      : result.parentData && (
-                          <span className="mt-1 block text-sm text-gray-500">
-                            {result.parentData.data}
-                          </span>
+                    <>
+                      <div className="mr-2 flex size-6 shrink-0 items-center justify-center rounded-full bg-gray-300 text-xs font-bold text-white">
+                        {firstLastName.firstName && firstLastName.lastName ? (
+                          <>
+                            {firstLastName.firstName[0]}
+                            {firstLastName.lastName[0]}
+                          </>
+                        ) : (
+                          'yCb'
                         )}
-                  </span>
+                      </div>
+                      <span className="font-normal">{result.data}</span>
+                    </>
+                  ) : null}
                 </div>
               </Link>
               <div className="text-sm text-gray-500">

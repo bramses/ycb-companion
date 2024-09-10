@@ -83,6 +83,20 @@ export async function fetchSearchEntries(
       return entry;
     });
 
+    updatedEntries.forEach((entry: any, entryIdx: number) => {
+      if (entry.metadata.alias_ids) {
+        const aliasIds = entry.metadata.alias_ids.map(Number);
+        const index = updatedEntries.findIndex((searchResult: any) =>
+          aliasIds.includes(Number(searchResult.id)),
+        );
+        if (index !== -1) {
+          console.log('splice:', updatedEntries[entryIdx]);
+
+          updatedEntries.splice(entryIdx, 1);
+        }
+      }
+    });
+
     // Return updated entries immediately
     setSearchResults(updatedEntries);
 
@@ -412,6 +426,23 @@ export const fetchList = async (
       return entry;
     });
 
+    // for each entry that has alias_ids, check if the id exists in our searchResults
+    // if it does, splice the entry from the searchResults array
+    updatedEntries.forEach((entry: any, entryIdx: number) => {
+      if (entry.metadata.alias_ids) {
+        const aliasIds = entry.metadata.alias_ids.map(Number);
+        const index = updatedEntries.findIndex((searchResult: any) =>
+          aliasIds.includes(Number(searchResult.id)),
+        );
+        if (index !== -1) {
+          console.log('splice:', updatedEntries[entryIdx]);
+
+          updatedEntries.splice(entryIdx, 1);
+        }
+      }
+    });
+
+    console.log('updatedEntries:', updatedEntries);
     // Return updated entries immediately
     setSearchResults(updatedEntries);
 
