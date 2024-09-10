@@ -413,7 +413,7 @@ const SearchResults = () => {
         <>
           <div
             key={result.id}
-            className="mb-4 flex items-center justify-between"
+            className="mx-2 mb-4 flex items-center justify-between"
           >
             <div className="grow">
               <Link
