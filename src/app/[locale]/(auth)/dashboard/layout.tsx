@@ -42,9 +42,11 @@ export default function DashboardLayout(props: { children: React.ReactNode }) {
     }
 
     // focus on the textarea
-    const message = document.getElementById('message');
+    const message = document.getElementById('message') as HTMLTextAreaElement;
     if (message) {
       message.focus();
+      // highlight the text in the textarea
+      message.select();
     }
   };
 
