@@ -420,7 +420,7 @@ const SearchResults = () => {
                 href={{
                   pathname: `/dashboard/entry/${result.id}`,
                 }}
-                className="block text-black no-underline"
+                className="block text-gray-900 no-underline"
                 onClick={() => {
                   if (textAreaValue === '') {
                     return;
@@ -440,7 +440,7 @@ const SearchResults = () => {
                     height={16}
                     className="float-left mr-2"
                   />
-                  <span className="font-medium">
+                  <span className="font-normal">
                     {renderResultData(result)}
                   </span>
                 </div>
@@ -457,7 +457,7 @@ const SearchResults = () => {
                       )}
                     </div>
                   ) : null}
-                  <span className="font-medium">
+                  <span className="font-normal">
                     {result.parentData
                       ? result.data
                       : result.parentData && (

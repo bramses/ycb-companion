@@ -5,6 +5,7 @@
 
 import 'react-lite-youtube-embed/dist/LiteYouTubeEmbed.css';
 
+import { useUser } from '@clerk/nextjs';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
@@ -66,6 +67,11 @@ const EntryPage = () => {
   const [buildingCollection, setBuildingCollection] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [temporaryAliases, setTemporaryAliases] = useState<string[]>([]);
+  const { user, isLoaded } = useUser();
+  const [firstLastName, setFirstLastName] = useState({
+    firstName: '',
+    lastName: '',
+  });
 
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => setIsModalOpen(false);
@@ -222,6 +228,17 @@ const EntryPage = () => {
     }
   }, [pathname, data]);
 
+  useEffect(() => {
+    if (!isLoaded) return;
+    // set first name as title
+    if (user?.firstName && user?.lastName) {
+      setFirstLastName({
+        firstName: user.firstName,
+        lastName: user.lastName,
+      });
+    }
+  }, [isLoaded, user]);
+
   return data ? (
     <div className="my-4 min-w-full max-w-full">
       {hasYouTubeEmbed && (
@@ -280,41 +297,66 @@ const EntryPage = () => {
         'Loading...'
       )}
 
-      {hasAliases && (
+      {(hasAliases || temporaryAliases.length > 0) && (
+        <h2 className="my-4 text-4xl font-extrabold">Comments</h2>
+      )}
+
+      {temporaryAliases.length > 0 && (
         <div>
-          <h2 className="my-4 text-4xl font-extrabold">Comments</h2>
-          {data?.metadata?.aliasData?.map((alias: any) => (
-            <div key={alias.aliasId} className="mb-4">
-              <button
-                className=" text-blue-600 hover:underline"
-                type="button"
-                onClick={() => toDashboard(alias.aliasData)}
-              >
-                {alias.aliasData}
-              </button>
-              <br />
+          {temporaryAliases.map((alias) => (
+            <div key={alias} className="mb-4 flex flex-col items-start">
+              <div className="flex items-center">
+                <div className="mr-2 flex size-6 shrink-0 items-center justify-center rounded-full bg-gray-300 text-xs font-bold text-white">
+                  {firstLastName.firstName && firstLastName.lastName ? (
+                    <>
+                      {firstLastName.firstName[0]}
+                      {firstLastName.lastName[0]}
+                    </>
+                  ) : (
+                    'YCB'
+                  )}
+                </div>
+                <button
+                  className="text-black hover:underline"
+                  type="button"
+                  onClick={() => toDashboard(alias)}
+                >
+                  {alias}
+                </button>
+              </div>
               <span className="text-sm text-gray-500">
-                Added to yCb: {alias.aliasCreatedAt}
+                Added to yCb: {new Date().toLocaleString()}
               </span>
             </div>
           ))}
         </div>
       )}
 
-      {temporaryAliases.length > 0 && (
+      {hasAliases && (
         <div>
-          {temporaryAliases.map((alias) => (
-            <div key={alias} className="mb-4">
-              <button
-                className=" text-blue-600 hover:underline"
-                type="button"
-                onClick={() => toDashboard(alias)}
-              >
-                {alias}
-              </button>
-              <br />
+          {data?.metadata?.aliasData?.map((alias: any) => (
+            <div key={alias.aliasId} className="mb-4 flex flex-col items-start">
+              <div className="flex items-center">
+                <div className="mr-2 flex size-6 shrink-0 items-center justify-center rounded-full bg-gray-300 text-xs font-bold text-white">
+                  {firstLastName.firstName && firstLastName.lastName ? (
+                    <>
+                      {firstLastName.firstName[0]}
+                      {firstLastName.lastName[0]}
+                    </>
+                  ) : (
+                    'YCB'
+                  )}
+                </div>
+                <button
+                  className="text-black hover:underline"
+                  type="button"
+                  onClick={() => toDashboard(alias.aliasData)}
+                >
+                  {alias.aliasData}
+                </button>
+              </div>
               <span className="text-sm text-gray-500">
-                Added to yCb: {new Date().toLocaleString()}
+                Added to yCb: {alias.aliasCreatedAt}
               </span>
             </div>
           ))}
