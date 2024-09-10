@@ -237,7 +237,7 @@ const EntryPage = () => {
       {hasTikTokEmbed && <MemoizedTikTokEmbed url={author} />}
 
       {data ? (
-        <div>
+        <div className="m-4 [&_p]:my-6">
           <p className="text-md my-4 text-gray-500">{data.data}</p>
 
           <EditModal
@@ -361,7 +361,7 @@ const EntryPage = () => {
         />
         {!isAddingAlias ? (
           <>
-            <button
+            {/* <button
               type="button"
               onClick={() => {
                 const aliasInput = document.getElementById(
@@ -382,7 +382,7 @@ const EntryPage = () => {
               aria-label="Suggest Comment"
             >
               Suggest Comment
-            </button>
+            </button> */}
             <button
               type="button"
               onClick={async () => {
