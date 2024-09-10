@@ -314,72 +314,6 @@ const EntryPage = () => {
         'Loading...'
       )}
 
-      {(hasAliases || temporaryAliases.length > 0) && (
-        <h2 className="my-4 text-4xl font-extrabold">Comments</h2>
-      )}
-
-      {temporaryAliases.length > 0 && (
-        <div>
-          {temporaryAliases.map((alias) => (
-            <div key={alias} className="mb-4 flex flex-col items-start">
-              <div className="flex items-center">
-                <div className="mr-2 flex size-6 shrink-0 items-center justify-center rounded-full bg-gray-300 text-xs font-bold text-white">
-                  {firstLastName.firstName && firstLastName.lastName ? (
-                    <>
-                      {firstLastName.firstName[0]}
-                      {firstLastName.lastName[0]}
-                    </>
-                  ) : (
-                    'YCB'
-                  )}
-                </div>
-                <button
-                  className="text-black hover:underline"
-                  type="button"
-                  onClick={() => toDashboard(alias)}
-                >
-                  {alias}
-                </button>
-              </div>
-              <span className="text-sm text-gray-500">
-                Added to yCb: {new Date().toLocaleString()}
-              </span>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {hasAliases && (
-        <div>
-          {data?.metadata?.aliasData?.map((alias: any) => (
-            <div key={alias.aliasId} className="mb-4 flex flex-col items-start">
-              <div className="flex items-center">
-                <div className="mr-2 flex size-6 shrink-0 items-center justify-center rounded-full bg-gray-300 text-xs font-bold text-white">
-                  {firstLastName.firstName && firstLastName.lastName ? (
-                    <>
-                      {firstLastName.firstName[0]}
-                      {firstLastName.lastName[0]}
-                    </>
-                  ) : (
-                    'YCB'
-                  )}
-                </div>
-                <button
-                  className="text-black hover:underline"
-                  type="button"
-                  onClick={() => toDashboard(alias.aliasData)}
-                >
-                  {alias.aliasData}
-                </button>
-              </div>
-              <span className="text-sm text-gray-500">
-                Added to yCb: {alias.aliasCreatedAt}
-              </span>
-            </div>
-          ))}
-        </div>
-      )}
-
       <h2 className="my-4 text-4xl font-extrabold">Add Comment</h2>
       <div className="">
         <textarea
@@ -509,6 +443,73 @@ const EntryPage = () => {
           </button>
         )}
       </div>
+
+      {(hasAliases || temporaryAliases.length > 0) && (
+        <h2 className="my-4 text-4xl font-extrabold">Comments</h2>
+      )}
+
+      {temporaryAliases.length > 0 && (
+        <div>
+          {temporaryAliases.map((alias) => (
+            <div key={alias} className="mb-4 flex flex-col items-start">
+              <div className="flex items-center">
+                <div className="mr-2 flex size-6 shrink-0 items-center justify-center rounded-full bg-gray-300 text-xs font-bold text-white">
+                  {firstLastName.firstName && firstLastName.lastName ? (
+                    <>
+                      {firstLastName.firstName[0]}
+                      {firstLastName.lastName[0]}
+                    </>
+                  ) : (
+                    'YCB'
+                  )}
+                </div>
+                <button
+                  className="text-black hover:underline"
+                  type="button"
+                  onClick={() => toDashboard(alias)}
+                >
+                  {alias}
+                </button>
+              </div>
+              <span className="text-sm text-gray-500">
+                Added to yCb: {new Date().toLocaleString()}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {hasAliases && (
+        <div>
+          {data?.metadata?.aliasData?.map((alias: any) => (
+            <div key={alias.aliasId} className="mb-4 flex flex-col items-start">
+              <div className="flex items-center">
+                <div className="mr-2 flex size-6 shrink-0 items-center justify-center rounded-full bg-gray-300 text-xs font-bold text-white">
+                  {firstLastName.firstName && firstLastName.lastName ? (
+                    <>
+                      {firstLastName.firstName[0]}
+                      {firstLastName.lastName[0]}
+                    </>
+                  ) : (
+                    'YCB'
+                  )}
+                </div>
+                <button
+                  className="text-black hover:underline"
+                  type="button"
+                  onClick={() => toDashboard(alias.aliasData)}
+                >
+                  {alias.aliasData}
+                </button>
+              </div>
+              <span className="text-sm text-gray-500">
+                Added to yCb: {alias.aliasCreatedAt}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+
       {showAliasError && (
         <div className="text-red-500">Error adding alias. Try again.</div>
       )}
