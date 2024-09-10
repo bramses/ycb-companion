@@ -163,6 +163,23 @@ const EntryPage = () => {
     }
   };
 
+  const renderResultData = (result: any) => {
+    if (result.parentData) {
+      return result.parentData.data;
+    }
+    if (result.data.split(' ').length > 2200) {
+      return (
+        <>
+          {splitIntoWords(result.data, 22, 0)}...
+          <span className="mt-1 block text-sm text-gray-500">
+            ...{splitIntoWords(result.data, 22, 22)}...
+          </span>
+        </>
+      );
+    }
+    return result.data;
+  };
+
   useEffect(() => {
     if (!data) {
       const asyncFn = async () => {
@@ -498,111 +515,138 @@ const EntryPage = () => {
 
       <h2 className="my-4 text-4xl font-extrabold">Related Entries</h2>
       {searchResults.map((result) => (
-        <div key={result.id} className="mb-4 flex items-center justify-between">
-          <div className="grow">
-            <Link
-              href={{
-                pathname: `/dashboard/entry/${result.id}`,
-              }}
-              className="block"
-            >
-              <div className="flex items-center text-blue-600 hover:underline">
-                <Image
-                  src={result.favicon}
-                  alt="favicon"
-                  width={16}
-                  height={16}
-                  className="mr-2"
-                />
-                <span className="font-medium">
-                  {result.data.split(' ').length > 12 ? (
-                    <>
-                      {splitIntoWords(result.data, 12, 0)}...
-                      <span className="mt-1 block text-sm text-gray-500">
-                        ...{splitIntoWords(result.data, 20, 12)}...
-                      </span>
-                    </>
-                  ) : (
-                    result.data
-                  )}
-                </span>
-              </div>
+        <>
+          <div
+            key={result.id}
+            className="mx-2 mb-4 flex items-center justify-between"
+          >
+            <div className="grow">
+              <Link
+                href={{
+                  pathname: `/dashboard/entry/${result.id}`,
+                }}
+                className="block text-gray-900 no-underline"
+              >
+                <div className="relative">
+                  <Image
+                    src={result.favicon}
+                    alt="favicon"
+                    width={16}
+                    height={16}
+                    className="float-left mr-2"
+                  />
+                  <span className="font-normal">
+                    {renderResultData(result)}
+                  </span>
+                </div>
+                <div className="ml-6 flex items-center">
+                  {result.parentData ? (
+                    <div className="mr-2 flex size-6 shrink-0 items-center justify-center rounded-full bg-gray-300 text-xs font-bold text-white">
+                      {firstLastName.firstName && firstLastName.lastName ? (
+                        <>
+                          {firstLastName.firstName[0]}
+                          {firstLastName.lastName[0]}
+                        </>
+                      ) : (
+                        'YCB'
+                      )}
+                    </div>
+                  ) : null}
+                  <span className="font-normal">
+                    {result.parentData
+                      ? result.data
+                      : result.parentData && (
+                          <span className="mt-1 block text-sm text-gray-500">
+                            {result.parentData.data}
+                          </span>
+                        )}
+                  </span>
+                </div>
+              </Link>
               <div className="text-sm text-gray-500">
-                {result.parentData && (
-                  <span className="mt-1 block">{result.parentData.data}</span>
+                Created: {new Date(result.createdAt).toLocaleString()}
+                {result.createdAt !== result.updatedAt && (
+                  <>
+                    {' '}
+                    | Last Updated:{' '}
+                    {new Date(result.updatedAt).toLocaleString()}{' '}
+                  </>
                 )}
               </div>
-            </Link>
-            {/* when was the entry created and updated */}
-            <div className="text-sm text-gray-500">
-              Added to yCb: {new Date(result.createdAt).toLocaleString()}
-              {result.createdAt !== result.updatedAt && (
-                <>
-                  {' '}
-                  | Last Updated: {new Date(
-                    result.updatedAt,
-                  ).toLocaleString()}{' '}
-                </>
-              )}
+              <a
+                target="_blank"
+                href={result.metadata.author}
+                rel="noopener noreferrer"
+                className="inline-flex items-center font-medium text-blue-600 hover:underline"
+              >
+                {toHostname(result.metadata.author)}
+                <svg
+                  className="ms-2.5 size-3 rtl:rotate-[270deg]"
+                  aria-hidden="true"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 18 18"
+                >
+                  <path
+                    stroke="currentColor"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M15 11v4.833A1.166 1.166 0 0 1 13.833 17H2.167A1.167 1.167 0 0 1 1 15.833V4.167A1.166 1.166 0 0 1 2.167 3h4.618m4.447-2H17v5.768M9.111 8.889l7.778-7.778"
+                  />
+                </svg>
+              </a>
             </div>
-            <a
-              target="_blank"
-              href={result.metadata.author}
-              rel="noopener noreferrer"
-              className="inline-flex items-center font-medium text-blue-600 hover:underline"
+            <button
+              type="button"
+              className={`ml-4 rounded-full p-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-300 ${
+                checkedButtons[result.id] ? 'bg-green-500' : 'bg-blue-500'
+              }`}
+              onClick={() =>
+                addToCollection(
+                  result.id,
+                  result.data,
+                  buildingCollection,
+                  setBuildingCollection,
+                  setCheckedButtons,
+                )
+              }
             >
-              {toHostname(result.metadata.author)}
-              <UrlSVG />
-            </a>
+              {checkedButtons[result.id] ? (
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  className="size-5"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M5 13l4 4L19 7"
+                  />
+                </svg>
+              ) : (
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  className="size-5"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M12 4v16m8-8H4"
+                  />
+                </svg>
+              )}
+            </button>
           </div>
-          <button
-            type="button"
-            className={`ml-4 rounded-full p-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-300 ${
-              checkedButtons[result.id] ? 'bg-green-500' : 'bg-blue-500'
-            }`}
-            onClick={() =>
-              addToCollection(
-                result.id,
-                result.data,
-                buildingCollection,
-                setBuildingCollection,
-                setCheckedButtons,
-              )
-            }
-          >
-            {checkedButtons[result.id] ? (
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                className="size-5"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M5 13l4 4L19 7"
-                />
-              </svg>
-            ) : (
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                className="size-5"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M12 4v16m8-8H4"
-                />
-              </svg>
-            )}
-          </button>
-        </div>
+          <hr className="my-4" />
+        </>
       ))}
 
       <Link
