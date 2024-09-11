@@ -186,6 +186,12 @@ const SearchResults = () => {
     fetchRecentEntries();
   }, []);
 
+  useEffect(() => {
+    if (textAreaValue) {
+      document.title = `Search: ${textAreaValue}`;
+    }
+  }, [textAreaValue]);
+
   return (
     <div className="min-w-full">
       <textarea
