@@ -256,6 +256,12 @@ const EntryPage = () => {
     }
   }, [isLoaded, user]);
 
+  useEffect(() => {
+    if (data) {
+      document.title = data.data;
+    }
+  }, [data]);
+
   return data ? (
     <div className="my-4 min-w-full max-w-full">
       {hasYouTubeEmbed && (
