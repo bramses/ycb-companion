@@ -22,12 +22,17 @@ const SpeedDial = ({
   }, [isOpen]);
 
   return (
-    <div data-dial-init className="speed-dial group fixed bottom-6 end-6 z-50">
+    <div>
+      {isOpen && <div className="overlay" />}
       <div
-        id="speed-dial-menu-text-outside-button"
-        className={`flex flex-col items-center ${isOpen ? 'flex' : 'hidden'} mb-4 space-y-2`}
+        data-dial-init
+        className="speed-dial group fixed bottom-6 end-6 z-50"
       >
-        {/* <button
+        <div
+          id="speed-dial-menu-text-outside-button"
+          className={`flex flex-col items-center ${isOpen ? 'flex' : 'hidden'} mb-4 space-y-2`}
+        >
+          {/* <button
           type="button"
           className="relative size-[52px] rounded-lg border border-gray-200 bg-white text-gray-500 shadow-sm hover:bg-gray-50 hover:text-gray-900 focus:outline-none focus:ring-4 focus:ring-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-400 dark:hover:bg-gray-600 dark:hover:text-white dark:focus:ring-gray-400"
         >
@@ -62,76 +67,77 @@ const SpeedDial = ({
             Print
           </span>
         </button> */}
+          <button
+            type="button"
+            className="relative size-[52px] rounded-lg border border-gray-200 bg-white text-gray-500 shadow-sm hover:bg-gray-50 hover:text-gray-900 focus:outline-none focus:ring-4 focus:ring-gray-300"
+            onClick={() => {
+              onSearch();
+              setIsOpen(false);
+            }}
+          >
+            <svg
+              className="mx-auto size-5"
+              aria-hidden="true"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="currentColor"
+              viewBox="0 0 20 20"
+            >
+              <path d="M14.707 7.793a1 1 0 0 0-1.414 0L11 10.086V1.5a1 1 0 0 0-2 0v8.586L6.707 7.793a1 1 0 1 0-1.414 1.414l4 4a1 1 0 0 0 1.416 0l4-4a1 1 0 0 0-.002-1.414Z" />
+              <path d="M18 12h-2.55l-2.975 2.975a3.5 3.5 0 0 1-4.95 0L4.55 12H2a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-4a2 2 0 0 0-2-2Zm-3 5a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z" />
+            </svg>
+            <span className="absolute -start-14 top-1/2 mb-px block -translate-y-1/2 text-sm font-medium text-white">
+              Search
+            </span>
+          </button>
+          <button
+            type="button"
+            className="relative size-[52px] rounded-lg border border-gray-200 bg-white text-gray-500 shadow-sm hover:bg-gray-50 hover:text-gray-900 focus:outline-none focus:ring-4 focus:ring-gray-300"
+            onClick={() => {
+              onOpenModal();
+              setIsOpen(false);
+            }}
+          >
+            <svg
+              className="mx-auto size-5"
+              aria-hidden="true"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="currentColor"
+              viewBox="0 0 18 20"
+            >
+              <path d="M5 9V4.13a2.96 2.96 0 0 0-1.293.749L.879 7.707A2.96 2.96 0 0 0 .13 9H5Zm11.066-9H9.829a2.98 2.98 0 0 0-2.122.879L7 1.584A.987.987 0 0 0 6.766 2h4.3A3.972 3.972 0 0 1 15 6v10h1.066A1.97 1.97 0 0 0 18 14V2a1.97 1.97 0 0 0-1.934-2Z" />
+              <path d="M11.066 4H7v5a2 2 0 0 1-2 2H0v7a1.969 1.969 0 0 0 1.933 2h9.133A1.97 1.97 0 0 0 13 18V6a1.97 1.97 0 0 0-1.934-2Z" />
+            </svg>
+            <span className="absolute -start-14 top-1/2 mb-px block -translate-y-1/2 text-sm font-medium text-white">
+              Upload
+            </span>
+          </button>
+        </div>
         <button
           type="button"
-          className="relative size-[52px] rounded-lg border border-gray-200 bg-white text-gray-500 shadow-sm hover:bg-gray-50 hover:text-gray-900 focus:outline-none focus:ring-4 focus:ring-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-400 dark:hover:bg-gray-600 dark:hover:text-white dark:focus:ring-gray-400"
-          onClick={() => {
-            onSearch();
-            setIsOpen(false);
-          }}
+          data-dial-toggle="speed-dial-menu-text-outside-button"
+          aria-controls="speed-dial-menu-text-outside-button"
+          aria-expanded={isOpen}
+          onClick={toggleMenu}
+          className="flex size-14 items-center justify-center rounded-lg bg-blue-700 text-white hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
         >
           <svg
-            className="mx-auto size-5"
+            className={`size-5 transition-transform ${isOpen ? 'rotate-45' : ''}`}
             aria-hidden="true"
             xmlns="http://www.w3.org/2000/svg"
-            fill="currentColor"
-            viewBox="0 0 20 20"
+            fill="none"
+            viewBox="0 0 18 18"
           >
-            <path d="M14.707 7.793a1 1 0 0 0-1.414 0L11 10.086V1.5a1 1 0 0 0-2 0v8.586L6.707 7.793a1 1 0 1 0-1.414 1.414l4 4a1 1 0 0 0 1.416 0l4-4a1 1 0 0 0-.002-1.414Z" />
-            <path d="M18 12h-2.55l-2.975 2.975a3.5 3.5 0 0 1-4.95 0L4.55 12H2a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-4a2 2 0 0 0-2-2Zm-3 5a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z" />
+            <path
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M9 1v16M1 9h16"
+            />
           </svg>
-          <span className="absolute -start-14 top-1/2 mb-px block -translate-y-1/2 text-sm font-medium">
-            Search
-          </span>
-        </button>
-        <button
-          type="button"
-          className="relative size-[52px] rounded-lg border border-gray-200 bg-white text-gray-500 shadow-sm hover:bg-gray-50 hover:text-gray-900 focus:outline-none focus:ring-4 focus:ring-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-400 dark:hover:bg-gray-600 dark:hover:text-white dark:focus:ring-gray-400"
-          onClick={() => {
-            onOpenModal();
-            setIsOpen(false);
-          }}
-        >
-          <svg
-            className="mx-auto size-5"
-            aria-hidden="true"
-            xmlns="http://www.w3.org/2000/svg"
-            fill="currentColor"
-            viewBox="0 0 18 20"
-          >
-            <path d="M5 9V4.13a2.96 2.96 0 0 0-1.293.749L.879 7.707A2.96 2.96 0 0 0 .13 9H5Zm11.066-9H9.829a2.98 2.98 0 0 0-2.122.879L7 1.584A.987.987 0 0 0 6.766 2h4.3A3.972 3.972 0 0 1 15 6v10h1.066A1.97 1.97 0 0 0 18 14V2a1.97 1.97 0 0 0-1.934-2Z" />
-            <path d="M11.066 4H7v5a2 2 0 0 1-2 2H0v7a1.969 1.969 0 0 0 1.933 2h9.133A1.97 1.97 0 0 0 13 18V6a1.97 1.97 0 0 0-1.934-2Z" />
-          </svg>
-          <span className="absolute -start-14 top-1/2 mb-px block -translate-y-1/2 text-sm font-medium">
-            Upload
-          </span>
+          <span className="sr-only">Open actions menu</span>
         </button>
       </div>
-      <button
-        type="button"
-        data-dial-toggle="speed-dial-menu-text-outside-button"
-        aria-controls="speed-dial-menu-text-outside-button"
-        aria-expanded={isOpen}
-        onClick={toggleMenu}
-        className="flex size-14 items-center justify-center rounded-lg bg-blue-700 text-white hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
-      >
-        <svg
-          className={`size-5 transition-transform ${isOpen ? 'rotate-45' : ''}`}
-          aria-hidden="true"
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 18 18"
-        >
-          <path
-            stroke="currentColor"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M9 1v16M1 9h16"
-          />
-        </svg>
-        <span className="sr-only">Open actions menu</span>
-      </button>
     </div>
   );
 };

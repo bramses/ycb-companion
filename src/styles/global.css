@@ -2,9 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-
-/* 
-TODO fix this
+// TODO fix this
 .modal-open {
   opacity: 0.5;
   transition: opacity 0.3s ease;
@@ -13,5 +11,15 @@ TODO fix this
 .speed-dial {
   z-index: 1000; 
   opacity: 1 !important;
+  position: fixed;
 } 
-*/
+
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 999; /* Ensure it's below the speed dial */
+}
