@@ -410,9 +410,9 @@ const EntryPage = () => {
                   // clear input field
                   (aliasInput as HTMLInputElement).value = '';
                   // add alias to span list to show users new aliases
-                  // setProcessingAliases((prev) => {
-                  //   return [...prev, alias];
-                  // });
+                  setTemporaryAliases((prev) => {
+                    return [alias, ...prev];
+                  });
                 } catch (err) {
                   // show error message for 5 seconds
                   setAliasShowError(true);
@@ -489,7 +489,7 @@ const EntryPage = () => {
         <div>
           {data?.metadata?.aliasData?.map((alias: any) => (
             <div key={alias.aliasId} className="mb-4 flex flex-col items-start">
-              <div className="flex items-center">
+              <div className="flex">
                 <div className="mr-2 flex size-6 shrink-0 items-center justify-center rounded-full bg-gray-300 text-xs font-bold text-white">
                   {firstLastName.firstName && firstLastName.lastName ? (
                     <>

@@ -72,6 +72,7 @@ const SearchResults = () => {
 
     console.log('Searching for:', searchQuery);
     setShowLoading(true);
+    setSearchResults([]);
 
     // check if the query is in cache
     if (cache.searches[searchQuery]) {
@@ -177,6 +178,7 @@ const SearchResults = () => {
     )
       return;
     setShowLoading(true);
+    setSearchResults([]);
     await fetchList(setSearchResults as any, 1);
     setShowLoading(false);
   };

@@ -2,11 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-.modal-open {
-  opacity: 0.5;
-  transition: opacity 0.3s ease;
-}
-
 .speed-dial {
   z-index: 1000; 
   opacity: 1 !important;
