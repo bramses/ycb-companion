@@ -10,5 +10,3 @@
 - upload
   - screenshots
   - text
-
-
