@@ -94,7 +94,7 @@ export default function DashboardLayout(props: { children: React.ReactNode }) {
           </li>
           <li>
             <Link
-              href="/dashboard/upload/"
+              href="/dashboard/paragraphs/"
               className="border-none text-gray-700 hover:text-gray-900"
             >
               {t('uploader_link')}

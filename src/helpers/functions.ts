@@ -209,7 +209,7 @@ export const formatDate = (isoString: string) => {
   return date.toLocaleString(); // You can customize the locale and options as needed
 };
 
-export const addEntry = async (data: string, metadata: string) => {
+export const addEntry = async (data: string, metadata: any) => {
   try {
     const response = await fetch('/api/add', {
       method: 'POST',
@@ -231,11 +231,7 @@ export const addEntry = async (data: string, metadata: string) => {
   }
 };
 
-export const updateEntry = async (
-  id: string,
-  data: string,
-  metadata: string,
-) => {
+export const updateEntry = async (id: string, data: string, metadata: any) => {
   try {
     console.log('metadata:', metadata);
     console.log('metadata type:', typeof metadata);
@@ -262,10 +258,11 @@ export const updateEntry = async (
   }
 };
 
-export const handleAliasAdd = async (data: any) => {
+export const handleAliasAdd = async (entry: any) => {
   try {
-    console.log('data [handleAliasAdd]:', data);
-    const parentEntry = await fetchByID(data.id);
+    console.log('entry [handleAliasAdd]:', entry);
+    const parentId = entry.id;
+    const parentEntry = await fetchByID(parentId);
     console.log('parentEntry:', parentEntry);
     let parentAliases = parentEntry.metadata.alias_ids;
     try {
@@ -275,21 +272,21 @@ export const handleAliasAdd = async (data: any) => {
     }
     // add a new entry with the alias as data and the original entry's metadata
     // add parent_id to the metadata
-    const parentId = data.id;
+
     const newMetadata = {
-      ...data.metadata,
+      ...entry.metadata,
       parent_id: parentId,
     };
-    const aliasRes = await addEntry(data.alias, newMetadata);
+    const aliasRes = await addEntry(entry.alias, newMetadata);
     console.log('aliasRes:', aliasRes);
     const aliasId = aliasRes.respData.id;
     // update the original entry's metadata with the new alias id in the alias_ids array
     const updatedMetadata = {
-      ...data.metadata,
+      ...entry.metadata,
       alias_ids: parentAliases ? [parentAliases, aliasId].flat() : [aliasId],
     };
     console.log('updatedMetadata:', updatedMetadata);
-    await updateEntry(parentId, data.data.data, updatedMetadata);
+    await updateEntry(parentId, entry.data.data, updatedMetadata);
 
     return aliasRes;
   } catch (err) {

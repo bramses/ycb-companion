@@ -27,7 +27,6 @@ import {
   formatDate,
   handleAliasAdd,
   splitIntoWords,
-  updateEntry,
 } from '../helpers/functions';
 import EditModal from './EditModal';
 import Loading from './Loading';
@@ -65,7 +64,7 @@ const EntryPage = () => {
     [key: string]: boolean;
   }>({});
   const [buildingCollection, setBuildingCollection] = useState(false);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  // const [isModalOpen, setIsModalOpen] = useState(false);
   const [temporaryAliases, setTemporaryAliases] = useState<string[]>([]);
   const { user, isLoaded } = useUser();
   const [firstLastName, setFirstLastName] = useState({
@@ -73,21 +72,31 @@ const EntryPage = () => {
     lastName: '',
   });
 
-  const openModal = () => setIsModalOpen(true);
-  const closeModal = () => setIsModalOpen(false);
+  const [modalStates, setModalStates] = useState<{ [key: string]: boolean }>(
+    {},
+  );
+
+  const openModal = (key: string) =>
+    setModalStates((prev) => ({ ...prev, [key]: true }));
+  const closeModal = (key: string) =>
+    setModalStates((prev) => ({ ...prev, [key]: false }));
+
+  // const openModal = () => setIsModalOpen(true);
+  // const closeModal = () => setIsModalOpen(false);
 
   const handleSave = (newData: any, newMetadata: any) => {
     if (!data) return;
-    setData({
-      ...data,
-      data: newData,
-      metadata: newMetadata,
-      id: data.id,
-      createdAt: data.createdAt,
-    });
     console.log('newData:', newData);
     console.log('newMetadata:', newMetadata);
-    updateEntry(data.id, newData, newMetadata);
+    // TODO: implement saving of edits
+    // setData({
+    //   ...data,
+    //   data: newData,
+    //   metadata: newMetadata,
+    //   id: data.id,
+    //   createdAt: data.createdAt,
+    // });
+    // updateEntry(data.id, newData, newMetadata);
   };
 
   function checkEmbeds(
@@ -212,6 +221,8 @@ const EntryPage = () => {
                   aliasData: ad.data,
                   aliasId: ad.id,
                   aliasCreatedAt: formatDate(ad.createdAt),
+                  aliasUpdatedAt: formatDate(ad.updatedAt),
+                  aliasMetadata: ad.metadata,
                 };
               })
               .reverse();
@@ -281,9 +292,10 @@ const EntryPage = () => {
           <p className="text-md my-4 text-gray-500">{data.data}</p>
 
           <EditModal
-            isOpen={isModalOpen}
-            closeModalFn={closeModal}
+            isOpen={modalStates.editModal || false}
+            closeModalFn={() => closeModal('editModal')}
             data={data.data}
+            disabledKeys={['aliasData']}
             metadata={data.metadata}
             onSave={handleSave}
           />
@@ -297,8 +309,8 @@ const EntryPage = () => {
           </Link>
           <button
             type="button"
-            onClick={openModal}
-            className="focus:ring-gray-30 my-2 me-2 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4"
+            onClick={() => openModal('editModal')}
+            className="my-2 me-2 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4"
           >
             Edit Entry
           </button>
@@ -470,7 +482,7 @@ const EntryPage = () => {
                   )}
                 </div>
                 <button
-                  className="text-black hover:underline"
+                  className="justify-start text-black hover:underline"
                   type="button"
                   onClick={() => toDashboard(alias)}
                 >
@@ -489,6 +501,14 @@ const EntryPage = () => {
         <div>
           {data?.metadata?.aliasData?.map((alias: any) => (
             <div key={alias.aliasId} className="mb-4 flex flex-col items-start">
+              <EditModal
+                isOpen={modalStates[`alias-${alias.aliasId}`] || false}
+                closeModalFn={() => closeModal(`alias-${alias.aliasId}`)}
+                data={alias.aliasData}
+                metadata={alias.aliasMetadata}
+                disabledKeys={['parent_id']}
+                onSave={handleSave}
+              />
               <div className="flex">
                 <div className="mr-2 flex size-6 shrink-0 items-center justify-center rounded-full bg-gray-300 text-xs font-bold text-white">
                   {firstLastName.firstName && firstLastName.lastName ? (
@@ -500,17 +520,29 @@ const EntryPage = () => {
                     'YCB'
                   )}
                 </div>
+                <p className="text-black">{alias.aliasData}</p>
+              </div>
+              <p className="text-sm text-gray-500">
+                Added to yCb: {alias.aliasCreatedAt}
+              </p>
+              <div className="flex">
                 <button
-                  className="text-black hover:underline"
+                  className="mr-4 justify-start text-blue-600 hover:underline"
                   type="button"
                   onClick={() => toDashboard(alias.aliasData)}
                 >
-                  {alias.aliasData}
+                  Search
+                </button>
+                <button
+                  className="justify-start text-blue-600 hover:underline"
+                  type="button"
+                  onClick={() => openModal(`alias-${alias.aliasId}`)}
+                  aria-label="edit"
+                >
+                  Edit
                 </button>
               </div>
-              <span className="text-sm text-gray-500">
-                Added to yCb: {alias.aliasCreatedAt}
-              </span>
+              <hr className="mt-2 w-full" />
             </div>
           ))}
         </div>
@@ -522,7 +554,7 @@ const EntryPage = () => {
 
       <h2 className="my-4 text-4xl font-extrabold">Related Entries</h2>
       {searchResults.map((result) => (
-        <>
+        <div key={result.id}>
           <div
             key={result.id}
             className="mx-2 mb-4 flex items-center justify-between"
@@ -647,7 +679,7 @@ const EntryPage = () => {
             </button>
           </div>
           <hr className="my-4" />
-        </>
+        </div>
       ))}
 
       <Link

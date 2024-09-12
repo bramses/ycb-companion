@@ -6,11 +6,13 @@ const EditModal = ({
   data,
   metadata,
   onSave,
+  disabledKeys,
 }: {
   isOpen: boolean;
   closeModalFn: () => void;
   data: any;
   metadata: any;
+  disabledKeys: string[];
   onSave: (data: any, metadata: any) => void;
 }) => {
   return (
@@ -19,15 +21,19 @@ const EditModal = ({
       onRequestClose={closeModalFn}
       contentLabel="Edit Modal"
       ariaHideApp={false}
+      className="fixed left-1/2 top-1/2 z-50 w-full max-w-sm
+        -translate-x-1/2 -translate-y-1/2 rounded-lg bg-white p-4 shadow-lg"
     >
+      <button onClick={closeModalFn} type="button">
+        (close)
+      </button>
       <textarea
         id="edit-modal-textarea"
         rows={4}
         style={{ fontSize: '17px' }}
         className="my-4 block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500"
-      >
-        {data}
-      </textarea>
+        defaultValue={data}
+      />
       {Object.entries(metadata).map(([key, value]) => (
         <div key={key} className="my-2">
           <label
@@ -38,6 +44,7 @@ const EditModal = ({
           </label>
           <input
             id={key}
+            disabled={disabledKeys.includes(key)}
             type="text"
             style={{ fontSize: '17px' }}
             className="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500"
@@ -105,13 +112,6 @@ const EditModal = ({
           }}
         >
           Save
-        </button>
-        <button
-          type="button"
-          className="mb-2 me-2 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4 focus:ring-gray-300"
-          onClick={closeModalFn}
-        >
-          Cancel
         </button>
       </div>
     </Modal>
