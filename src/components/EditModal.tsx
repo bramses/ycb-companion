@@ -5,15 +5,17 @@ const EditModal = ({
   closeModalFn,
   data,
   metadata,
+  id,
   onSave,
   disabledKeys,
 }: {
   isOpen: boolean;
   closeModalFn: () => void;
   data: any;
+  id: string;
   metadata: any;
   disabledKeys: string[];
-  onSave: (data: any, metadata: any) => void;
+  onSave: (data: any, metadata: any, id: string) => void;
 }) => {
   return (
     <Modal
@@ -107,7 +109,7 @@ const EditModal = ({
             }
 
             // send data to parent
-            onSave(newData, newMetadata);
+            onSave(newData, newMetadata, id);
             closeModalFn();
           }}
         >

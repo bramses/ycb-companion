@@ -27,6 +27,7 @@ import {
   formatDate,
   handleAliasAdd,
   splitIntoWords,
+  updateEntry,
 } from '../helpers/functions';
 import EditModal from './EditModal';
 import Loading from './Loading';
@@ -84,10 +85,14 @@ const EntryPage = () => {
   // const openModal = () => setIsModalOpen(true);
   // const closeModal = () => setIsModalOpen(false);
 
-  const handleSave = (newData: any, newMetadata: any) => {
+  const handleSave = async (newData: any, newMetadata: any, id: string) => {
     if (!data) return;
     console.log('newData:', newData);
     console.log('newMetadata:', newMetadata);
+    console.log('id:', id);
+    await updateEntry(id, newData, newMetadata);
+    // reload the page
+    window.location.reload();
     // TODO: implement saving of edits
     // setData({
     //   ...data,
@@ -295,6 +300,7 @@ const EntryPage = () => {
             isOpen={modalStates.editModal || false}
             closeModalFn={() => closeModal('editModal')}
             data={data.data}
+            id={data.id}
             disabledKeys={['aliasData']}
             metadata={data.metadata}
             onSave={handleSave}
@@ -505,6 +511,7 @@ const EntryPage = () => {
                 isOpen={modalStates[`alias-${alias.aliasId}`] || false}
                 closeModalFn={() => closeModal(`alias-${alias.aliasId}`)}
                 data={alias.aliasData}
+                id={alias.aliasId}
                 metadata={alias.aliasMetadata}
                 disabledKeys={['parent_id']}
                 onSave={handleSave}
