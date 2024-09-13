@@ -14,8 +14,13 @@ export const fetchByID = async (entryId: string) => {
   const resData = await response.json();
 
   const entry = resData.data;
+  let { metadata } = entry;
   // parse metadata
-  const metadata = JSON.parse(entry.metadata);
+  try {
+    metadata = JSON.parse(entry.metadata);
+  } catch (err) {
+    console.error('Error parsing metadata:', err);
+  }
 
   return {
     data: entry.data,
@@ -207,6 +212,25 @@ export async function fetchSearchEntriesOriginal(
 export const formatDate = (isoString: string) => {
   const date = new Date(isoString);
   return date.toLocaleString(); // You can customize the locale and options as needed
+};
+
+export const deleteEntry = async (id: string) => {
+  try {
+    const response = await fetch(`/api/delete`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ id }),
+    });
+    const data = await response.json();
+    if (data.error) {
+      throw new Error(data.error);
+    }
+    return data;
+  } catch (error) {
+    return { error };
+  }
 };
 
 export const addEntry = async (data: string, metadata: any) => {

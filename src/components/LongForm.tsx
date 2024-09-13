@@ -62,7 +62,10 @@ const LongForm = () => {
     // clear localStorage heading and content
     localStorage.removeItem('heading');
     localStorage.removeItem('content');
+
     setLoading(false);
+    // reload the page
+    window.location.reload();
   };
 
   const handleContentChange = (event: any) => {

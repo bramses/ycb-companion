@@ -22,6 +22,7 @@ import { Tweet } from 'react-tweet';
 
 import {
   addToCollection,
+  deleteEntry,
   fetchByID,
   fetchSearchEntries,
   formatDate,
@@ -73,6 +74,7 @@ const EntryPage = () => {
     firstName: '',
     lastName: '',
   });
+  const [showDeleteError, setShowDeleteError] = useState(false);
 
   const [modalStates, setModalStates] = useState<{ [key: string]: boolean }>(
     {},
@@ -111,15 +113,29 @@ const EntryPage = () => {
     await updateEntry(id, newData, newMetadata);
     // reload the page
     window.location.reload();
-    // TODO: implement saving of edits
-    // setData({
-    //   ...data,
-    //   data: newData,
-    //   metadata: newMetadata,
-    //   id: data.id,
-    //   createdAt: data.createdAt,
-    // });
-    // updateEntry(data.id, newData, newMetadata);
+  };
+
+  const handleDelete = async (id: string, isComment = false) => {
+    let delId = id;
+    if (id === '' && data) {
+      delId = data.id;
+    }
+    const result = await deleteEntry(delId);
+    console.log('result:', result);
+    if (result.data.error) {
+      setShowDeleteError(true);
+      setTimeout(() => {
+        setShowDeleteError(false);
+      }, 5000);
+    }
+
+    if (isComment && !result.data.error) {
+      // reload the page
+      window.location.reload();
+    } else if (!result.data.error) {
+      // send back to homepage
+      window.location.href = '/dashboard';
+    }
   };
 
   function checkEmbeds(
@@ -342,6 +358,19 @@ const EntryPage = () => {
           >
             Edit Entry
           </button>
+          <button
+            type="button"
+            onClick={() => handleDelete('', false)}
+            className="my-2 me-2 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4"
+          >
+            Delete Entry
+          </button>
+          {showDeleteError && (
+            <div className="text-red-500">
+              Error deleting entry, delete comments first if you want to delete
+              the entry.
+            </div>
+          )}
 
           <h3 className="my-4 text-2xl font-bold">Added to yCb</h3>
           <a
@@ -564,12 +593,20 @@ const EntryPage = () => {
                   Search
                 </button>
                 <button
-                  className="justify-start text-blue-600 hover:underline"
+                  className="mr-4 justify-start text-blue-600 hover:underline"
                   type="button"
                   onClick={() => openModal(`alias-${alias.aliasId}`)}
                   aria-label="edit"
                 >
                   Edit
+                </button>
+                <button
+                  className="justify-start text-blue-600 hover:underline"
+                  type="button"
+                  onClick={() => handleDelete(alias.aliasId, true)}
+                  aria-label="delete"
+                >
+                  Delete Comment
                 </button>
               </div>
               <hr className="mt-2 w-full" />
