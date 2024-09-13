@@ -20,6 +20,7 @@ const LongForm = () => {
   const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(
     null,
   );
+  const [audioUrl, setAudioUrl] = useState<string | null>(null);
 
   const handleSave = async () => {
     console.log('heading:', heading);
@@ -124,6 +125,12 @@ const LongForm = () => {
         } finally {
           setLoading(false);
         }
+
+        // Create a URL for the audio blob and set it to state
+        const audioUrlRes = URL.createObjectURL(audioBlob);
+        console.log('audioUrlRes:', audioUrlRes);
+        setAudioUrl(audioUrlRes);
+        setLoading(false);
       };
 
       recorder.start();
@@ -131,6 +138,18 @@ const LongForm = () => {
       setIsRecording(true);
     }
   };
+
+  // const handlePlayAudio = () => {
+  //   console.log('audioUrl click:', audioUrl);
+  //   if (audioUrl) {
+  //     const audio = new Audio(audioUrl);
+  //     audio.play().catch((error) => {
+  //       console.error('Error playing audio:', error);
+  //     });
+  //   } else {
+  //     console.error('No audio URL found');
+  //   }
+  // };
 
   return (
     <div className="flex flex-col">
@@ -192,6 +211,15 @@ const LongForm = () => {
           {isRecording ? 'Stop Recording' : 'Record Audio'}
         </button>
       </div>
+      {audioUrl && (
+        <div className="mb-4">
+          <audio controls src={audioUrl}>
+            <track kind="captions" />
+            Your browser does not support the
+            <code>audio</code> element.
+          </audio>
+        </div>
+      )}
       {!loading ? (
         <button
           type="button"
