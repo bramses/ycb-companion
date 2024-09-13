@@ -54,7 +54,7 @@ const EntryPage = () => {
   const [hasInstagramEmbed, setHasInstagramEmbed] = useState(false);
   const [hasTikTokEmbed, setHasTikTokEmbed] = useState(false);
   const [hasImage, setHasImage] = useState(false);
-  const MemoizedInstagramEmbed = memo(InstagramEmbed);
+  // const MemoizedInstagramEmbed = memo(InstagramEmbed);
   const MemoizedTikTokEmbed = memo(TikTokEmbed);
   const [hasAliases, setHasAliases] = useState(false);
   const [searchResults, setSearchResults] = useState<any[]>([]);
@@ -280,6 +280,7 @@ const EntryPage = () => {
 
   return data ? (
     <div className="my-4 min-w-full max-w-full">
+      {/* <span>{JSON.stringify(data)}</span> */}
       {hasYouTubeEmbed && (
         <LiteYouTubeEmbed
           id={youtubeId}
@@ -289,12 +290,12 @@ const EntryPage = () => {
       )}
       {hasImage && <img className="h-auto w-full" src={author} alt="Image" />}
       {hasTwitterEmbed && <Tweet id={tweetId} />}
-      {hasInstagramEmbed && <MemoizedInstagramEmbed url={author} />}
+      {hasInstagramEmbed && <InstagramEmbed url={author} />}
       {hasTikTokEmbed && <MemoizedTikTokEmbed url={author} />}
 
       {data ? (
         <div className="m-4 [&_p]:my-6">
-          <p className="text-md my-4 text-gray-500">{data.data}</p>
+          <p className="my-4 text-gray-500">{data.data}</p>
 
           <EditModal
             isOpen={modalStates.editModal || false}
@@ -505,6 +506,7 @@ const EntryPage = () => {
 
       {hasAliases && (
         <div>
+          {/* <span>{JSON.stringify(data?.metadata?.aliasData)}</span> */}
           {data?.metadata?.aliasData?.map((alias: any) => (
             <div key={alias.aliasId} className="mb-4 flex flex-col items-start">
               <EditModal
@@ -560,6 +562,7 @@ const EntryPage = () => {
       )}
 
       <h2 className="my-4 text-4xl font-extrabold">Related Entries</h2>
+      {/* <span>{JSON.stringify(searchResults)}</span> */}
       {searchResults.map((result) => (
         <div key={result.id}>
           <div

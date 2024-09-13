@@ -231,6 +231,27 @@ export const addEntry = async (data: string, metadata: any) => {
   }
 };
 
+// TODO -- how to auto-generate the title? when all user has is a manual url?
+export async function getPageTitle(url: string) {
+  try {
+    const response = await fetch(url);
+    const text = await response.text();
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(text, 'text/html');
+    if (!doc) {
+      return null;
+    }
+    if (!doc.querySelector('title')) {
+      return null;
+    }
+
+    return doc?.querySelector('title')?.innerText;
+  } catch (error) {
+    console.error('Error fetching the title:', error);
+    return null;
+  }
+}
+
 export const updateEntry = async (id: string, data: string, metadata: any) => {
   try {
     console.log('metadata:', metadata);
