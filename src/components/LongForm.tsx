@@ -92,10 +92,10 @@ const LongForm = () => {
       };
 
       recorder.onstop = async () => {
-        const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+        const audioBlob = new Blob(audioChunks, { type: 'audio/mp3' });
         const formData = new FormData();
-        const audioFile = new File([audioBlob], 'recording.wav', {
-          type: 'audio/wav',
+        const audioFile = new File([audioBlob], 'recording.mp3', {
+          type: 'audio/mp3',
         });
 
         formData.append('audio', audioFile); // matches "audio" in your curl command
