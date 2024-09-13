@@ -14,7 +14,7 @@ const Upload = () => {
     { key: 'author', value: 'https://ycb-companion.onrender.com/dashboard' },
     { key: 'title', value: 'by me' },
   ]);
-  const apiKey = 'apikeyyyy'; // todo get from env
+  const apiKey = process.env.NEXT_PUBLIC_API_KEY_CF_IMG;
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {

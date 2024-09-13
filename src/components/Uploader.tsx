@@ -17,7 +17,7 @@ const Uploader = () => {
     lastName: '',
   });
 
-  const apiKey = 'apikeyyyy'; // todo get from env
+  const apiKey = process.env.NEXT_PUBLIC_API_KEY_CF_IMG;
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
