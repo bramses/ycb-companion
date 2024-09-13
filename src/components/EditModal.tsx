@@ -95,7 +95,7 @@ const EditModal = ({
               try {
                 newMetadata.alias_ids = newMetadata.alias_ids
                   .split(',')
-                  .map((id: any) => id.trim());
+                  .map((aliasId: any) => aliasId.trim());
               } catch (err) {
                 console.error('Error parsing alias_ids:', err);
                 return;
