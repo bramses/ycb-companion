@@ -30,6 +30,7 @@ import {
   updateEntry,
 } from '../helpers/functions';
 import EditModal from './EditModal';
+import LinksModal from './LinksModal';
 import Loading from './Loading';
 import UrlSVG from './UrlSVG';
 
@@ -76,14 +77,31 @@ const EntryPage = () => {
   const [modalStates, setModalStates] = useState<{ [key: string]: boolean }>(
     {},
   );
+  const [isLinkModalOpen, setIsLinkModalOpen] = useState(false);
+  const [links, setLinks] = useState<any[]>([]);
 
   const openModal = (key: string) =>
     setModalStates((prev) => ({ ...prev, [key]: true }));
   const closeModal = (key: string) =>
     setModalStates((prev) => ({ ...prev, [key]: false }));
 
-  // const openModal = () => setIsModalOpen(true);
-  // const closeModal = () => setIsModalOpen(false);
+  const handleLinkSave = async (name: string, url: string) => {
+    if (!data) return;
+    console.log('name:', name);
+    console.log('url:', url);
+    // add the link to the entry under metadata.links
+    const newMetadata = {
+      ...data.metadata,
+      links: [...(data.metadata.links ?? []), { name, url }],
+    };
+    // delete aliasData from metadata
+    delete newMetadata.aliasData;
+    console.log('newMetadata:', newMetadata);
+    await updateEntry(data.id, data.data, newMetadata);
+    setIsLinkModalOpen(false);
+    // reload the page
+    window.location.reload();
+  };
 
   const handleSave = async (newData: any, newMetadata: any, id: string) => {
     if (!data) return;
@@ -235,6 +253,9 @@ const EntryPage = () => {
             return res;
           });
         }
+
+        // get the links from the metadata
+        setLinks(res.metadata.links ?? []);
 
         setData(res);
 
@@ -559,6 +580,45 @@ const EntryPage = () => {
 
       {showAliasError && (
         <div className="text-red-500">Error adding alias. Try again.</div>
+      )}
+
+      <h2 className="my-4 text-4xl font-extrabold">Add Links</h2>
+
+      <button
+        type="button"
+        className="my-4 w-full rounded-lg bg-blue-700 px-5 py-2.5 text-sm font-medium text-white hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+        onClick={() => setIsLinkModalOpen(true)}
+      >
+        Add Link
+      </button>
+      {isLinkModalOpen && (
+        <LinksModal
+          isOpen={isLinkModalOpen}
+          closeModalFn={() => setIsLinkModalOpen(false)}
+          onSave={handleLinkSave}
+        />
+      )}
+
+      {links.length > 0 && (
+        <h2 className="my-4 text-4xl font-extrabold">Links</h2>
+      )}
+
+      {links.length > 0 && (
+        <div>
+          {links.map((link: any) => (
+            <>
+              <Link
+                key={link.name}
+                href={link.url}
+                target="_blank"
+                className="text-blue-600 hover:underline"
+              >
+                {link.name}
+              </Link>
+              <br />
+            </>
+          ))}
+        </div>
       )}
 
       <h2 className="my-4 text-4xl font-extrabold">Related Entries</h2>
