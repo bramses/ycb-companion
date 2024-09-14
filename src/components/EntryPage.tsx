@@ -17,6 +17,7 @@ import {
   useState,
 } from 'react';
 import LiteYouTubeEmbed from 'react-lite-youtube-embed';
+import ReactMarkdown from 'react-markdown';
 import { InstagramEmbed, TikTokEmbed } from 'react-social-media-embed';
 import { Tweet } from 'react-tweet';
 
@@ -332,7 +333,9 @@ const EntryPage = () => {
 
       {data ? (
         <div className="m-4 [&_p]:my-6">
-          <p className="my-4 text-gray-500">{data.data}</p>
+          <ReactMarkdown className="font-normal text-gray-900">
+            {data.data}
+          </ReactMarkdown>
 
           <EditModal
             isOpen={modalStates.editModal || false}
