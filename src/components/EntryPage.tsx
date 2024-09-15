@@ -17,6 +17,7 @@ import {
   useEffect,
   useState,
 } from 'react';
+import { CopyBlock, dracula } from 'react-code-blocks';
 import LiteYouTubeEmbed from 'react-lite-youtube-embed';
 import ReactMarkdown from 'react-markdown';
 import { InstagramEmbed, TikTokEmbed } from 'react-social-media-embed';
@@ -56,6 +57,7 @@ const EntryPage = () => {
   const [youtubeStart, setYoutubeStart] = useState(0);
   const [tweetId, setTweetId] = useState('');
   const [hasTwitterEmbed, setHasTwitterEmbed] = useState(false);
+  const [hasCodeBlock, setHasCodeBlock] = useState(false);
   const [hasInstagramEmbed, setHasInstagramEmbed] = useState(false);
   const [hasTikTokEmbed, setHasTikTokEmbed] = useState(false);
   const [hasImage, setHasImage] = useState(false);
@@ -169,6 +171,7 @@ const EntryPage = () => {
     fn_setHasTikTokEmbed: Dispatch<SetStateAction<boolean>>,
     fn_setHasImage: Dispatch<SetStateAction<boolean>>,
     fn_setHasSpotifyEmbed: Dispatch<SetStateAction<boolean>>,
+    fn_setHasCodeBlock: Dispatch<SetStateAction<boolean>>,
   ) {
     if (res.metadata.author.includes('youtube.com')) {
       fn_setHasYoutubeEmbed(true);
@@ -204,6 +207,12 @@ const EntryPage = () => {
     // check if the data has spotify embed
     if (res.metadata.author.includes('open.spotify.com')) {
       fn_setHasSpotifyEmbed(true);
+    }
+    // check if the data has code block
+    if (res.metadata.code) {
+      fn_setHasCodeBlock(true);
+      // replace ```*``` in data.data with ''
+      res.data = res.data.replace(/```[\s\S]*?```/g, '');
     }
   }
 
@@ -319,6 +328,7 @@ const EntryPage = () => {
           setHasTikTokEmbed,
           setHasImage,
           setHasSpotifyEmbed,
+          setHasCodeBlock,
         );
 
         // set author to the URL
@@ -363,6 +373,19 @@ const EntryPage = () => {
       {hasSpotifyEmbed && <Spotify link={author} wide />}
       {hasInstagramEmbed && <InstagramEmbed url={author} />}
       {hasTikTokEmbed && <MemoizedTikTokEmbed url={author} />}
+      {hasCodeBlock && (
+        <CopyBlock
+          showLineNumbers
+          wrapLongLines
+          text={data.metadata.code}
+          theme={dracula}
+          language={
+            data.metadata.language === 'typescriptreact'
+              ? 'tsx'
+              : data.metadata.language
+          }
+        />
+      )}
 
       {data ? (
         <div className="m-4 [&_p]:my-6">
