@@ -54,6 +54,7 @@
     "react-modal": "^3.16.1",
     "react-scroll-to-top": "^3.0.0",
     "react-social-media-embed": "^2.5.13",
+    "react-spotify-embed": "^2.0.4",
     "react-tweet": "^3.2.1",
     "sharp": "^0.33.4",
     "zod": "^3.23.8"

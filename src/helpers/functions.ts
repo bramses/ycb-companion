@@ -13,7 +13,14 @@ export const fetchByID = async (entryId: string) => {
 
   const resData = await response.json();
 
+  if (!resData || !resData.data) {
+    throw new Error('No data returned from the API');
+  }
+
+  console.log('resData:', resData);
+
   const entry = resData.data;
+  console.log('entry:', entry);
   let { metadata } = entry;
   // parse metadata
   try {

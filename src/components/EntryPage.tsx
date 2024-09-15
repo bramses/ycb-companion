@@ -19,6 +19,7 @@ import {
 import LiteYouTubeEmbed from 'react-lite-youtube-embed';
 import ReactMarkdown from 'react-markdown';
 import { InstagramEmbed, TikTokEmbed } from 'react-social-media-embed';
+import { Spotify } from 'react-spotify-embed';
 import { Tweet } from 'react-tweet';
 
 import {
@@ -57,6 +58,7 @@ const EntryPage = () => {
   const [hasInstagramEmbed, setHasInstagramEmbed] = useState(false);
   const [hasTikTokEmbed, setHasTikTokEmbed] = useState(false);
   const [hasImage, setHasImage] = useState(false);
+  const [hasSpotifyEmbed, setHasSpotifyEmbed] = useState(false);
   // const MemoizedInstagramEmbed = memo(InstagramEmbed);
   const MemoizedTikTokEmbed = memo(TikTokEmbed);
   const [hasAliases, setHasAliases] = useState(false);
@@ -149,6 +151,7 @@ const EntryPage = () => {
     fn_setHasInstagramEmbed: Dispatch<SetStateAction<boolean>>,
     fn_setHasTikTokEmbed: Dispatch<SetStateAction<boolean>>,
     fn_setHasImage: Dispatch<SetStateAction<boolean>>,
+    fn_setHasSpotifyEmbed: Dispatch<SetStateAction<boolean>>,
   ) {
     if (res.metadata.author.includes('youtube.com')) {
       fn_setHasYoutubeEmbed(true);
@@ -180,6 +183,10 @@ const EntryPage = () => {
     // check if the data has image
     if (res.metadata.author.includes('imagedelivery.net')) {
       fn_setHasImage(true);
+    }
+    // check if the data has spotify embed
+    if (res.metadata.author.includes('open.spotify.com')) {
+      fn_setHasSpotifyEmbed(true);
     }
   }
 
@@ -287,6 +294,7 @@ const EntryPage = () => {
           setHasInstagramEmbed,
           setHasTikTokEmbed,
           setHasImage,
+          setHasSpotifyEmbed,
         );
 
         // set author to the URL
@@ -328,6 +336,7 @@ const EntryPage = () => {
       )}
       {hasImage && <img className="h-auto w-full" src={author} alt="Image" />}
       {hasTwitterEmbed && <Tweet id={tweetId} />}
+      {hasSpotifyEmbed && <Spotify link={author} wide />}
       {hasInstagramEmbed && <InstagramEmbed url={author} />}
       {hasTikTokEmbed && <MemoizedTikTokEmbed url={author} />}
 
