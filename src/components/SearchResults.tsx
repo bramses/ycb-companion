@@ -7,7 +7,8 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { CopyBlock, dracula } from 'react-code-blocks';
+import SyntaxHighlighter from 'react-syntax-highlighter';
+import { docco } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 
 import { appendSearchToCache, clearCache, getCache } from '@/helpers/cache';
 
@@ -107,22 +108,19 @@ const SearchResults = () => {
 
     if (result.metadata && result.metadata.code) {
       return (
-        <CopyBlock
-          customStyle={{
-            height: '200px',
-            overflow: 'scroll',
-            width: '100%',
-          }}
-          wrapLongLines
-          text={result.metadata.code}
+        <SyntaxHighlighter
           language={
             result.metadata.language === 'typescriptreact'
               ? 'tsx'
               : result.metadata.language
           }
-          showLineNumbers
-          theme={dracula}
-        />
+          style={docco}
+          wrapLines
+          wrapLongLines
+          customStyle={{ height: '200px', overflow: 'scroll' }}
+        >
+          {result.metadata.code}
+        </SyntaxHighlighter>
       );
     }
 

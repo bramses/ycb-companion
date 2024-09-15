@@ -17,11 +17,12 @@ import {
   useEffect,
   useState,
 } from 'react';
-import { CopyBlock, dracula } from 'react-code-blocks';
 import LiteYouTubeEmbed from 'react-lite-youtube-embed';
 import ReactMarkdown from 'react-markdown';
 import { InstagramEmbed, TikTokEmbed } from 'react-social-media-embed';
 import { Spotify } from 'react-spotify-embed';
+import SyntaxHighlighter from 'react-syntax-highlighter';
+import { docco } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 import { Tweet } from 'react-tweet';
 
 import {
@@ -256,22 +257,19 @@ const EntryPage = () => {
 
     if (result.metadata && result.metadata.code) {
       return (
-        <CopyBlock
-          customStyle={{
-            height: '200px',
-            overflow: 'scroll',
-            width: '100%',
-          }}
-          wrapLongLines
-          text={result.metadata.code}
+        <SyntaxHighlighter
           language={
             result.metadata.language === 'typescriptreact'
               ? 'tsx'
               : result.metadata.language
           }
-          showLineNumbers
-          theme={dracula}
-        />
+          style={docco}
+          wrapLines
+          wrapLongLines
+          customStyle={{ height: '200px', overflow: 'scroll' }}
+        >
+          {result.metadata.code}
+        </SyntaxHighlighter>
       );
     }
 
@@ -396,17 +394,29 @@ const EntryPage = () => {
       {hasInstagramEmbed && <InstagramEmbed url={author} />}
       {hasTikTokEmbed && <MemoizedTikTokEmbed url={author} />}
       {hasCodeBlock && (
-        <CopyBlock
-          showLineNumbers
-          wrapLongLines
-          text={data.metadata.code}
-          theme={dracula}
+        // <CopyBlock
+        //   showLineNumbers
+        //   wrapLongLines
+        //   text={data.metadata.code}
+        //   theme={dracula}
+        //   language={
+        //     data.metadata.language === 'typescriptreact'
+        //       ? 'tsx'
+        //       : data.metadata.language
+        //   }
+        // />
+        <SyntaxHighlighter
           language={
             data.metadata.language === 'typescriptreact'
               ? 'tsx'
               : data.metadata.language
           }
-        />
+          style={docco}
+          wrapLines
+          wrapLongLines
+        >
+          {data.metadata.code}
+        </SyntaxHighlighter>
       )}
 
       {data ? (
