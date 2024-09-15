@@ -1,3 +1,5 @@
+/* eslint-disable @next/next/no-img-element */
+
 'use client';
 
 import { useUser } from '@clerk/nextjs';
@@ -94,9 +96,13 @@ const SearchResults = () => {
   };
 
   const renderResultData = (result: any) => {
+    if (result.metadata.author.includes('imagedelivery.net')) {
+      return <img src={result.metadata.author} alt="Image" />;
+    }
     if (result.parentData) {
       return result.parentData.data;
     }
+
     if (result.data.split(' ').length > 2200) {
       return (
         <>

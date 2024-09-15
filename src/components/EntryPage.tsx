@@ -220,6 +220,9 @@ const EntryPage = () => {
   };
 
   const renderResultData = (result: any) => {
+    if (result.metadata.author.includes('imagedelivery.net')) {
+      return <img src={result.metadata.author} alt="Image" />;
+    }
     if (result.parentData) {
       return result.parentData.data;
     }
