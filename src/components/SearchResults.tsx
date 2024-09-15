@@ -111,6 +111,7 @@ const SearchResults = () => {
           customStyle={{
             height: '200px',
             overflow: 'scroll',
+            width: '100%',
           }}
           wrapLongLines
           text={result.metadata.code}

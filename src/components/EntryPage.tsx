@@ -253,6 +253,28 @@ const EntryPage = () => {
     ) {
       return <img src={result.metadata.author} alt="Image" />;
     }
+
+    if (result.metadata && result.metadata.code) {
+      return (
+        <CopyBlock
+          customStyle={{
+            height: '200px',
+            overflow: 'scroll',
+            width: '100%',
+          }}
+          wrapLongLines
+          text={result.metadata.code}
+          language={
+            result.metadata.language === 'typescriptreact'
+              ? 'tsx'
+              : result.metadata.language
+          }
+          showLineNumbers
+          theme={dracula}
+        />
+      );
+    }
+
     if (result.parentData) {
       return result.parentData.data;
     }
