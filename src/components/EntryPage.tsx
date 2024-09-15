@@ -1,5 +1,6 @@
 /* eslint-disable @next/next/no-img-element */
 /* eslint-disable jsx-a11y/img-redundant-alt */
+/* eslint-disable no-alert */
 
 'use client';
 
@@ -122,6 +123,22 @@ const EntryPage = () => {
     let delId = id;
     if (id === '' && data) {
       delId = data.id;
+    }
+    // pop up a confirmation dialog
+    if (!isComment) {
+      const result = window.confirm(
+        'Are you sure you want to delete this entry?',
+      );
+      if (!result) {
+        return;
+      }
+    } else {
+      const result = window.confirm(
+        'Are you sure you want to delete this comment?',
+      );
+      if (!result) {
+        return;
+      }
     }
     const result = await deleteEntry(delId);
     console.log('result:', result);
