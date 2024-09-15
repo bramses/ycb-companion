@@ -97,7 +97,7 @@ const SearchResults = () => {
 
   const renderResultData = (result: any) => {
     if (result.metadata.author.includes('imagedelivery.net')) {
-      return <img src={result.metadata.author} alt="Image" />;
+      return <img src={result.metadata.author} alt="ycb-companion-image" />;
     }
     if (result.parentData) {
       return result.parentData.data;
