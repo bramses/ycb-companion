@@ -345,7 +345,7 @@ const EntryPage = () => {
 
       {data ? (
         <div className="m-4 [&_p]:my-6">
-          <ReactMarkdown className="font-normal text-gray-900">
+          <ReactMarkdown className="overflow-scroll font-normal text-gray-900">
             {data.data}
           </ReactMarkdown>
 
