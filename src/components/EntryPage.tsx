@@ -88,6 +88,7 @@ const EntryPage = () => {
   );
   const [isLinkModalOpen, setIsLinkModalOpen] = useState(false);
   const [links, setLinks] = useState<any[]>([]);
+  const [relatedText, setRelatedText] = useState('Related Entries');
 
   const openModal = (key: string) =>
     setModalStates((prev) => ({ ...prev, [key]: true }));
@@ -371,6 +372,28 @@ const EntryPage = () => {
       });
     }
   }, [isLoaded, user]);
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'k') {
+        console.log('handleKeyDown:', event.key);
+        const selectedText = window.getSelection()?.toString();
+        console.log('selectedText:', selectedText);
+        if (selectedText) {
+          handleSearch(selectedText, '');
+          if (relatedText === 'Related Entries') {
+            setRelatedText(`Using "K" to search: ${selectedText}`);
+          }
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
 
   useEffect(() => {
     if (data) {
@@ -749,7 +772,7 @@ const EntryPage = () => {
         </div>
       )}
 
-      <h2 className="my-4 text-4xl font-extrabold">Related Entries</h2>
+      <h2 className="my-4 text-4xl font-extrabold">{relatedText}</h2>
       {/* <span>{JSON.stringify(searchResults)}</span> */}
       {searchResults.map((result) => (
         <div key={result.id}>
