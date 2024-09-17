@@ -30,6 +30,7 @@ import {
   deleteEntry,
   fetchByID,
   fetchSearchEntries,
+  fetchSearchEntriesHelper,
   formatDate,
   handleAliasAdd,
   splitIntoWords,
@@ -218,8 +219,18 @@ const EntryPage = () => {
     }
   }
 
-  const handleSearch = async (entryData: string, _: string) => {
+  const handleSearchHelper = async (entryData: string) => {
     const parsedEntries = await fetchSearchEntries(entryData, setSearchResults);
+    return parsedEntries;
+  };
+
+  const handleSearchLinksModal = async (entryData: string) => {
+    const parsedEntries = await fetchSearchEntriesHelper(entryData);
+    return parsedEntries;
+  };
+
+  const handleSearch = async (entryData: string, _: string) => {
+    const parsedEntries = await handleSearchHelper(entryData);
     setSearchResults(parsedEntries);
   };
 
@@ -747,6 +758,7 @@ const EntryPage = () => {
           isOpen={isLinkModalOpen}
           closeModalFn={() => setIsLinkModalOpen(false)}
           onSave={handleLinkSave}
+          onSearch={handleSearchLinksModal}
         />
       )}
 
