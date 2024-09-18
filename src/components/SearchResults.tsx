@@ -90,11 +90,12 @@ const SearchResults = () => {
     const parsedEntries = await fetchSearchEntries(
       searchQuery,
       setSearchResults,
+      setShowLoading,
     );
 
-    setSearchResults(parsedEntries);
-
     setShowLoading(false);
+
+    setSearchResults(parsedEntries);
   };
 
   const renderResultData = (result: any) => {

@@ -119,10 +119,14 @@ export async function fetchFavicons(entries: any[]) {
 export async function fetchSearchEntries(
   query: string,
   setSearchResults: Dispatch<SetStateAction<any[]>>,
+  setLoading: Dispatch<SetStateAction<boolean>> | null,
 ) {
   // Step 1: Fetch and parse entries
   const parsedEntries = await fetchSearchEntriesHelper(query);
   setSearchResults(parsedEntries);
+  if (setLoading !== null) {
+    setLoading(false);
+  }
 
   // Step 2: Fetch parent data
   const entriesWithParentData = await fetchParentData(parsedEntries);

@@ -220,7 +220,11 @@ const EntryPage = () => {
   }
 
   const handleSearchHelper = async (entryData: string) => {
-    const parsedEntries = await fetchSearchEntries(entryData, setSearchResults);
+    const parsedEntries = await fetchSearchEntries(
+      entryData,
+      setSearchResults,
+      null,
+    );
     return parsedEntries;
   };
 
