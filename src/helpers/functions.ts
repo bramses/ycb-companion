@@ -116,6 +116,50 @@ export async function fetchFavicons(entries: any[]) {
   return updatedEntriesFavicon;
 }
 
+export async function fetchRandomEntries() {
+  const fetchRandomData = async () => {
+    const response = await fetch('/api/random', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    return response.json();
+  };
+
+  const dataArray = await Promise.all([
+    fetchRandomData(),
+    fetchRandomData(),
+    fetchRandomData(),
+  ]);
+  const data = dataArray.map((item) => item.data);
+
+  // map entries.metadata to json
+  const parsedEntries = data.map((entry: any) => {
+    let metadata;
+    try {
+      metadata = JSON.parse(entry.metadata);
+    } catch (err) {
+      metadata = entry.metadata; // fallback to original metadata if parsing fails
+    }
+
+    return { ...entry, metadata, favicon: '/favicon.ico' };
+  });
+  return parsedEntries;
+  // Return parsed entries immediately
+}
+
+// daily game fetches three random entries from the database and logs them as { id, data, updatedAt }
+export async function fetchDailyEntriesToImprove() {
+  const randomEntries = await fetchRandomEntries();
+  console.log('randomEntries:', randomEntries);
+  const updatedEntries = randomEntries.map((entry: any) => {
+    return { data: entry.data, id: entry.id, updatedAt: entry.updatedAt };
+  });
+  return updatedEntries;
+  // Return parsed entries immediately
+}
+
 export async function fetchSearchEntries(
   query: string,
   setSearchResults: Dispatch<SetStateAction<any[]>>,

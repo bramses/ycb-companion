@@ -15,6 +15,7 @@ import { appendSearchToCache, clearCache, getCache } from '@/helpers/cache';
 import {
   addToCollection,
   downloadCollection,
+  fetchDailyEntriesToImprove,
   fetchList,
   fetchSearchEntries,
   splitIntoWords,
@@ -31,6 +32,7 @@ const SearchResults = () => {
     [key: string]: boolean;
   }>({});
   const [buildingCollection, setBuildingCollection] = useState(false);
+  const [dailyEntries, setDailyEntries] = useState<any[]>([]);
 
   const [firstLastName, setFirstLastName] = useState({
     firstName: '',
@@ -226,6 +228,15 @@ const SearchResults = () => {
     }
   }, [textAreaValue]);
 
+  useEffect(() => {
+    if (dailyEntries.length > 0) {
+      return;
+    }
+    fetchDailyEntriesToImprove().then((res) => {
+      setDailyEntries(res);
+    });
+  }, []);
+
   return (
     <div className="min-w-full">
       <textarea
@@ -299,6 +310,44 @@ const SearchResults = () => {
       >
         Refresh Feed
       </button>
+      <div>
+        <div className="mb-1 text-base font-medium text-indigo-700 dark:text-indigo-500">
+          Daily Improvement Entries
+        </div>
+        <div className="mb-4 h-2.5 w-full rounded-full bg-gray-200 dark:bg-gray-700">
+          <div
+            className="h-2.5 rounded-full bg-indigo-600 dark:bg-indigo-500"
+            style={{ width: '45%' }}
+          />
+        </div>
+        <div className="flex flex-wrap gap-4">
+          {dailyEntries.map((entry: any) => (
+            <div key={entry.id} className="me-4 flex items-center">
+              <input
+                type="checkbox"
+                id={`daily-entry-${entry.id}`}
+                className="size-4 rounded border-gray-300 bg-gray-100 text-blue-600 focus:ring-blue-500"
+              />
+              <label
+                htmlFor={`daily-entry-${entry.id}`}
+                className="ms-2 text-sm font-medium text-gray-900"
+              >
+                <Link
+                  href={{
+                    pathname: `/dashboard/entry/${entry.id}`,
+                  }}
+                  className="block text-gray-900 no-underline"
+                >
+                  <div className="relative">
+                    <span className="font-normal">{entry.data}</span>
+                  </div>
+                </Link>
+              </label>
+            </div>
+          ))}
+        </div>
+      </div>
+      <hr className="my-4" />
       {/* download collection btn only if buildingCollection is true */}
       {buildingCollection && (
         <button
