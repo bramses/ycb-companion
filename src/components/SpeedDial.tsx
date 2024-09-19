@@ -3,9 +3,11 @@ import { useEffect, useState } from 'react';
 const SpeedDial = ({
   onOpenModal,
   onSearch,
+  openRandom,
 }: {
   onOpenModal: () => void;
   onSearch: () => void;
+  openRandom: () => void;
 }) => {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -48,25 +50,29 @@ const SpeedDial = ({
           <span className="absolute -start-14 top-1/2 mb-px block -translate-y-1/2 text-sm font-medium">
             Share
           </span>
-        </button>
-        <button
-          type="button"
-          className="relative size-[52px] rounded-lg border border-gray-200 bg-white text-gray-500 shadow-sm hover:bg-gray-50 hover:text-gray-900 focus:outline-none focus:ring-4 focus:ring-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-400 dark:hover:bg-gray-600 dark:hover:text-white dark:focus:ring-gray-400"
-        >
-          <svg
-            className="mx-auto size-5"
-            aria-hidden="true"
-            xmlns="http://www.w3.org/2000/svg"
-            fill="currentColor"
-            viewBox="0 0 20 20"
-          >
-            <path d="M5 20h10a1 1 0 0 0 1-1v-5H4v5a1 1 0 0 0 1 1Z" />
-            <path d="M18 7H2a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2v-3a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v3a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2Zm-1-2V2a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v3h14Z" />
-          </svg>
-          <span className="absolute -start-14 top-1/2 mb-px block -translate-y-1/2 text-sm font-medium">
-            Print
-          </span>
         </button> */}
+          <button
+            type="button"
+            onClick={() => {
+              openRandom();
+              setIsOpen(false);
+            }}
+            className="relative size-[52px] rounded-lg border border-gray-200 bg-white text-gray-500 shadow-sm hover:bg-gray-50 hover:text-gray-900 focus:outline-none focus:ring-4 focus:ring-gray-300"
+          >
+            <svg
+              className="mx-auto size-5"
+              aria-hidden="true"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="currentColor"
+              viewBox="0 0 20 20"
+            >
+              <path d="M5 20h10a1 1 0 0 0 1-1v-5H4v5a1 1 0 0 0 1 1Z" />
+              <path d="M18 7H2a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2v-3a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v3a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2Zm-1-2V2a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v3h14Z" />
+            </svg>
+            <span className="absolute -start-14 top-1/2 mb-px block -translate-y-1/2 text-sm font-medium text-white">
+              Random
+            </span>
+          </button>
           <button
             type="button"
             className="relative size-[52px] rounded-lg border border-gray-200 bg-white text-gray-500 shadow-sm hover:bg-gray-50 hover:text-gray-900 focus:outline-none focus:ring-4 focus:ring-gray-300"

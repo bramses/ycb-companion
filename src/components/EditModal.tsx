@@ -36,24 +36,26 @@ const EditModal = ({
         className="my-4 block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500"
         defaultValue={data}
       />
-      {Object.entries(metadata).map(([key, value]) => (
-        <div key={key} className="my-2">
-          <label
-            htmlFor={key}
-            className="block text-sm font-medium text-gray-700"
-          >
-            {key}
-          </label>
-          <input
-            id={key}
-            disabled={disabledKeys.includes(key)}
-            type="text"
-            style={{ fontSize: '17px' }}
-            className="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500"
-            defaultValue={String(value)}
-          />
-        </div>
-      ))}
+      {metadata
+        ? Object.entries(metadata).map(([key, value]) => (
+            <div key={key} className="my-2">
+              <label
+                htmlFor={key}
+                className="block text-sm font-medium text-gray-700"
+              >
+                {key}
+              </label>
+              <input
+                id={key}
+                disabled={disabledKeys.includes(key)}
+                type="text"
+                style={{ fontSize: '17px' }}
+                className="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500"
+                defaultValue={String(value)}
+              />
+            </div>
+          ))
+        : null}
       <div className="flex space-x-2">
         <button
           type="button"

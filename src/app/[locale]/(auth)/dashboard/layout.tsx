@@ -10,6 +10,7 @@ import LocaleSwitcher from '@/components/LocaleSwitcher';
 import { LogOutButton } from '@/components/LogOutButton';
 import SpeedDial from '@/components/SpeedDial';
 import Uploader from '@/components/Uploader';
+import { fetchRandomEntry } from '@/helpers/functions';
 import { BaseTemplate } from '@/templates/BaseTemplate';
 
 export default function DashboardLayout(props: { children: React.ReactNode }) {
@@ -48,6 +49,12 @@ export default function DashboardLayout(props: { children: React.ReactNode }) {
       // highlight the text in the textarea
       message.select();
     }
+  };
+
+  const handleRandom = async () => {
+    // fetch a random entry and open it
+    const entry = await fetchRandomEntry();
+    router.push(`/dashboard/entry/${entry.id}`);
   };
 
   useEffect(() => {
@@ -193,7 +200,11 @@ export default function DashboardLayout(props: { children: React.ReactNode }) {
         </button> */}
         <Uploader />
       </Modal>
-      <SpeedDial onOpenModal={handleOpenModal} onSearch={handleSearch} />
+      <SpeedDial
+        onOpenModal={handleOpenModal}
+        onSearch={handleSearch}
+        openRandom={handleRandom}
+      />
       {props.children}
     </BaseTemplate>
   );

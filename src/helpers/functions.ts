@@ -14,10 +14,8 @@ export const fetchByID = async (entryId: string) => {
   const resData = await response.json();
 
   if (!resData || !resData.data) {
-    throw new Error('No data returned from the API');
+    return {};
   }
-
-  console.log('resData:', resData);
 
   const entry = resData.data;
   console.log('entry:', entry);
@@ -420,6 +418,18 @@ export const addToCollection = (
     ...prev,
     [id]: !prev[id],
   }));
+};
+
+export const fetchRandomEntry = async () => {
+  const response = await fetch('/api/random', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+  const data = await response.json();
+
+  return data.data;
 };
 
 export const downloadCollection = (
