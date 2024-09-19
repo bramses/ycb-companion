@@ -341,7 +341,12 @@ const EntryPage = () => {
                 };
               })
               .reverse();
-            setData(res);
+            setData({
+              data: res.data,
+              metadata: res.metadata,
+              id: res.id,
+              createdAt: res.createdAt,
+            });
             return res;
           });
         }
@@ -349,7 +354,12 @@ const EntryPage = () => {
         // get the links from the metadata
         setLinks(res.metadata.links ?? []);
 
-        setData(res);
+        setData({
+          data: res.data,
+          metadata: res.metadata,
+          id: res.id,
+          createdAt: res.createdAt,
+        });
 
         // check if the data has youtube embed
         checkEmbeds(

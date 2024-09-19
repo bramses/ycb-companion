@@ -14,7 +14,8 @@ export const fetchByID = async (entryId: string) => {
   const resData = await response.json();
 
   if (!resData || !resData.data) {
-    return {};
+    console.error('No data returned from the API');
+    throw new Error('No data returned from the API');
   }
 
   const entry = resData.data;
