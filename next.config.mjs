@@ -24,7 +24,7 @@ export default withSentryConfig(
         dirs: ['.'],
       },
       poweredByHeader: false,
-      reactStrictMode: true,
+      reactStrictMode: false, // i call a lot of APIs so its annoying to have strict mode on and call them twice each time
       experimental: {
         serverComponentsExternalPackages: ['@electric-sql/pglite'],
       },

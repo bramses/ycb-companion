@@ -13,8 +13,6 @@ import { docco } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 import { appendSearchToCache, clearCache, getCache } from '@/helpers/cache';
 
 import {
-  addToCollection,
-  downloadCollection,
   fetchList,
   fetchSearchEntries,
   splitIntoWords,
@@ -27,10 +25,10 @@ const SearchResults = () => {
   const [textAreaValue, setTextAreaValue] = useState('');
   const [showLoading, setShowLoading] = useState(false);
   const [searchResults, setSearchResults] = useState<any[]>([]);
-  const [checkedButtons, setCheckedButtons] = useState<{
-    [key: string]: boolean;
-  }>({});
-  const [buildingCollection, setBuildingCollection] = useState(false);
+  // const [checkedButtons, setCheckedButtons] = useState<{
+  //   [key: string]: boolean;
+  // }>({});
+  // const [buildingCollection, setBuildingCollection] = useState(false);
 
   const [firstLastName, setFirstLastName] = useState({
     firstName: '',
@@ -163,11 +161,11 @@ const SearchResults = () => {
   }, [searchParams]);
 
   // check local storage for collection being built (ar array of objects)
-  useEffect(() => {
-    if (localStorage.getItem('buildingCollection')) {
-      setBuildingCollection(true);
-    }
-  }, [buildingCollection]);
+  // useEffect(() => {
+  //   if (localStorage.getItem('buildingCollection')) {
+  //     setBuildingCollection(true);
+  //   }
+  // }, [buildingCollection]);
 
   // when searchResults change, append to cache
   useEffect(() => {
@@ -300,7 +298,7 @@ const SearchResults = () => {
         Refresh Feed
       </button>
       {/* download collection btn only if buildingCollection is true */}
-      {buildingCollection && (
+      {/* {buildingCollection && (
         <button
           type="button"
           onClick={() => {
@@ -312,7 +310,7 @@ const SearchResults = () => {
         >
           Download Trail
         </button>
-      )}
+      )} */}
       {showLoading && <Loading />}
       {searchResults.map((result) => (
         <>
@@ -401,7 +399,7 @@ const SearchResults = () => {
                 </svg>
               </a>
             </div>
-            <button
+            {/* <button
               type="button"
               className={`ml-4 rounded-full p-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-300 ${
                 checkedButtons[result.id] ? 'bg-green-500' : 'bg-blue-500'
@@ -447,7 +445,7 @@ const SearchResults = () => {
                   />
                 </svg>
               )}
-            </button>
+            </button> */}
           </div>
           <hr className="my-4" />
         </>

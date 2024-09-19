@@ -26,7 +26,6 @@ import { docco } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 import { Tweet } from 'react-tweet';
 
 import {
-  addToCollection,
   deleteEntry,
   fetchByID,
   fetchSearchEntries,
@@ -71,10 +70,10 @@ const EntryPage = () => {
   const [isAddingAlias, setIsAddingAlias] = useState(false);
   const router = useRouter();
   const [showAliasError, setAliasShowError] = useState(false);
-  const [checkedButtons, setCheckedButtons] = useState<{
-    [key: string]: boolean;
-  }>({});
-  const [buildingCollection, setBuildingCollection] = useState(false);
+  // const [checkedButtons, setCheckedButtons] = useState<{
+  //   [key: string]: boolean;
+  // }>({});
+  // const [buildingCollection, setBuildingCollection] = useState(false);
   // const [isModalOpen, setIsModalOpen] = useState(false);
   const [temporaryAliases, setTemporaryAliases] = useState<string[]>([]);
   const { user, isLoaded } = useUser();
@@ -867,7 +866,7 @@ const EntryPage = () => {
                 </svg>
               </a>
             </div>
-            <button
+            {/* <button
               type="button"
               className={`ml-4 rounded-full p-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-300 ${
                 checkedButtons[result.id] ? 'bg-green-500' : 'bg-blue-500'
@@ -913,7 +912,7 @@ const EntryPage = () => {
                   />
                 </svg>
               )}
-            </button>
+            </button> */}
           </div>
           <hr className="my-4" />
         </div>
