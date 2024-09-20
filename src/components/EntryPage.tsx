@@ -38,6 +38,7 @@ import {
 import EditModal from './EditModal';
 import LinksModal from './LinksModal';
 import Loading from './Loading';
+import SearchModalBeta from './SearchModalBeta';
 import UrlSVG from './UrlSVG';
 
 const EntryPage = () => {
@@ -88,7 +89,9 @@ const EntryPage = () => {
   );
   const [isLinkModalOpen, setIsLinkModalOpen] = useState(false);
   const [links, setLinks] = useState<any[]>([]);
-  const [relatedText, setRelatedText] = useState('Related Entries');
+  const [relatedText] = useState('Related Entries');
+
+  const [searchBetaModalQuery, setSearchBetaModalQuery] = useState('');
 
   const openModal = (key: string) =>
     setModalStates((prev) => ({ ...prev, [key]: true }));
@@ -404,10 +407,9 @@ const EntryPage = () => {
         const selectedText = window.getSelection()?.toString();
         console.log('selectedText:', selectedText);
         if (selectedText) {
-          handleSearch(selectedText, '');
-          if (relatedText === 'Related Entries') {
-            setRelatedText(`Using "K" to search: ${selectedText}`);
-          }
+          // open search modal beta
+          setModalStates((prev) => ({ ...prev, searchModalBeta: true }));
+          setSearchBetaModalQuery(selectedText);
         }
       }
     };
@@ -468,7 +470,7 @@ const EntryPage = () => {
 
       {data ? (
         <div className="m-4 [&_p]:my-6">
-          <ReactMarkdown className="overflow-scroll font-normal text-gray-900">
+          <ReactMarkdown className="font-normal text-gray-900">
             {data.data}
           </ReactMarkdown>
 
@@ -480,6 +482,12 @@ const EntryPage = () => {
             disabledKeys={['aliasData']}
             metadata={data.metadata}
             onSave={handleSave}
+          />
+          <SearchModalBeta
+            isOpen={modalStates.searchModalBeta || false}
+            closeModalFn={() => closeModal('searchModalBeta')}
+            onSearch={handleSearchLinksModal}
+            inputQuery={searchBetaModalQuery}
           />
           <Link
             href={data.metadata.author}
@@ -726,7 +734,13 @@ const EntryPage = () => {
                 <button
                   className="mr-4 justify-start text-blue-600 hover:underline"
                   type="button"
-                  onClick={() => toDashboard(alias.aliasData)}
+                  onClick={() => {
+                    setModalStates((prev) => ({
+                      ...prev,
+                      searchModalBeta: true,
+                    }));
+                    setSearchBetaModalQuery(alias.aliasData);
+                  }}
                 >
                   Search
                 </button>

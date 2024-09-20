@@ -1,53 +1,46 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 import Modal from 'react-modal';
 
 import LocaleSwitcher from '@/components/LocaleSwitcher';
 import { LogOutButton } from '@/components/LogOutButton';
+import SearchModalBeta from '@/components/SearchModalBeta';
 import SpeedDial from '@/components/SpeedDial';
 import Uploader from '@/components/Uploader';
-import { fetchRandomEntry } from '@/helpers/functions';
+import {
+  fetchRandomEntry,
+  fetchSearchEntriesHelper,
+} from '@/helpers/functions';
 import { BaseTemplate } from '@/templates/BaseTemplate';
 
 export default function DashboardLayout(props: { children: React.ReactNode }) {
   const t = useTranslations('DashboardLayout');
   const router = useRouter();
-  const pathname = usePathname();
+  const [isSearchModalBetaOpen, setSearchModalBetaOpen] = useState(false);
 
-  const [isModalOpen, setModalOpen] = useState(false);
+  const [searchBetaModalQuery] = useState('');
 
-  const openModal = () => setModalOpen(true);
+  const [isFastEntryModalOpen, setFastEntryModalOpen] = useState(false);
+  const openFastEntryModal = () => setFastEntryModalOpen(true);
+  const closeFastEntryModal = () => setFastEntryModalOpen(false);
 
-  const closeModal = () => setModalOpen(false);
+  const openSearchModalBeta = () => setSearchModalBetaOpen(true);
+  const closeSearchModalBeta = () => setSearchModalBetaOpen(false);
 
-  const handleOpenModal = () => setModalOpen(true);
-
-  const afterOpenModal = () => {
-    // focus on the textarea
-    const message = document.getElementById('modal-message');
-    if (message) {
-      message.focus();
-    }
+  const handleSearchBetaModal = async (entryData: string) => {
+    const parsedEntries = await fetchSearchEntriesHelper(entryData);
+    return parsedEntries;
   };
 
-  const handleSearch = () => {
-    // redirect to dashboard if not on dashboard
-
-    if (pathname !== '/dashboard') {
-      router.push('/dashboard');
-      return;
-    }
-
-    // focus on the textarea
-    const message = document.getElementById('message') as HTMLTextAreaElement;
-    if (message) {
-      message.focus();
-      // highlight the text in the textarea
-      message.select();
+  const onOpenModal = (which: string) => {
+    if (which === 'upload') {
+      openFastEntryModal();
+    } else if (which === 'search') {
+      openSearchModalBeta();
     }
   };
 
@@ -61,7 +54,7 @@ export default function DashboardLayout(props: { children: React.ReactNode }) {
     const handleKeyDown = (event: any) => {
       if (event.metaKey && event.key === 'u') {
         // cmd-u for Mac users
-        openModal();
+        openFastEntryModal();
       }
     };
 
@@ -72,12 +65,11 @@ export default function DashboardLayout(props: { children: React.ReactNode }) {
     };
   }, []);
 
-  // route to dashboard when user presses cmd+k using next/router
+  // open search modal beta when user presses cmd+k using next/router
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-        e.preventDefault();
-        router.push('/dashboard/');
+        openSearchModalBeta();
       }
     };
 
@@ -145,17 +137,22 @@ export default function DashboardLayout(props: { children: React.ReactNode }) {
         </>
       }
     >
+      <SearchModalBeta
+        isOpen={isSearchModalBetaOpen || false}
+        closeModalFn={closeSearchModalBeta}
+        onSearch={handleSearchBetaModal}
+        inputQuery={searchBetaModalQuery}
+      />
       <Modal
-        isOpen={isModalOpen}
-        onRequestClose={closeModal}
-        onAfterOpen={afterOpenModal}
+        isOpen={isFastEntryModalOpen}
+        onRequestClose={closeFastEntryModal}
         contentLabel="Example Modal"
         ariaHideApp={false}
         // apply custom styles using tailwind classes
         className="fixed left-1/2 top-1/2 z-50 w-full max-w-sm
         -translate-x-1/2 -translate-y-1/2 rounded-lg bg-white p-4 shadow-lg"
       >
-        <button onClick={closeModal} type="button">
+        <button onClick={closeFastEntryModal} type="button">
           (close)
         </button>
         <h2
@@ -200,11 +197,7 @@ export default function DashboardLayout(props: { children: React.ReactNode }) {
         </button> */}
         <Uploader />
       </Modal>
-      <SpeedDial
-        onOpenModal={handleOpenModal}
-        onSearch={handleSearch}
-        openRandom={handleRandom}
-      />
+      <SpeedDial onOpenModal={onOpenModal} openRandom={handleRandom} />
       {props.children}
     </BaseTemplate>
   );

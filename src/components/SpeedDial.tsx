@@ -2,11 +2,9 @@ import { useEffect, useState } from 'react';
 
 const SpeedDial = ({
   onOpenModal,
-  onSearch,
   openRandom,
 }: {
-  onOpenModal: () => void;
-  onSearch: () => void;
+  onOpenModal: (which: string) => void;
   openRandom: () => void;
 }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -77,7 +75,7 @@ const SpeedDial = ({
             type="button"
             className="relative size-[52px] rounded-lg border border-gray-200 bg-white text-gray-500 shadow-sm hover:bg-gray-50 hover:text-gray-900 focus:outline-none focus:ring-4 focus:ring-gray-300"
             onClick={() => {
-              onSearch();
+              onOpenModal('search');
               setIsOpen(false);
             }}
           >
@@ -99,7 +97,7 @@ const SpeedDial = ({
             type="button"
             className="relative size-[52px] rounded-lg border border-gray-200 bg-white text-gray-500 shadow-sm hover:bg-gray-50 hover:text-gray-900 focus:outline-none focus:ring-4 focus:ring-gray-300"
             onClick={() => {
-              onOpenModal();
+              onOpenModal('upload');
               setIsOpen(false);
             }}
           >
