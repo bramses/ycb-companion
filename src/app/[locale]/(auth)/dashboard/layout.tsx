@@ -11,10 +11,7 @@ import { LogOutButton } from '@/components/LogOutButton';
 import SearchModalBeta from '@/components/SearchModalBeta';
 import SpeedDial from '@/components/SpeedDial';
 import Uploader from '@/components/Uploader';
-import {
-  fetchRandomEntry,
-  fetchSearchEntriesHelper,
-} from '@/helpers/functions';
+import { fetchRandomEntry } from '@/helpers/functions';
 import { BaseTemplate } from '@/templates/BaseTemplate';
 
 export default function DashboardLayout(props: { children: React.ReactNode }) {
@@ -30,11 +27,6 @@ export default function DashboardLayout(props: { children: React.ReactNode }) {
 
   const openSearchModalBeta = () => setSearchModalBetaOpen(true);
   const closeSearchModalBeta = () => setSearchModalBetaOpen(false);
-
-  const handleSearchBetaModal = async (entryData: string) => {
-    const parsedEntries = await fetchSearchEntriesHelper(entryData);
-    return parsedEntries;
-  };
 
   const onOpenModal = (which: string) => {
     if (which === 'upload') {
@@ -140,7 +132,6 @@ export default function DashboardLayout(props: { children: React.ReactNode }) {
       <SearchModalBeta
         isOpen={isSearchModalBetaOpen || false}
         closeModalFn={closeSearchModalBeta}
-        onSearch={handleSearchBetaModal}
         inputQuery={searchBetaModalQuery}
       />
       <Modal

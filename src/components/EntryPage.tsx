@@ -486,7 +486,6 @@ const EntryPage = () => {
           <SearchModalBeta
             isOpen={modalStates.searchModalBeta || false}
             closeModalFn={() => closeModal('searchModalBeta')}
-            onSearch={handleSearchLinksModal}
             inputQuery={searchBetaModalQuery}
           />
           <Link

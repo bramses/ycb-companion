@@ -9,17 +9,19 @@ import Modal from 'react-modal';
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import { docco } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 
-import { splitIntoWords, toHostname } from '@/helpers/functions';
+import {
+  fetchSearchEntries,
+  splitIntoWords,
+  toHostname,
+} from '@/helpers/functions';
 
 const SearchModalBeta = ({
   isOpen,
   closeModalFn,
-  onSearch,
   inputQuery,
 }: {
   isOpen: boolean;
   closeModalFn: () => void;
-  onSearch: (query: string) => Promise<any[]>;
   inputQuery: string;
 }) => {
   const [searchResults, setSearchResults] = useState<any[]>([]);
@@ -31,10 +33,23 @@ const SearchModalBeta = ({
 
   const { user, isLoaded } = useUser();
 
+  const handleSearchHelper = async (entryData: string) => {
+    const parsedEntries = await fetchSearchEntries(
+      entryData,
+      setSearchResults,
+      null,
+    );
+    return parsedEntries;
+  };
+
+  const handleSearch = async (entryData: string, _: string) => {
+    const parsedEntries = await handleSearchHelper(entryData);
+    setSearchResults(parsedEntries);
+  };
+
   // on open focus on the input
   useEffect(() => {
     const input = document.getElementById('modal-beta-search');
-    console.log('input:', input);
     if (input) {
       input.focus();
     }
@@ -123,8 +138,7 @@ const SearchModalBeta = ({
               return;
             }
             setIsLoading(true);
-            const ress = await onSearch(query);
-            setSearchResults(ress);
+            await handleSearch(query, '');
             setIsLoading(false);
           }}
         >
@@ -141,6 +155,9 @@ const SearchModalBeta = ({
                   <Link
                     href={{
                       pathname: `/dashboard/entry/${result.id}`,
+                    }}
+                    onClick={() => {
+                      closeModalFn();
                     }}
                     className="block text-gray-900 no-underline"
                   >
