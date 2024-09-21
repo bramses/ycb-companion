@@ -1,6 +1,4 @@
-/* eslint-disable @next/next/no-img-element */
-/* eslint-disable jsx-a11y/img-redundant-alt */
-/* eslint-disable no-alert */
+// EntryPage.tsx
 
 'use client';
 
@@ -10,13 +8,7 @@ import { useUser } from '@clerk/nextjs';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import {
-  type Dispatch,
-  memo,
-  type SetStateAction,
-  useEffect,
-  useState,
-} from 'react';
+import { memo, useEffect, useState } from 'react';
 import LiteYouTubeEmbed from 'react-lite-youtube-embed';
 import ReactMarkdown from 'react-markdown';
 import { InstagramEmbed, TikTokEmbed } from 'react-social-media-embed';
@@ -24,17 +16,20 @@ import { Spotify } from 'react-spotify-embed';
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import { docco } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 import { Tweet } from 'react-tweet';
+import { v4 as uuidv4 } from 'uuid';
 
 import {
-  deleteEntry,
+  deleteEntry as apiDeleteEntry,
   fetchByID,
   fetchSearchEntries,
   fetchSearchEntriesHelper,
   formatDate,
-  handleAliasAdd,
   splitIntoWords,
-  updateEntry,
+  updateEntry as apiUpdateEntry,
 } from '../helpers/functions';
+import { createEntryTransaction } from '../helpers/transactionFunctions';
+import type { Transaction } from '../helpers/transactionManager';
+import { TransactionManager } from '../helpers/transactionManager';
 import EditModal from './EditModal';
 import LinksModal from './LinksModal';
 import Loading from './Loading';
@@ -48,9 +43,6 @@ const EntryPage = () => {
     metadata: any;
     id: string;
     createdAt: string;
-    // updatedAt: string;
-    // similarity: number;
-    // favicon: string;
   } | null>(null);
   const [author, setAuthor] = useState(''); // author is the URL
   const pathname = usePathname();
@@ -64,19 +56,11 @@ const EntryPage = () => {
   const [hasTikTokEmbed, setHasTikTokEmbed] = useState(false);
   const [hasImage, setHasImage] = useState(false);
   const [hasSpotifyEmbed, setHasSpotifyEmbed] = useState(false);
-  // const MemoizedInstagramEmbed = memo(InstagramEmbed);
   const MemoizedTikTokEmbed = memo(TikTokEmbed);
   const [hasAliases, setHasAliases] = useState(false);
   const [searchResults, setSearchResults] = useState<any[]>([]);
-  const [isAddingAlias, setIsAddingAlias] = useState(false);
   const router = useRouter();
   const [showAliasError, setAliasShowError] = useState(false);
-  // const [checkedButtons, setCheckedButtons] = useState<{
-  //   [key: string]: boolean;
-  // }>({});
-  // const [buildingCollection, setBuildingCollection] = useState(false);
-  // const [isModalOpen, setIsModalOpen] = useState(false);
-  const [temporaryAliases, setTemporaryAliases] = useState<string[]>([]);
   const { user, isLoaded } = useUser();
   const [firstLastName, setFirstLastName] = useState({
     firstName: '',
@@ -88,173 +72,19 @@ const EntryPage = () => {
     {},
   );
   const [isLinkModalOpen, setIsLinkModalOpen] = useState(false);
-  const [links, setLinks] = useState<any[]>([]);
   const [relatedText] = useState('Related Entries');
 
   const [searchBetaModalQuery, setSearchBetaModalQuery] = useState('');
+
+  const [transactionManager, setTransactionManager] =
+    useState<TransactionManager | null>(null);
+  const [tempIds, setTempIds] = useState<string[]>([]);
+  const [tempCommentIDs, setTempCommentIDs] = useState<string[]>([]);
 
   const openModal = (key: string) =>
     setModalStates((prev) => ({ ...prev, [key]: true }));
   const closeModal = (key: string) =>
     setModalStates((prev) => ({ ...prev, [key]: false }));
-
-  const handleLinkSave = async (name: string, url: string) => {
-    if (!data) return;
-    console.log('name:', name);
-    console.log('url:', url);
-    // add the link to the entry under metadata.links
-    const newMetadata = {
-      ...data.metadata,
-      links: [...(data.metadata.links ?? []), { name, url }],
-    };
-    // delete aliasData from metadata
-    delete newMetadata.aliasData;
-    console.log('newMetadata:', newMetadata);
-    await updateEntry(data.id, data.data, newMetadata);
-    setIsLinkModalOpen(false);
-    // reload the page
-    window.location.reload();
-  };
-
-  const handleSave = async (newData: any, newMetadata: any, id: string) => {
-    if (!data) return;
-    console.log('newData:', newData);
-    console.log('newMetadata:', newMetadata);
-    console.log('id:', id);
-    await updateEntry(id, newData, newMetadata);
-    // reload the page
-    window.location.reload();
-  };
-
-  const handleDelete = async (id: string, isComment = false) => {
-    let delId = id;
-    if (id === '' && data) {
-      delId = data.id;
-    }
-    // pop up a confirmation dialog
-    if (!isComment) {
-      const result = window.confirm(
-        'Are you sure you want to delete this entry?',
-      );
-      if (!result) {
-        return;
-      }
-    } else {
-      const result = window.confirm(
-        'Are you sure you want to delete this comment?',
-      );
-      if (!result) {
-        return;
-      }
-    }
-    const result = await deleteEntry(delId);
-    console.log('result:', result);
-    if (result.data.error) {
-      setShowDeleteError(true);
-      setTimeout(() => {
-        setShowDeleteError(false);
-      }, 5000);
-    }
-
-    if (isComment && !result.data.error) {
-      // reload the page
-      window.location.reload();
-    } else if (!result.data.error) {
-      // send back to homepage
-      window.location.href = '/dashboard';
-    }
-  };
-
-  function checkEmbeds(
-    res: { data: any; metadata: any },
-    fn_setHasYoutubeEmbed: Dispatch<SetStateAction<boolean>>,
-    fn_setYoutubeId: Dispatch<SetStateAction<string>>,
-    fn_setYoutubeStart: Dispatch<SetStateAction<number>>,
-    fn_setHasTwitterEmbed: Dispatch<SetStateAction<boolean>>,
-    fn_setTweetId: Dispatch<SetStateAction<string>>,
-    fn_setHasInstagramEmbed: Dispatch<SetStateAction<boolean>>,
-    fn_setHasTikTokEmbed: Dispatch<SetStateAction<boolean>>,
-    fn_setHasImage: Dispatch<SetStateAction<boolean>>,
-    fn_setHasSpotifyEmbed: Dispatch<SetStateAction<boolean>>,
-    fn_setHasCodeBlock: Dispatch<SetStateAction<boolean>>,
-  ) {
-    if (res.metadata.author.includes('youtube.com')) {
-      fn_setHasYoutubeEmbed(true);
-      fn_setYoutubeId(res.metadata.author.split('v=')[1]?.split('&')[0]);
-      if (res.metadata.author.includes('t=')) {
-        fn_setYoutubeStart(res.metadata.author.split('t=')[1].split('s')[0]);
-      }
-    }
-
-    // check if the data has twitter embed
-    if (
-      res.metadata.author.includes('twitter.com') ||
-      /^https:\/\/(www\.)?x\.com/.test(res.metadata.author)
-    ) {
-      fn_setHasTwitterEmbed(true);
-      fn_setTweetId(res.metadata.author.split('/').pop());
-    }
-
-    // check if the data has instagram embed
-    if (res.metadata.author.includes('instagram.com')) {
-      fn_setHasInstagramEmbed(true);
-    }
-
-    // check if the data has tiktok embed
-    if (res.metadata.author.includes('tiktok.com')) {
-      fn_setHasTikTokEmbed(true);
-    }
-
-    // check if the data has image
-    if (res.metadata.author.includes('imagedelivery.net')) {
-      fn_setHasImage(true);
-    }
-    // check if the data has spotify embed
-    if (res.metadata.author.includes('open.spotify.com')) {
-      fn_setHasSpotifyEmbed(true);
-    }
-    // check if the data has code block
-    if (res.metadata.code) {
-      fn_setHasCodeBlock(true);
-      // replace ```*``` in data.data with ''
-      res.data = res.data.replace(/```[\s\S]*?```/g, '');
-    }
-  }
-
-  const handleSearchHelper = async (entryData: string) => {
-    const parsedEntries = await fetchSearchEntries(
-      entryData,
-      setSearchResults,
-      null,
-    );
-    return parsedEntries;
-  };
-
-  const handleSearchLinksModal = async (entryData: string) => {
-    const parsedEntries = await fetchSearchEntriesHelper(entryData);
-    return parsedEntries;
-  };
-
-  const handleSearch = async (entryData: string, _: string) => {
-    const parsedEntries = await handleSearchHelper(entryData);
-    setSearchResults(parsedEntries);
-  };
-
-  const toDashboard = (query: string) => {
-    if (query === '') {
-      return router.push('/dashboard');
-    }
-
-    // if query is longer than url max length, truncate it
-    if (query.length > 2000) {
-      const truncatedQuery = query.slice(0, 2000);
-      return router.push(
-        `/dashboard?query=${encodeURIComponent(truncatedQuery)}`,
-      );
-    }
-
-    return router.push(`/dashboard?query=${encodeURIComponent(query)}`);
-  };
 
   const toHostname = (url: string) => {
     try {
@@ -307,6 +137,81 @@ const EntryPage = () => {
     return result.data;
   };
 
+  const checkEmbeds = (
+    res: { data: any; metadata: any },
+    fn_setHasYoutubeEmbed: React.Dispatch<React.SetStateAction<boolean>>,
+    fn_setYoutubeId: React.Dispatch<React.SetStateAction<string>>,
+    fn_setYoutubeStart: React.Dispatch<React.SetStateAction<number>>,
+    fn_setHasTwitterEmbed: React.Dispatch<React.SetStateAction<boolean>>,
+    fn_setTweetId: React.Dispatch<React.SetStateAction<string>>,
+    fn_setHasInstagramEmbed: React.Dispatch<React.SetStateAction<boolean>>,
+    fn_setHasTikTokEmbed: React.Dispatch<React.SetStateAction<boolean>>,
+    fn_setHasImage: React.Dispatch<React.SetStateAction<boolean>>,
+    fn_setHasSpotifyEmbed: React.Dispatch<React.SetStateAction<boolean>>,
+    fn_setHasCodeBlock: React.Dispatch<React.SetStateAction<boolean>>,
+  ) => {
+    if (res.metadata.author.includes('youtube.com')) {
+      fn_setHasYoutubeEmbed(true);
+      fn_setYoutubeId(res.metadata.author.split('v=')[1]?.split('&')[0]);
+      if (res.metadata.author.includes('t=')) {
+        fn_setYoutubeStart(res.metadata.author.split('t=')[1].split('s')[0]);
+      }
+    }
+
+    // check if the data has twitter embed
+    if (
+      res.metadata.author.includes('twitter.com') ||
+      /^https:\/\/(www\.)?x\.com/.test(res.metadata.author)
+    ) {
+      fn_setHasTwitterEmbed(true);
+      fn_setTweetId(res.metadata.author.split('/').pop());
+    }
+
+    // check if the data has instagram embed
+    if (res.metadata.author.includes('instagram.com')) {
+      fn_setHasInstagramEmbed(true);
+    }
+
+    // check if the data has tiktok embed
+    if (res.metadata.author.includes('tiktok.com')) {
+      fn_setHasTikTokEmbed(true);
+    }
+
+    // check if the data has image
+    if (res.metadata.author.includes('imagedelivery.net')) {
+      fn_setHasImage(true);
+    }
+    // check if the data has spotify embed
+    if (res.metadata.author.includes('open.spotify.com')) {
+      fn_setHasSpotifyEmbed(true);
+    }
+    // check if the data has code block
+    if (res.metadata.code) {
+      fn_setHasCodeBlock(true);
+      // replace ```*``` in data.data with ''
+      res.data = res.data.replace(/```[\s\S]*?```/g, '');
+    }
+  };
+
+  const handleSearchHelper = async (entryData: string) => {
+    const parsedEntries = await fetchSearchEntries(
+      entryData,
+      setSearchResults,
+      null,
+    );
+    return parsedEntries;
+  };
+
+  const handleSearchLinksModal = async (entryData: string) => {
+    const parsedEntries = await fetchSearchEntriesHelper(entryData);
+    return parsedEntries;
+  };
+
+  const handleSearch = async (entryData: string, _: string) => {
+    const parsedEntries = await handleSearchHelper(entryData);
+    setSearchResults(parsedEntries);
+  };
+
   useEffect(() => {
     if (!data) {
       const asyncFn = async () => {
@@ -329,33 +234,22 @@ const EntryPage = () => {
         if ('alias_ids' in res.metadata) {
           // fetch plaintext data from alias_ids
           setHasAliases(true);
-          Promise.all(
+          const aliasData = await Promise.all(
             res.metadata.alias_ids.map((aliasId: string) => fetchByID(aliasId)),
-          ).then((aliasData) => {
-            // replace alias_ids with aliasData
-            res.metadata.aliasData = aliasData
-              .map((ad) => {
-                return {
-                  aliasData: ad.data,
-                  aliasId: ad.id,
-                  aliasCreatedAt: formatDate(ad.createdAt),
-                  aliasUpdatedAt: formatDate(ad.updatedAt),
-                  aliasMetadata: ad.metadata,
-                };
-              })
-              .reverse();
-            setData({
-              data: res.data,
-              metadata: res.metadata,
-              id: res.id,
-              createdAt: res.createdAt,
-            });
-            return res;
-          });
+          );
+          // replace alias_ids with aliasData
+          res.metadata.aliasData = aliasData
+            .map((ad) => {
+              return {
+                aliasData: ad.data,
+                aliasId: ad.id,
+                aliasCreatedAt: formatDate(ad.createdAt),
+                aliasUpdatedAt: formatDate(ad.updatedAt),
+                aliasMetadata: ad.metadata,
+              };
+            })
+            .reverse();
         }
-
-        // get the links from the metadata
-        setLinks(res.metadata.links ?? []);
 
         setData({
           data: res.data,
@@ -363,6 +257,9 @@ const EntryPage = () => {
           id: res.id,
           createdAt: res.createdAt,
         });
+
+        // Initialize the TransactionManager with the current data
+        setTransactionManager(new TransactionManager(res));
 
         // check if the data has youtube embed
         checkEmbeds(
@@ -382,7 +279,7 @@ const EntryPage = () => {
         // set author to the URL
         setAuthor(res.metadata.author);
 
-        // search for related entries (Commented out for development)
+        // search for related entries
         handleSearch(res.data, res.id);
       };
       asyncFn();
@@ -403,9 +300,7 @@ const EntryPage = () => {
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'k') {
-        console.log('handleKeyDown:', event.key);
         const selectedText = window.getSelection()?.toString();
-        console.log('selectedText:', selectedText);
         if (selectedText) {
           // open search modal beta
           setModalStates((prev) => ({ ...prev, searchModalBeta: true }));
@@ -427,9 +322,295 @@ const EntryPage = () => {
     }
   }, [data]);
 
-  return data ? (
+  // Transaction Handlers
+
+  // Handle Save All Transactions
+  const handleSaveAll = async () => {
+    if (!transactionManager) return;
+
+    try {
+      handleSaveComments();
+
+      await transactionManager.executeTransactions();
+      // Update the data with the latest draft state
+      setData(transactionManager.getDraftState());
+      alert('All changes saved successfully.');
+    } catch (error) {
+      alert('Failed to save changes. Rolling back to the last saved state.');
+      // Rollback UI to last saved state
+      setData(transactionManager.getDraftState());
+      console.error(transactionManager.getErrorLog());
+    }
+  };
+
+  // Handle Edit Entry
+  const handleEditEntry = (newData: string, newMetadata: any) => {
+    if (!transactionManager || !data) return;
+
+    // Update the draft state
+    const draftState = transactionManager.getDraftState();
+    draftState.data = newData;
+    draftState.metadata = newMetadata;
+
+    // Update UI immediately
+    setData({ ...draftState });
+
+    // Add transaction
+    const transaction: Transaction = async () => {
+      await apiUpdateEntry(data.id, newData, newMetadata);
+    };
+
+    // should happen last
+    transactionManager.addTransaction(transaction, { dependencies: tempIds });
+  };
+
+  // Handle Delete Entry
+  const handleDeleteEntry = () => {
+    if (!transactionManager || !data) return;
+
+    // Confirm deletion
+    const confirmDelete = window.confirm(
+      'Are you sure you want to delete this entry?',
+    );
+    if (!confirmDelete) return;
+
+    // Update the draft state
+    const draftState = transactionManager.getDraftState();
+    draftState.deleted = true;
+
+    // Update UI immediately (navigate back to dashboard)
+    router.push('/dashboard');
+
+    // Add transaction
+    const transaction: Transaction = async () => {
+      await apiDeleteEntry(data.id);
+    };
+
+    transactionManager.addTransaction(transaction);
+  };
+
+  // Handle Add Comment
+  const handleAddComment = (alias: string) => {
+    if (!transactionManager || !data) return;
+    console.log('alias:', alias);
+
+    // Assign a temporary ID
+    const tempAliasId = `temp-${uuidv4()}`;
+
+    // Update the draft state
+    const draftState = transactionManager.getDraftState();
+    const newAliasData = {
+      aliasData: alias,
+      aliasCreatedAt: new Date().toISOString(),
+      aliasUpdatedAt: new Date().toISOString(),
+      aliasMetadata: {
+        title: data.metadata.title,
+        author: data.metadata.author,
+        parent_id: data.id,
+      },
+    };
+    draftState.metadata.aliasData = [
+      newAliasData,
+      ...(draftState.metadata.aliasData || []),
+    ];
+    draftState.metadata.alias_ids = [...(draftState.metadata.alias_ids || [])];
+
+    // Update UI immediately
+    setData({ ...draftState });
+
+    // Transaction to create the alias entry
+    const createAliasTx = createEntryTransaction(tempAliasId, alias, {
+      parent_id: data.id,
+      title: data.metadata.title,
+      author: data.metadata.author,
+    });
+
+    // const updateParentTx: Transaction = async (
+    //   context: any,
+    // ) => {
+    //   const actualAliasId = context.idMapping.get(tempAliasId);
+    //   if (!actualAliasId) {
+    //     throw new Error(`Failed to resolve ID for temporary ID ${tempAliasId}`);
+    //   }
+    //   // remove the temporary alias ID from the alias_ids array
+    //   const updatedAliasIds = [
+    //     actualAliasId,
+    //     ...(data.metadata.alias_ids.filter(
+    //       (id: string) => id !== tempAliasId,
+    //     ) || []),
+    //   ];
+    //   console.log('updatedAliasIds:', updatedAliasIds);
+
+    //   // remove aliasData from metadata
+    //   delete data.metadata.aliasData;
+
+    //   await apiUpdateEntry(data.id, data.data, {
+    //     ...data.metadata,
+    //     alias_ids: updatedAliasIds,
+    //   });
+    // };
+
+    // Add transactions with dependencies
+    transactionManager.addTransaction(createAliasTx, { tempId: tempAliasId });
+    // add the tempAliasId to the tempCommentIDs array
+    setTempCommentIDs((prev) => [...prev, tempAliasId]);
+    // transactionManager.addTransaction(updateParentTx, {
+    //   dependencies: [tempAliasId],
+    // });
+  };
+
+  const handleSaveComments = async () => {
+    if (!transactionManager || !data) return;
+    // Transaction to update the parent entry with the new alias ID
+    const updateParentTx: Transaction = async (context: any) => {
+      const actualAliasIds = tempCommentIDs.map((tempAliasId) => {
+        const actualAliasId = context.idMapping.get(tempAliasId);
+        if (!actualAliasId) {
+          throw new Error(
+            `Failed to resolve ID for temporary ID ${tempAliasId}`,
+          );
+        }
+        return actualAliasId;
+      });
+
+      // remove the temporary alias IDs from the alias_ids array
+      const updatedAliasIds = [
+        ...actualAliasIds,
+        ...(data.metadata.alias_ids.filter(
+          (id: string) => !tempCommentIDs.includes(id),
+        ) || []),
+      ];
+      console.log('updatedAliasIds:', updatedAliasIds);
+
+      // remove aliasData from metadata
+      delete data.metadata.aliasData;
+
+      await apiUpdateEntry(data.id, data.data, {
+        ...data.metadata,
+        alias_ids: updatedAliasIds,
+      });
+    };
+
+    transactionManager.addTransaction(updateParentTx, {
+      dependencies: tempCommentIDs,
+    });
+  };
+
+  // Handle Delete Comment
+  const handleDeleteComment = (aliasId: string) => {
+    if (!transactionManager || !data) return;
+
+    // Confirm deletion
+    const confirmDelete = window.confirm(
+      'Are you sure you want to delete this comment?',
+    );
+    if (!confirmDelete) return;
+
+    // Update the draft state
+    const draftState = transactionManager.getDraftState();
+    draftState.metadata.aliasData = draftState.metadata.aliasData.filter(
+      (alias: any) => alias.aliasId !== aliasId,
+    );
+    draftState.metadata.alias_ids = (
+      draftState.metadata.alias_ids || []
+    ).filter((id: string) => id !== aliasId);
+
+    // Update UI immediately
+    setData({ ...draftState });
+
+    // Add transaction to delete the comment
+    const deleteCommentTx: Transaction = async () => {
+      await apiDeleteEntry(aliasId);
+    };
+
+    // Add transaction to update the parent entry
+    const updateParentTx: Transaction = async () => {
+      await apiUpdateEntry(data.id, data.data, draftState.metadata);
+    };
+
+    transactionManager.addTransaction(deleteCommentTx);
+    transactionManager.addTransaction(updateParentTx);
+  };
+
+  // Handle Edit Comment
+  const handleEditComment = (aliasId: string, newAliasData: string) => {
+    if (!transactionManager || !data) return;
+
+    // Update the draft state
+    const draftState = transactionManager.getDraftState();
+    const aliasIndex = draftState.metadata.aliasData.findIndex(
+      (alias: any) => alias.aliasId === aliasId,
+    );
+    if (aliasIndex !== -1) {
+      draftState.metadata.aliasData[aliasIndex].aliasData = newAliasData;
+    }
+
+    // Update UI immediately
+    setData({ ...draftState });
+
+    // Add transaction to update the comment
+    const transaction: Transaction = async () => {
+      await apiUpdateEntry(aliasId, newAliasData, {});
+    };
+
+    transactionManager.addTransaction(transaction);
+  };
+
+  // Handle Add Link
+  const handleAddLink = (name: string, url: string) => {
+    if (!transactionManager || !data) return;
+
+    // Update the draft state
+    const draftState = transactionManager.getDraftState();
+    const newLink = { name, url };
+    draftState.metadata.links = [...(draftState.metadata.links || []), newLink];
+
+    // Update UI immediately
+    setData({ ...draftState });
+
+    // Add transaction to update the entry
+    const transaction: Transaction = async () => {
+      await apiUpdateEntry(data.id, data.data, draftState.metadata);
+    };
+
+    // add the new link to the tempIds array
+    setTempIds((prev) => [...prev, newLink.name]);
+
+    transactionManager.addTransaction(transaction);
+  };
+
+  // Handle Delete Link
+  const handleDeleteLink = (index: number) => {
+    if (!transactionManager || !data) return;
+
+    // Update the draft state
+    const draftState = transactionManager.getDraftState();
+    if (draftState.metadata.links && draftState.metadata.links[index]) {
+      draftState.metadata.links.splice(index, 1);
+    }
+
+    // Update UI immediately
+    setData({ ...draftState });
+
+    // Add transaction to update the entry
+    const transaction: Transaction = async () => {
+      await apiUpdateEntry(data.id, data.data, draftState.metadata);
+    };
+
+    // add the new link to the tempIds array
+    const tempDeleteLinkId = `temp-delete-link-${uuidv4()}`;
+    setTempIds((prev) => [...prev, tempDeleteLinkId]);
+
+    transactionManager.addTransaction(transaction);
+  };
+
+  // Rendered Data
+  const renderedData = transactionManager
+    ? transactionManager.getDraftState()
+    : data;
+
+  return renderedData ? (
     <div className="my-4 min-w-full max-w-full">
-      {/* <span>{JSON.stringify(data)}</span> */}
       {hasYouTubeEmbed && (
         <LiteYouTubeEmbed
           id={youtubeId}
@@ -442,18 +623,7 @@ const EntryPage = () => {
       {hasSpotifyEmbed && <Spotify link={author} wide />}
       {hasInstagramEmbed && <InstagramEmbed url={author} />}
       {hasTikTokEmbed && <MemoizedTikTokEmbed url={author} />}
-      {hasCodeBlock && (
-        // <CopyBlock
-        //   showLineNumbers
-        //   wrapLongLines
-        //   text={data.metadata.code}
-        //   theme={dracula}
-        //   language={
-        //     data.metadata.language === 'typescriptreact'
-        //       ? 'tsx'
-        //       : data.metadata.language
-        //   }
-        // />
+      {hasCodeBlock && data && (
         <SyntaxHighlighter
           language={
             data.metadata.language === 'typescriptreact'
@@ -471,17 +641,17 @@ const EntryPage = () => {
       {data ? (
         <div className="m-4 [&_p]:my-6">
           <ReactMarkdown className="font-normal text-gray-900">
-            {data.data}
+            {renderedData.data}
           </ReactMarkdown>
 
           <EditModal
             isOpen={modalStates.editModal || false}
             closeModalFn={() => closeModal('editModal')}
-            data={data.data}
-            id={data.id}
+            data={renderedData.data}
+            id={renderedData.id}
             disabledKeys={['aliasData']}
-            metadata={data.metadata}
-            onSave={handleSave}
+            metadata={renderedData.metadata}
+            onSave={handleEditEntry}
           />
           <SearchModalBeta
             isOpen={modalStates.searchModalBeta || false}
@@ -489,11 +659,11 @@ const EntryPage = () => {
             inputQuery={searchBetaModalQuery}
           />
           <Link
-            href={data.metadata.author}
+            href={renderedData.metadata.author}
             className=" inline-flex items-center overflow-auto font-medium text-blue-600 hover:underline"
             target="_blank"
           >
-            {data.metadata.title}
+            {renderedData.metadata.title}
             <UrlSVG />
           </Link>
           <button
@@ -505,8 +675,8 @@ const EntryPage = () => {
           </button>
           <button
             type="button"
-            onClick={() => handleDelete('', false)}
-            className="my-2 me-2 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4"
+            onClick={handleDeleteEntry}
+            className="my-2 me-2 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-red-600 hover:bg-red-800 hover:text-white focus:outline-none focus:ring-4"
           >
             Delete Entry
           </button>
@@ -519,7 +689,7 @@ const EntryPage = () => {
 
           <h3 className="my-4 text-2xl font-bold">Added to yCb</h3>
           <a
-            href={`/dashboard/garden?date=${new Date(data.createdAt)
+            href={`/dashboard/garden?date=${new Date(renderedData.createdAt)
               .toLocaleDateString()
               .split('/')
               .map((d) => (d.length === 1 ? `0${d}` : d))
@@ -527,12 +697,20 @@ const EntryPage = () => {
                 `}
             className="text-blue-600 hover:underline"
           >
-            {new Date(data.createdAt).toLocaleDateString()}
+            {new Date(renderedData.createdAt).toLocaleDateString()}
           </a>
         </div>
       ) : (
         'Loading...'
       )}
+
+      <button
+        type="button"
+        onClick={handleSaveAll}
+        className="my-2 w-full rounded-lg bg-green-500 px-5 py-2.5 text-sm font-medium text-white hover:bg-green-700 focus:outline-none"
+      >
+        Save All Changes
+      </button>
 
       <h2 className="my-4 text-4xl font-extrabold">Add Comment</h2>
       <div className="">
@@ -541,168 +719,37 @@ const EntryPage = () => {
           style={{ fontSize: '17px' }}
           className="w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-gray-900 focus:border-blue-500 focus:ring-blue-500"
           placeholder="Add a comment..."
-          onKeyDown={async (e) => {
-            if (e.key === 'Enter') {
-              const aliasInput = document.getElementById(
-                `alias-input-${data?.id}`,
-              );
-              if (!aliasInput) return;
-              // Cast to HTMLInputElement to access value property
-              const alias = (aliasInput as HTMLInputElement).value;
-              setIsAddingAlias(true);
-              await handleAliasAdd({
-                id: data?.id,
-                alias,
-                data,
-                metadata: {
-                  title: data?.metadata.title,
-                  author: data?.metadata.author,
-                  links: data?.metadata.links,
-                },
-              });
-              setIsAddingAlias(false);
-              // clear input field
-              (aliasInput as HTMLInputElement).value = '';
-              // set temporaryAliases to show users new aliases without refreshing the page
-              // prepend new alias to the list
-              setTemporaryAliases((prev) => {
-                return [alias, ...prev];
-              });
-            }
-          }}
-          id={`alias-input-${data?.id}`}
+          id={`alias-input-${renderedData?.id}`}
         />
-        {!isAddingAlias ? (
-          <>
-            {/* <button
-              type="button"
-              onClick={() => {
-                const aliasInput = document.getElementById(
-                  `alias-input-${data?.id}`,
-                );
-                if (!aliasInput) return;
-                const suggestions = [
-                  'I think this is about...',
-                  'I think this is related to...',
-                  'This reminds me of...',
-                ];
-
-                (aliasInput as HTMLInputElement).value =
-                  suggestions[Math.floor(Math.random() * suggestions.length)] ||
-                  '';
-              }}
-              className="mb-2 me-2 mt-4 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4 focus:ring-gray-300"
-              aria-label="Suggest Comment"
-            >
-              Suggest Comment
-            </button> */}
-            <button
-              type="button"
-              onClick={async () => {
-                try {
-                  const aliasInput = document.getElementById(
-                    `alias-input-${data?.id}`,
-                  );
-                  if (!aliasInput) return;
-                  // Cast to HTMLInputElement to access value property
-                  const alias = (aliasInput as HTMLInputElement).value;
-                  setIsAddingAlias(true);
-                  const aliasAdded = await handleAliasAdd({
-                    id: data?.id,
-                    alias,
-                    data,
-                    metadata: {
-                      title: data?.metadata.title,
-                      author: data?.metadata.author,
-                      links: data?.metadata.links,
-                    },
-                  });
-                  if (!aliasAdded) throw new Error('Error adding alias');
-                  if (aliasAdded.error)
-                    throw new Error(`Error adding alias ${aliasAdded.error}`);
-                  setIsAddingAlias(false);
-                  // clear input field
-                  (aliasInput as HTMLInputElement).value = '';
-                  // add alias to span list to show users new aliases
-                  setTemporaryAliases((prev) => {
-                    return [alias, ...prev];
-                  });
-                } catch (err) {
-                  // show error message for 5 seconds
-                  setAliasShowError(true);
-                  setTimeout(() => {
-                    setAliasShowError(false);
-                  }, 5000);
-                }
-              }}
-              className="mb-2 me-2 mt-4 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4 focus:ring-gray-300"
-              aria-label="Add alias"
-            >
-              Add Comment (or press enter)
-            </button>
-          </>
-        ) : (
-          <button disabled type="button" className="ml-2" aria-label="adding">
-            <svg
-              aria-hidden="true"
-              role="status"
-              className="me-3 inline size-4 animate-spin text-white"
-              viewBox="0 0 100 101"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
-                fill="#E5E7EB"
-              />
-              <path
-                d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z"
-                fill="currentColor"
-              />
-            </svg>
-          </button>
-        )}
+        <button
+          type="button"
+          onClick={() => {
+            const aliasInput = document.getElementById(
+              `alias-input-${renderedData?.id}`,
+            );
+            if (!aliasInput) return;
+            // Cast to HTMLInputElement to access value property
+            const alias = (aliasInput as HTMLInputElement).value;
+            handleAddComment(alias);
+            // clear input field
+            (aliasInput as HTMLInputElement).value = '';
+          }}
+          className="mb-2 me-2 mt-4 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4 focus:ring-gray-300"
+          aria-label="Add alias"
+        >
+          Add Comment
+        </button>
       </div>
 
-      {(hasAliases || temporaryAliases.length > 0) && (
-        <h2 className="my-4 text-4xl font-extrabold">Comments</h2>
-      )}
-
-      {temporaryAliases.length > 0 && (
-        <div>
-          {temporaryAliases.map((alias) => (
-            <div key={alias} className="mb-4 flex flex-col items-start">
-              <div className="flex items-center">
-                <div className="mr-2 flex size-6 shrink-0 items-center justify-center rounded-full bg-gray-300 text-xs font-bold text-white">
-                  {firstLastName.firstName && firstLastName.lastName ? (
-                    <>
-                      {firstLastName.firstName[0]}
-                      {firstLastName.lastName[0]}
-                    </>
-                  ) : (
-                    'YCB'
-                  )}
-                </div>
-                <button
-                  className="justify-start text-black hover:underline"
-                  type="button"
-                  onClick={() => toDashboard(alias)}
-                >
-                  {alias}
-                </button>
-              </div>
-              <span className="text-sm text-gray-500">
-                Added to yCb: {new Date().toLocaleString()}
-              </span>
-            </div>
-          ))}
-        </div>
-      )}
+      {hasAliases &&
+        renderedData.metadata.aliasData &&
+        renderedData.metadata.aliasData.length > 0 && (
+          <h2 className="my-4 text-4xl font-extrabold">Comments</h2>
+        )}
 
       {hasAliases && (
         <div>
-          {/* <span>{JSON.stringify(data?.metadata?.aliasData)}</span> */}
-          {data?.metadata?.aliasData?.map((alias: any) => (
+          {renderedData?.metadata?.aliasData?.map((alias: any) => (
             <div key={alias.aliasId} className="mb-4 flex flex-col items-start">
               <EditModal
                 isOpen={modalStates[`alias-${alias.aliasId}`] || false}
@@ -711,7 +758,7 @@ const EntryPage = () => {
                 id={alias.aliasId}
                 metadata={alias.aliasMetadata}
                 disabledKeys={['parent_id']}
-                onSave={handleSave}
+                onSave={(newData) => handleEditComment(alias.aliasId, newData)}
               />
               <div className="flex">
                 <div className="mr-2 flex size-6 shrink-0 items-center justify-center rounded-full bg-gray-300 text-xs font-bold text-white">
@@ -754,7 +801,7 @@ const EntryPage = () => {
                 <button
                   className="justify-start text-blue-600 hover:underline"
                   type="button"
-                  onClick={() => handleDelete(alias.aliasId, true)}
+                  onClick={() => handleDeleteComment(alias.aliasId)}
                   aria-label="delete"
                 >
                   Delete Comment
@@ -774,7 +821,7 @@ const EntryPage = () => {
 
       <button
         type="button"
-        className="my-4 w-full rounded-lg bg-blue-700 px-5 py-2.5 text-sm font-medium text-white hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+        className="my-4 w-full rounded-lg bg-blue-700 px-5 py-2.5 text-sm font-medium text-white hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300"
         onClick={() => setIsLinkModalOpen(true)}
       >
         Add Link
@@ -783,35 +830,45 @@ const EntryPage = () => {
         <LinksModal
           isOpen={isLinkModalOpen}
           closeModalFn={() => setIsLinkModalOpen(false)}
-          onSave={handleLinkSave}
+          onSave={(name, url) => {
+            handleAddLink(name, url);
+            setIsLinkModalOpen(false);
+          }}
           onSearch={handleSearchLinksModal}
         />
       )}
 
-      {links.length > 0 && (
-        <h2 className="my-4 text-4xl font-extrabold">Links</h2>
-      )}
-
-      {links.length > 0 && (
-        <div>
-          {links.map((link: any) => (
-            <>
-              <Link
-                key={link.name}
-                href={link.url}
-                target="_blank"
-                className="text-blue-600 hover:underline"
-              >
-                {link.name}
-              </Link>
-              <br />
-            </>
-          ))}
-        </div>
-      )}
+      {renderedData.metadata.links &&
+        renderedData.metadata.links.length > 0 && (
+          <>
+            <h2 className="my-4 text-4xl font-extrabold">Links</h2>
+            <div>
+              {renderedData.metadata.links.map((link: any, index: number) => (
+                <div
+                  key={`${link.name}-${index}`}
+                  className="flex items-center"
+                >
+                  <Link
+                    href={link.url}
+                    target="_blank"
+                    className="text-blue-600 hover:underline"
+                  >
+                    {link.name}
+                  </Link>
+                  <button
+                    type="button"
+                    className="ml-2 text-red-500 hover:underline"
+                    onClick={() => handleDeleteLink(index)}
+                  >
+                    Delete
+                  </button>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
 
       <h2 className="my-4 text-4xl font-extrabold">{relatedText}</h2>
-      {/* <span>{JSON.stringify(searchResults)}</span> */}
       {searchResults.map((result) => (
         <div key={result.id}>
           <div
@@ -889,53 +946,6 @@ const EntryPage = () => {
                 </svg>
               </a>
             </div>
-            {/* <button
-              type="button"
-              className={`ml-4 rounded-full p-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-300 ${
-                checkedButtons[result.id] ? 'bg-green-500' : 'bg-blue-500'
-              }`}
-              onClick={() =>
-                addToCollection(
-                  result.id,
-                  result.data,
-                  buildingCollection,
-                  setBuildingCollection,
-                  setCheckedButtons,
-                )
-              }
-            >
-              {checkedButtons[result.id] ? (
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  className="size-5"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M5 13l4 4L19 7"
-                  />
-                </svg>
-              ) : (
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  className="size-5"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M12 4v16m8-8H4"
-                  />
-                </svg>
-              )}
-            </button> */}
           </div>
           <hr className="my-4" />
         </div>
