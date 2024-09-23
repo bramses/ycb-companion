@@ -37,24 +37,29 @@ const EditModal = ({
         defaultValue={data}
       />
       {metadata
-        ? Object.entries(metadata).map(([key, value]) => (
-            <div key={key} className="my-2">
-              <label
-                htmlFor={key}
-                className="block text-sm font-medium text-gray-700"
-              >
-                {key}
-              </label>
-              <input
-                id={key}
-                disabled={disabledKeys.includes(key)}
-                type="text"
-                style={{ fontSize: '17px' }}
-                className="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500"
-                defaultValue={String(value)}
-              />
-            </div>
-          ))
+        ? Object.entries(metadata)
+            .filter(([key]) => !disabledKeys.includes(key)) // Filter out disabled keys
+            .map(([key, value]) => (
+              <div key={key} className="my-2">
+                <label
+                  htmlFor={key}
+                  className="block text-sm font-medium text-gray-700"
+                >
+                  {key}
+                </label>
+                <input
+                  id={key}
+                  type="text"
+                  style={{ fontSize: '17px' }}
+                  className="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500"
+                  defaultValue={
+                    typeof value === 'object'
+                      ? JSON.stringify(value)
+                      : String(value)
+                  }
+                />
+              </div>
+            ))
         : null}
       <div className="flex space-x-2">
         <button
@@ -66,12 +71,22 @@ const EditModal = ({
               document.getElementById('edit-modal-textarea') as HTMLInputElement
             ).value;
             const newMetadata: any = {};
-            Object.entries(metadata).forEach(([key]) => {
-              const input = document.getElementById(key) as HTMLInputElement;
-              newMetadata[key] = input.value;
-            });
+            // add in the disabled keys to the newMetadata object TODO should probably be enabled_keys instead of disabled_keys since there are potenitally more keys
+            disabledKeys
+              .filter((key) => metadata[key])
+              .forEach((key) => {
+                newMetadata[key] = metadata[key];
+              });
+            Object.entries(metadata)
+              .filter(([key]) => !disabledKeys.includes(key))
+              .forEach(([key]) => {
+                const input = document.getElementById(key) as HTMLInputElement;
+                newMetadata[key] = input.value;
+              });
+
             // if data is empty, do not save
             if (!newData) {
+              closeModalFn();
               return;
             }
             // if no changes, do not save
@@ -106,9 +121,9 @@ const EditModal = ({
               }
             }
 
-            if (newMetadata.aliasData) {
-              delete newMetadata.aliasData;
-            }
+            // if (newMetadata.aliasData) {
+            //   delete newMetadata.aliasData;
+            // }
 
             // send data to parent
             onSave(newData, newMetadata, id);

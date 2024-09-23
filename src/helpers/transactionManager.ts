@@ -6,6 +6,7 @@ export interface TransactionOptions {
   canRunInParallel?: boolean;
   dependencies?: string[]; // List of temporary IDs this transaction depends on
   tempId?: string; // Temporary ID for this transaction
+  name?: string; // Name of the transaction
 }
 
 export interface TransactionContext {

@@ -1,3 +1,5 @@
+/* eslint-disable @next/next/no-img-element */
+
 // EntryPage.tsx
 
 'use client';
@@ -60,13 +62,13 @@ const EntryPage = () => {
   const [hasAliases, setHasAliases] = useState(false);
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const router = useRouter();
-  const [showAliasError, setAliasShowError] = useState(false);
+  const [showAliasError] = useState(false);
   const { user, isLoaded } = useUser();
   const [firstLastName, setFirstLastName] = useState({
     firstName: '',
     lastName: '',
   });
-  const [showDeleteError, setShowDeleteError] = useState(false);
+  const [showDeleteError] = useState(false);
 
   const [modalStates, setModalStates] = useState<{ [key: string]: boolean }>(
     {},
@@ -75,6 +77,7 @@ const EntryPage = () => {
   const [relatedText] = useState('Related Entries');
 
   const [searchBetaModalQuery, setSearchBetaModalQuery] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
 
   const [transactionManager, setTransactionManager] =
     useState<TransactionManager | null>(null);
@@ -328,6 +331,8 @@ const EntryPage = () => {
   const handleEditEntry = (newData: string, newMetadata: any) => {
     if (!transactionManager || !data) return;
 
+    console.log('newMetadata:', newMetadata);
+
     // Update the draft state
     const draftState = transactionManager.getDraftState();
     draftState.data = newData;
@@ -527,6 +532,9 @@ const EntryPage = () => {
         prev.filter((tempCommentId) => tempCommentId.tempAliasId !== aliasId),
       );
     } else {
+      const deleteCommentTxName = `deleteCommentTx-${uuidv4()}`;
+      const updateParentTxName = `updateParentTx-${uuidv4()}`;
+
       // Add transaction to delete the comment
       const deleteCommentTx: Transaction = async () => {
         await apiDeleteEntry(aliasId);
@@ -536,8 +544,12 @@ const EntryPage = () => {
       const updateParentTx: Transaction = async () => {
         await apiUpdateEntry(data.id, data.data, draftState.metadata);
       };
-      transactionManager.addTransaction(deleteCommentTx);
-      transactionManager.addTransaction(updateParentTx);
+      transactionManager.addTransaction(deleteCommentTx, {
+        name: deleteCommentTxName,
+      });
+      transactionManager.addTransaction(updateParentTx, {
+        name: updateParentTxName,
+      });
     }
   };
 
@@ -572,6 +584,9 @@ const EntryPage = () => {
       );
     } else {
       // Add transaction to update the comment
+
+      const editCommentTxName = `editCommentTx-${uuidv4()}`;
+
       const editCommentTx: Transaction = async () => {
         // same metadata as it was before
         await apiUpdateEntry(aliasId, newAliasData, {
@@ -581,7 +596,9 @@ const EntryPage = () => {
         });
       };
 
-      transactionManager.addTransaction(editCommentTx);
+      transactionManager.addTransaction(editCommentTx, {
+        name: editCommentTxName,
+      });
     }
   };
 
@@ -597,15 +614,19 @@ const EntryPage = () => {
     // Update UI immediately
     setData({ ...draftState });
 
+    const addLinkTxName = `addLinkTx-${uuidv4()}`;
+
     // Add transaction to update the entry
-    const transaction: Transaction = async () => {
+    const addLinkTx: Transaction = async () => {
       await apiUpdateEntry(data.id, data.data, draftState.metadata);
     };
 
     // add the new link to the tempIds array
     setTempIds((prev) => [...prev, newLink.name]);
 
-    transactionManager.addTransaction(transaction);
+    transactionManager.addTransaction(addLinkTx, {
+      name: addLinkTxName,
+    });
   };
 
   // Handle Delete Link
@@ -622,7 +643,7 @@ const EntryPage = () => {
     setData({ ...draftState });
 
     // Add transaction to update the entry
-    const transaction: Transaction = async () => {
+    const deleteLinkTx: Transaction = async () => {
       await apiUpdateEntry(data.id, data.data, draftState.metadata);
     };
 
@@ -630,7 +651,7 @@ const EntryPage = () => {
     const tempDeleteLinkId = `temp-delete-link-${uuidv4()}`;
     setTempIds((prev) => [...prev, tempDeleteLinkId]);
 
-    transactionManager.addTransaction(transaction);
+    transactionManager.addTransaction(deleteLinkTx);
   };
 
   // Handle Save All Transactions
@@ -638,17 +659,22 @@ const EntryPage = () => {
     if (!transactionManager) return;
 
     try {
+      setIsSaving(true);
       handleSaveComments();
 
       await transactionManager.executeTransactions();
       // Update the data with the latest draft state
       setData(transactionManager.getDraftState());
+      setIsSaving(false);
       alert('All changes saved successfully.');
+      // reload the page
+      window.location.reload();
     } catch (error) {
       alert('Failed to save changes. Rolling back to the last saved state.');
       // Rollback UI to last saved state
       setData(transactionManager.getDraftState());
       console.error(transactionManager.getErrorLog());
+      setIsSaving(false);
     }
   };
 
@@ -656,6 +682,8 @@ const EntryPage = () => {
   const renderedData = transactionManager
     ? transactionManager.getDraftState()
     : data;
+
+  console.log('renderedData:', renderedData);
 
   return renderedData ? (
     <div className="my-4 min-w-full max-w-full">
@@ -697,7 +725,7 @@ const EntryPage = () => {
             closeModalFn={() => closeModal('editModal')}
             data={renderedData.data}
             id={renderedData.id}
-            disabledKeys={['aliasData']}
+            disabledKeys={['aliasData', 'alias_ids', 'links', 'parent_id']}
             metadata={renderedData.metadata}
             onSave={handleEditEntry}
           />
@@ -757,7 +785,7 @@ const EntryPage = () => {
         onClick={handleSaveAll}
         className="my-2 w-full rounded-lg bg-green-500 px-5 py-2.5 text-sm font-medium text-white hover:bg-green-700 focus:outline-none"
       >
-        Save All Changes
+        {isSaving ? 'Saving...' : 'Save All Changes'}
       </button>
 
       <h2 className="my-4 text-4xl font-extrabold">Add Comment</h2>
@@ -893,7 +921,7 @@ const EntryPage = () => {
             <div>
               {renderedData.metadata.links.map((link: any, index: number) => (
                 <div
-                  key={`${link.name}-${index}`}
+                  key={`${link.name}-${uuidv4()}`}
                   className="flex items-center"
                 >
                   <Link
