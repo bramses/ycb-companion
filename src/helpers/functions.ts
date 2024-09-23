@@ -253,6 +253,28 @@ export const deleteEntry = async (id: string) => {
   }
 };
 
+// export const addEntry = async (data: string, metadata: any) => {
+//   try {
+//     const response = await fetch('/api/add', {
+//       method: 'POST',
+//       headers: {
+//         'Content-Type': 'application/json',
+//       },
+//       body: JSON.stringify({
+//         data,
+//         metadata,
+//       }),
+//     });
+//     const responseData = await response.json();
+
+//     // console.log('Added entry:', responseData);
+//     return responseData;
+//   } catch (error) {
+//     console.error('Error adding entry:', error);
+//     return {};
+//   }
+// };
+
 export const addEntry = async (data: string, metadata: any) => {
   try {
     const response = await fetch('/api/add', {
@@ -267,11 +289,11 @@ export const addEntry = async (data: string, metadata: any) => {
     });
     const responseData = await response.json();
 
-    // console.log('Added entry:', responseData);
+    // Return the ID of the new entry
     return responseData;
   } catch (error) {
     console.error('Error adding entry:', error);
-    return {};
+    throw error;
   }
 };
 
