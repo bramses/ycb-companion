@@ -366,7 +366,7 @@ const EntryPage = () => {
     draftState.deleted = true;
 
     // Update UI immediately (navigate back to dashboard)
-    router.push('/dashboard');
+    // router.push('/dashboard');
 
     // Add transaction
     const deleteEntryTx: Transaction = async () => {
