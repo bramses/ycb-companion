@@ -337,12 +337,12 @@ const EntryPage = () => {
     setData({ ...draftState });
 
     // Add transaction
-    const transaction: Transaction = async () => {
+    const editEntryTx: Transaction = async () => {
       await apiUpdateEntry(data.id, newData, newMetadata);
     };
 
     // should happen last
-    transactionManager.addTransaction(transaction, { dependencies: tempIds });
+    transactionManager.addTransaction(editEntryTx, { dependencies: tempIds });
   };
 
   // Handle Delete Entry
@@ -573,7 +573,12 @@ const EntryPage = () => {
     } else {
       // Add transaction to update the comment
       const editCommentTx: Transaction = async () => {
-        await apiUpdateEntry(aliasId, newAliasData, {});
+        // same metadata as it was before
+        await apiUpdateEntry(aliasId, newAliasData, {
+          title: data.metadata.title,
+          author: data.metadata.author,
+          parent_id: data.id,
+        });
       };
 
       transactionManager.addTransaction(editCommentTx);
