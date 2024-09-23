@@ -62,7 +62,7 @@ const EntryPage = () => {
   const MemoizedTikTokEmbed = memo(TikTokEmbed);
   const [hasAliases, setHasAliases] = useState(false);
   const [searchResults, setSearchResults] = useState<any[]>([]);
-  const router = useRouter();
+  // const router = useRouter();
   const [showAliasError] = useState(false);
   const { user, isLoaded } = useUser();
   const [firstLastName, setFirstLastName] = useState({
