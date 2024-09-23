@@ -79,7 +79,7 @@ const EntryPage = () => {
   const [transactionManager, setTransactionManager] =
     useState<TransactionManager | null>(null);
   const [tempIds, setTempIds] = useState<string[]>([]);
-  const [tempCommentIDs, setTempCommentIDs] = useState<string[]>([]);
+  const [tempCommentIDs, setTempCommentIDs] = useState<any[]>([]);
 
   const openModal = (key: string) =>
     setModalStates((prev) => ({ ...prev, [key]: true }));
@@ -324,25 +324,6 @@ const EntryPage = () => {
 
   // Transaction Handlers
 
-  // Handle Save All Transactions
-  const handleSaveAll = async () => {
-    if (!transactionManager) return;
-
-    try {
-      handleSaveComments();
-
-      await transactionManager.executeTransactions();
-      // Update the data with the latest draft state
-      setData(transactionManager.getDraftState());
-      alert('All changes saved successfully.');
-    } catch (error) {
-      alert('Failed to save changes. Rolling back to the last saved state.');
-      // Rollback UI to last saved state
-      setData(transactionManager.getDraftState());
-      console.error(transactionManager.getErrorLog());
-    }
-  };
-
   // Handle Edit Entry
   const handleEditEntry = (newData: string, newMetadata: any) => {
     if (!transactionManager || !data) return;
@@ -382,17 +363,17 @@ const EntryPage = () => {
     router.push('/dashboard');
 
     // Add transaction
-    const transaction: Transaction = async () => {
+    const deleteEntryTx: Transaction = async () => {
       await apiDeleteEntry(data.id);
     };
 
-    transactionManager.addTransaction(transaction);
+    transactionManager.addTransaction(deleteEntryTx);
   };
 
   // Handle Add Comment
-  const handleAddComment = (alias: string) => {
+  const handleAddComment = (aliasInput: string) => {
     if (!transactionManager || !data) return;
-    console.log('alias:', alias);
+    console.log('alias:', aliasInput);
 
     // Assign a temporary ID
     const tempAliasId = `temp-${uuidv4()}`;
@@ -400,7 +381,8 @@ const EntryPage = () => {
     // Update the draft state
     const draftState = transactionManager.getDraftState();
     const newAliasData = {
-      aliasData: alias,
+      aliasId: tempAliasId,
+      aliasData: aliasInput,
       aliasCreatedAt: new Date().toISOString(),
       aliasUpdatedAt: new Date().toISOString(),
       aliasMetadata: {
@@ -419,11 +401,11 @@ const EntryPage = () => {
     setData({ ...draftState });
 
     // Transaction to create the alias entry
-    const createAliasTx = createEntryTransaction(tempAliasId, alias, {
-      parent_id: data.id,
-      title: data.metadata.title,
-      author: data.metadata.author,
-    });
+    // const createAliasTx = createEntryTransaction(tempAliasId, alias, {
+    //   parent_id: data.id,
+    //   title: data.metadata.title,
+    //   author: data.metadata.author,
+    // });
 
     // const updateParentTx: Transaction = async (
     //   context: any,
@@ -451,9 +433,9 @@ const EntryPage = () => {
     // };
 
     // Add transactions with dependencies
-    transactionManager.addTransaction(createAliasTx, { tempId: tempAliasId });
+    // transactionManager.addTransaction(createAliasTx, { tempId: tempAliasId });
     // add the tempAliasId to the tempCommentIDs array
-    setTempCommentIDs((prev) => [...prev, tempAliasId]);
+    setTempCommentIDs((prev) => [...prev, { tempAliasId, aliasInput }]);
     // transactionManager.addTransaction(updateParentTx, {
     //   dependencies: [tempAliasId],
     // });
@@ -461,13 +443,30 @@ const EntryPage = () => {
 
   const handleSaveComments = async () => {
     if (!transactionManager || !data) return;
+
+    // for each tempCommentIDs add a transaction
+    for (const tempCommentId of tempCommentIDs) {
+      const { tempAliasId, aliasInput } = tempCommentId;
+      console.log('tempCommentId and aliasInput:', { tempAliasId, aliasInput });
+      transactionManager.addTransaction(
+        createEntryTransaction(tempAliasId, aliasInput, {
+          parent_id: data.id,
+          title: data.metadata.title,
+          author: data.metadata.author,
+        }),
+        {
+          tempId: tempAliasId,
+        },
+      );
+    }
+
     // Transaction to update the parent entry with the new alias ID
     const updateParentTx: Transaction = async (context: any) => {
-      const actualAliasIds = tempCommentIDs.map((tempAliasId) => {
-        const actualAliasId = context.idMapping.get(tempAliasId);
+      const actualAliasIds = tempCommentIDs.map((tempComment) => {
+        const actualAliasId = context.idMapping.get(tempComment.tempAliasId);
         if (!actualAliasId) {
           throw new Error(
-            `Failed to resolve ID for temporary ID ${tempAliasId}`,
+            `Failed to resolve ID for temporary ID ${tempComment.tempAliasId}`,
           );
         }
         return actualAliasId;
@@ -518,18 +517,28 @@ const EntryPage = () => {
     // Update UI immediately
     setData({ ...draftState });
 
-    // Add transaction to delete the comment
-    const deleteCommentTx: Transaction = async () => {
-      await apiDeleteEntry(aliasId);
-    };
+    if (
+      tempCommentIDs.find(
+        (tempCommentId) => tempCommentId.tempAliasId === aliasId,
+      )
+    ) {
+      // if temp id is being deleted remove the transactions from the tempCommentIDs array
+      setTempCommentIDs((prev) =>
+        prev.filter((tempCommentId) => tempCommentId.tempAliasId !== aliasId),
+      );
+    } else {
+      // Add transaction to delete the comment
+      const deleteCommentTx: Transaction = async () => {
+        await apiDeleteEntry(aliasId);
+      };
 
-    // Add transaction to update the parent entry
-    const updateParentTx: Transaction = async () => {
-      await apiUpdateEntry(data.id, data.data, draftState.metadata);
-    };
-
-    transactionManager.addTransaction(deleteCommentTx);
-    transactionManager.addTransaction(updateParentTx);
+      // Add transaction to update the parent entry
+      const updateParentTx: Transaction = async () => {
+        await apiUpdateEntry(data.id, data.data, draftState.metadata);
+      };
+      transactionManager.addTransaction(deleteCommentTx);
+      transactionManager.addTransaction(updateParentTx);
+    }
   };
 
   // Handle Edit Comment
@@ -548,12 +557,27 @@ const EntryPage = () => {
     // Update UI immediately
     setData({ ...draftState });
 
-    // Add transaction to update the comment
-    const transaction: Transaction = async () => {
-      await apiUpdateEntry(aliasId, newAliasData, {});
-    };
+    // if editing a comment with a temp id change it in place
+    if (
+      tempCommentIDs.find(
+        (tempCommentId) => tempCommentId.tempAliasId === aliasId,
+      )
+    ) {
+      setTempCommentIDs((prev) =>
+        prev.map((tempCommentId) =>
+          tempCommentId.tempAliasId === aliasId
+            ? { ...tempCommentId, aliasInput: newAliasData }
+            : tempCommentId,
+        ),
+      );
+    } else {
+      // Add transaction to update the comment
+      const editCommentTx: Transaction = async () => {
+        await apiUpdateEntry(aliasId, newAliasData, {});
+      };
 
-    transactionManager.addTransaction(transaction);
+      transactionManager.addTransaction(editCommentTx);
+    }
   };
 
   // Handle Add Link
@@ -602,6 +626,25 @@ const EntryPage = () => {
     setTempIds((prev) => [...prev, tempDeleteLinkId]);
 
     transactionManager.addTransaction(transaction);
+  };
+
+  // Handle Save All Transactions
+  const handleSaveAll = async () => {
+    if (!transactionManager) return;
+
+    try {
+      handleSaveComments();
+
+      await transactionManager.executeTransactions();
+      // Update the data with the latest draft state
+      setData(transactionManager.getDraftState());
+      alert('All changes saved successfully.');
+    } catch (error) {
+      alert('Failed to save changes. Rolling back to the last saved state.');
+      // Rollback UI to last saved state
+      setData(transactionManager.getDraftState());
+      console.error(transactionManager.getErrorLog());
+    }
   };
 
   // Rendered Data
