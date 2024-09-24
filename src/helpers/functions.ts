@@ -13,9 +13,20 @@ export const fetchByID = async (entryId: string) => {
 
   const resData = await response.json();
 
+  if (!resData || !resData.data) {
+    console.error('No data returned from the API');
+    throw new Error('No data returned from the API');
+  }
+
   const entry = resData.data;
+  console.log('entry:', entry);
+  let { metadata } = entry;
   // parse metadata
-  const metadata = JSON.parse(entry.metadata);
+  try {
+    metadata = JSON.parse(entry.metadata);
+  } catch (err) {
+    console.error('Error parsing metadata:', err);
+  }
 
   return {
     data: entry.data,
@@ -36,180 +47,235 @@ export async function fetchFavicon(url: string) {
   }
 }
 
+export async function fetchSearchEntriesHelper(query: string) {
+  const response = await fetch('/api/search', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ query }),
+  });
+  const data = await response.json();
+  const entries = data.data;
+
+  // map entries.metadata to json
+  const parsedEntries = entries.map((entry: any) => {
+    let metadata;
+    try {
+      metadata = JSON.parse(entry.metadata);
+    } catch (err) {
+      metadata = entry.metadata; // fallback to original metadata if parsing fails
+    }
+
+    return { ...entry, metadata, favicon: '/favicon.ico' };
+  });
+
+  return parsedEntries;
+}
+
+export async function fetchParentData(entries: any[]) {
+  const parentPromises = entries.map((entry: any) => {
+    if ('parent_id' in entry.metadata) {
+      return fetchByID(entry.metadata.parent_id);
+    }
+    return Promise.resolve(null); // Return null for entries without parent_id
+  });
+
+  const results = await Promise.allSettled(parentPromises);
+  const updatedEntries = entries.map((entry: any, index: any) => {
+    if (!results[index]) {
+      return entry;
+    }
+    if (results[index].status === 'fulfilled' && results[index].value) {
+      return { ...entry, parentData: results[index].value };
+    }
+    return entry;
+  });
+
+  return updatedEntries;
+}
+
+export async function fetchFavicons(entries: any[]) {
+  const faviconPromises = entries.map((entry: any) => {
+    if (!entry.metadata) {
+      return { favicon: '/favicon.ico' };
+    }
+
+    return fetchFavicon(entry.metadata.author);
+  });
+
+  const favicons = await Promise.all(faviconPromises);
+  const updatedEntriesFavicon = entries.map((entry: any, index: any) => {
+    const favicon = favicons[index].favicon
+      ? favicons[index].favicon
+      : '/favicon.ico';
+    return { ...entry, favicon };
+  });
+
+  return updatedEntriesFavicon;
+}
+
 export async function fetchSearchEntries(
   query: string,
   setSearchResults: Dispatch<SetStateAction<any[]>>,
+  setLoading: Dispatch<SetStateAction<boolean>> | null,
 ) {
-  const response = await fetch('/api/search', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ query }),
-  });
-  const data = await response.json();
-  const entries = data.data;
-  // map entries.metadata to json
-  const parsedEntries = entries.map((entry: any) => {
-    let metadata;
-    try {
-      metadata = JSON.parse(entry.metadata);
-    } catch (err) {
-      metadata = entry.metadata; // fallback to original metadata if parsing fails
-    }
-
-    return { ...entry, metadata, favicon: '/favicon.ico' };
-  });
-
-  // Return parsed entries immediately
+  // Step 1: Fetch and parse entries
+  const parsedEntries = await fetchSearchEntriesHelper(query);
   setSearchResults(parsedEntries);
+  if (setLoading !== null) {
+    setLoading(false);
+  }
 
-  // for all entries with a parent_id, fetch parent_id data and append data as parentData key
-  const parentPromises = parsedEntries.map((entry: any) => {
-    if ('parent_id' in entry.metadata) {
-      return fetchByID(entry.metadata.parent_id);
-    }
-    return Promise.resolve(null); // Return null for entries without parent_id
-  });
+  // Step 2: Fetch parent data
+  const entriesWithParentData = await fetchParentData(parsedEntries);
+  setSearchResults(entriesWithParentData);
 
-  Promise.allSettled(parentPromises).then((results) => {
-    const updatedEntries = parsedEntries.map((entry: any, index: any) => {
-      if (!results[index]) {
-        return entry;
-      }
-      if (results[index].status === 'fulfilled' && results[index].value) {
-        return { ...entry, parentData: results[index].value };
-      }
-      return entry;
-    });
+  // Step 3: Fetch favicons
+  const entriesWithFavicons = await fetchFavicons(entriesWithParentData);
+  setSearchResults(entriesWithFavicons);
 
-    updatedEntries.forEach((entry: any, entryIdx: number) => {
-      if (entry.metadata.alias_ids) {
-        const aliasIds = entry.metadata.alias_ids.map(Number);
-        const index = updatedEntries.findIndex((searchResult: any) =>
-          aliasIds.includes(Number(searchResult.id)),
-        );
-        if (index !== -1) {
-          console.log('splice:', updatedEntries[entryIdx]);
-
-          updatedEntries.splice(entryIdx, 1);
-        }
-      }
-    });
-
-    // Return updated entries immediately
-    setSearchResults(updatedEntries);
-
-    // fetch favicon for each entry
-    const faviconPromises = updatedEntries.map((entry: any) => {
-      if (!entry.metadata) {
-        return { favicon: '/favicon.ico' };
-      }
-
-      return fetchFavicon(entry.metadata.author);
-    });
-
-    Promise.all(faviconPromises).then((favicons) => {
-      const updatedEntriesFavicon = updatedEntries.map(
-        (entry: any, index: any) => {
-          const favicon = favicons[index].favicon
-            ? favicons[index].favicon
-            : '/favicon.ico';
-          return { ...entry, favicon };
-        },
-      );
-
-      // Update search results with favicons
-      setSearchResults(updatedEntriesFavicon);
-    });
-  });
-
-  return parsedEntries;
+  return entriesWithFavicons;
 }
 
-export async function fetchSearchEntriesOriginal(
-  query: string,
-  setSearchResults: Dispatch<SetStateAction<any[]>>,
-) {
-  const response = await fetch('/api/search', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ query }),
-  });
-  const data = await response.json();
-  const entries = data.data;
-  // map entries.metadata to json
-  const parsedEntries = entries.map((entry: any) => {
-    let metadata;
-    try {
-      metadata = JSON.parse(entry.metadata);
-    } catch (err) {
-      metadata = entry.metadata; // fallback to original metadata if parsing fails
-    }
+// export async function fetchSearchEntries(
+//   query: string,
+//   setSearchResults: Dispatch<SetStateAction<any[]>>,
+// ) {
+//   const response = await fetch('/api/search', {
+//     method: 'POST',
+//     headers: {
+//       'Content-Type': 'application/json',
+//     },
+//     body: JSON.stringify({ query }),
+//   });
+//   const data = await response.json();
+//   const entries = data.data;
+//   // map entries.metadata to json
+//   const parsedEntries = entries.map((entry: any) => {
+//     let metadata;
+//     try {
+//       metadata = JSON.parse(entry.metadata);
+//     } catch (err) {
+//       metadata = entry.metadata; // fallback to original metadata if parsing fails
+//     }
 
-    return { ...entry, metadata, favicon: '/favicon.ico' };
-  });
+//     return { ...entry, metadata, favicon: '/favicon.ico' };
+//   });
 
-  // Return parsed entries immediately
-  setSearchResults(parsedEntries);
+//   // Return parsed entries immediately
+//   setSearchResults(parsedEntries);
 
-  // for all entries with a parent_id, fetch parent_id data and append data as parentData key
-  const parentPromises = parsedEntries.map((entry: any) => {
-    if ('parent_id' in entry.metadata) {
-      return fetchByID(entry.metadata.parent_id);
-    }
-    return Promise.resolve(null); // Return null for entries without parent_id
-  });
+//   // for all entries with a parent_id, fetch parent_id data and append data as parentData key
+//   const parentPromises = parsedEntries.map((entry: any) => {
+//     if ('parent_id' in entry.metadata) {
+//       return fetchByID(entry.metadata.parent_id);
+//     }
+//     return Promise.resolve(null); // Return null for entries without parent_id
+//   });
 
-  Promise.allSettled(parentPromises).then((results) => {
-    const updatedEntries = parsedEntries.map((entry: any, index: any) => {
-      if (!results[index]) {
-        return entry;
-      }
-      if (results[index].status === 'fulfilled' && results[index].value) {
-        return { ...entry, parentData: results[index].value };
-      }
-      return entry;
-    });
+//   Promise.allSettled(parentPromises).then((results) => {
+//     const updatedEntries = parsedEntries.map((entry: any, index: any) => {
+//       if (!results[index]) {
+//         return entry;
+//       }
+//       if (results[index].status === 'fulfilled' && results[index].value) {
+//         return { ...entry, parentData: results[index].value };
+//       }
+//       return entry;
+//     });
 
-    // Return updated entries immediately
-    setSearchResults(updatedEntries);
+//     updatedEntries.forEach((entry: any, entryIdx: number) => {
+//       if (entry.metadata.alias_ids) {
+//         const aliasIds = entry.metadata.alias_ids.map(Number);
+//         const index = updatedEntries.findIndex((searchResult: any) =>
+//           aliasIds.includes(Number(searchResult.id)),
+//         );
+//         if (index !== -1) {
+//           console.log('splice:', updatedEntries[entryIdx]);
 
-    // fetch favicon for each entry
-    const faviconPromises = updatedEntries.map((entry: any) => {
-      if (!entry.metadata) {
-        return { favicon: '/favicon.ico' };
-      }
+//           updatedEntries.splice(entryIdx, 1);
+//         }
+//       }
+//     });
 
-      return fetchFavicon(entry.metadata.author);
-    });
+//     // Return updated entries immediately
+//     setSearchResults(updatedEntries);
 
-    Promise.all(faviconPromises).then((favicons) => {
-      const updatedEntriesFavicon = updatedEntries.map(
-        (entry: any, index: any) => {
-          const favicon = favicons[index].favicon
-            ? favicons[index].favicon
-            : '/favicon.ico';
-          return { ...entry, favicon };
-        },
-      );
+//     // fetch favicon for each entry
+//     const faviconPromises = updatedEntries.map((entry: any) => {
+//       if (!entry.metadata) {
+//         return { favicon: '/favicon.ico' };
+//       }
 
-      // Update search results with favicons
-      setSearchResults(updatedEntriesFavicon);
-    });
-  });
+//       return fetchFavicon(entry.metadata.author);
+//     });
 
-  return parsedEntries;
-}
+//     Promise.all(faviconPromises).then((favicons) => {
+//       const updatedEntriesFavicon = updatedEntries.map(
+//         (entry: any, index: any) => {
+//           const favicon = favicons[index].favicon
+//             ? favicons[index].favicon
+//             : '/favicon.ico';
+//           return { ...entry, favicon };
+//         },
+//       );
+
+//       // Update search results with favicons
+//       setSearchResults(updatedEntriesFavicon);
+//     });
+//   });
+
+//   return parsedEntries;
+// }
 
 export const formatDate = (isoString: string) => {
   const date = new Date(isoString);
   return date.toLocaleString(); // You can customize the locale and options as needed
 };
 
-export const addEntry = async (data: string, metadata: string) => {
+export const deleteEntry = async (id: string) => {
+  try {
+    const response = await fetch(`/api/delete`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ id }),
+    });
+    const data = await response.json();
+    if (data.error) {
+      throw new Error(data.error);
+    }
+    return data;
+  } catch (error) {
+    return { error };
+  }
+};
+
+// export const addEntry = async (data: string, metadata: any) => {
+//   try {
+//     const response = await fetch('/api/add', {
+//       method: 'POST',
+//       headers: {
+//         'Content-Type': 'application/json',
+//       },
+//       body: JSON.stringify({
+//         data,
+//         metadata,
+//       }),
+//     });
+//     const responseData = await response.json();
+
+//     // console.log('Added entry:', responseData);
+//     return responseData;
+//   } catch (error) {
+//     console.error('Error adding entry:', error);
+//     return {};
+//   }
+// };
+
+export const addEntry = async (data: string, metadata: any) => {
   try {
     const response = await fetch('/api/add', {
       method: 'POST',
@@ -223,19 +289,36 @@ export const addEntry = async (data: string, metadata: string) => {
     });
     const responseData = await response.json();
 
-    // console.log('Added entry:', responseData);
+    // Return the ID of the new entry
     return responseData;
   } catch (error) {
     console.error('Error adding entry:', error);
-    return {};
+    throw error;
   }
 };
 
-export const updateEntry = async (
-  id: string,
-  data: string,
-  metadata: string,
-) => {
+// TODO -- how to auto-generate the title? when all user has is a manual url?
+export async function getPageTitle(url: string) {
+  try {
+    const response = await fetch(url);
+    const text = await response.text();
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(text, 'text/html');
+    if (!doc) {
+      return null;
+    }
+    if (!doc.querySelector('title')) {
+      return null;
+    }
+
+    return doc?.querySelector('title')?.innerText;
+  } catch (error) {
+    console.error('Error fetching the title:', error);
+    return null;
+  }
+}
+
+export const updateEntry = async (id: string, data: string, metadata: any) => {
   try {
     console.log('metadata:', metadata);
     console.log('metadata type:', typeof metadata);
@@ -262,10 +345,11 @@ export const updateEntry = async (
   }
 };
 
-export const handleAliasAdd = async (data: any) => {
+export const handleAliasAdd = async (entry: any) => {
   try {
-    console.log('data [handleAliasAdd]:', data);
-    const parentEntry = await fetchByID(data.id);
+    console.log('entry [handleAliasAdd]:', entry);
+    const parentId = entry.id;
+    const parentEntry = await fetchByID(parentId);
     console.log('parentEntry:', parentEntry);
     let parentAliases = parentEntry.metadata.alias_ids;
     try {
@@ -275,26 +359,34 @@ export const handleAliasAdd = async (data: any) => {
     }
     // add a new entry with the alias as data and the original entry's metadata
     // add parent_id to the metadata
-    const parentId = data.id;
+
     const newMetadata = {
-      ...data.metadata,
+      ...entry.metadata,
       parent_id: parentId,
     };
-    const aliasRes = await addEntry(data.alias, newMetadata);
+    const aliasRes = await addEntry(entry.alias, newMetadata);
     console.log('aliasRes:', aliasRes);
     const aliasId = aliasRes.respData.id;
     // update the original entry's metadata with the new alias id in the alias_ids array
     const updatedMetadata = {
-      ...data.metadata,
+      ...entry.metadata,
       alias_ids: parentAliases ? [parentAliases, aliasId].flat() : [aliasId],
     };
     console.log('updatedMetadata:', updatedMetadata);
-    await updateEntry(parentId, data.data.data, updatedMetadata);
+    await updateEntry(parentId, entry.data.data, updatedMetadata);
 
     return aliasRes;
   } catch (err) {
     console.error('Error adding alias:', err);
     return { error: err };
+  }
+};
+
+export const toHostname = (url: string) => {
+  try {
+    return new URL(url).hostname;
+  } catch (err) {
+    return url;
   }
 };
 
@@ -349,6 +441,18 @@ export const addToCollection = (
     ...prev,
     [id]: !prev[id],
   }));
+};
+
+export const fetchRandomEntry = async () => {
+  const response = await fetch('/api/random', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+  const data = await response.json();
+
+  return data.data;
 };
 
 export const downloadCollection = (

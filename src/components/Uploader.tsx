@@ -17,7 +17,7 @@ const Uploader = () => {
     lastName: '',
   });
 
-  const apiKey = 'apikeyyyy'; // todo get from env
+  const apiKey = process.env.NEXT_PUBLIC_API_KEY_CF_IMG;
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -85,59 +85,6 @@ const Uploader = () => {
       modalMessage.focus();
     }
   };
-
-  // TODO: implement image upload
-
-  // const uploadImage = async () => {
-  //   const fileInput = document.getElementById('file-input-modal');
-  //   if (!fileInput) return;
-  //   (fileInput as HTMLInputElement).click();
-
-  //   fileInput.addEventListener('change', async (event) => {
-  //     const file = (event.target as HTMLInputElement).files?.[0];
-  //     if (!file) return;
-
-  //     const formData = new FormData();
-  //     formData.append('file', file);
-  //     setLoading(true);
-  //     const response = await fetch(
-  //       'https://commonbase-supabase-alpha.onrender.com/cf-images/upload',
-  //       {
-  //         method: 'POST',
-  //         headers: {
-  //           Authorization: `Bearer ${apiKey}`,
-  //         },
-  //         body: formData,
-  //       },
-  //     );
-  //     const data = await response.json();
-  //     console.log('Image uploaded:', data);
-  //     const pngUrl = `${data.url}?format=png`;
-  //     console.log('PNG URL:', pngUrl);
-
-  //     const response2 = await fetch(
-  //       'https://commonbase-supabase-alpha.onrender.com/cf-images/describe',
-  //       {
-  //         method: 'POST',
-  //         headers: {
-  //           Authorization: `Bearer ${apiKey}`,
-  //           'Content-Type': 'application/json',
-  //         },
-  //         body: JSON.stringify({ imageUrl: pngUrl }),
-  //       },
-  //     );
-  //     const data2 = await response2.json();
-  //     console.log('Image description:', data2);
-  //     // put img description in text area
-  //     setTextAreaValue(data2.data);
-
-  //     setTitle('Image');
-  //     setAuthor(data2.metadata.imageUrl);
-  //     await add(data2.description);
-
-  //     setLoading(false);
-  //   });
-  // };
 
   const uploadImage = async () => {
     const fileInput = document.getElementById('file-input-modal');
@@ -248,25 +195,6 @@ const Uploader = () => {
       >
         Upload Image
       </button>
-      {/* {loading && <p>Loading...</p>} */}
-
-      {/* <p>
-        <em>image upload coming soon, use /dashboard/upload for now</em>
-      </p> */}
-
-      {/* <div className="inline-flex w-full items-center justify-center">
-        <hr className="my-8 h-px w-64 border-0 bg-gray-200 dark:bg-gray-700" />
-        <span className="absolute left-1/2 -translate-x-1/2 bg-white px-3 font-medium text-gray-900 dark:bg-gray-900 dark:text-white">
-          or
-        </span>
-      </div>
-      <button
-        type="button"
-        className="mt-2 block w-full rounded-lg bg-blue-700 px-5 py-2.5 text-sm font-medium text-white hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
-        onClick={uploadImage}
-      >
-        Upload Image
-      </button> */}
       {loading && <p>Loading...</p>}
     </div>
   );

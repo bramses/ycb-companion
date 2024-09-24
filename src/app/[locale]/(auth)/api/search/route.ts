@@ -10,6 +10,38 @@ export const POST = async (request: Request) => {
   const { query } = await request.json();
   const { CLOUD_URL } = process.env;
 
+  let submittedQuery = query;
+
+  /*
+  if query contains "metadata:example" take the ... and add a filterModel to the query and remove the metadata:example from the query
+
+  create this object only replace example with the user input
+  "metadata": {
+        "filterType": "text",
+        "type": "contains",
+        "filter": "example"
+    }
+}
+  */
+
+  let filterModel = null;
+  if (query.includes('metadata:')) {
+    const value = query
+      .split('metadata:')[1]
+      .split(' ')[0]
+      .trim()
+      .replace(/"/g, '');
+    filterModel = {
+      metadata: {
+        filterType: 'text',
+        type: 'contains',
+        filter: value,
+      },
+    };
+    submittedQuery = query.replace(`metadata:${value}`, '');
+    logger.info('filterModel:', filterModel);
+  }
+
   const dbRes = await GET(request);
   if (!dbRes) {
     return NextResponse.json({}, { status: 500 });
@@ -22,9 +54,10 @@ export const POST = async (request: Request) => {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      query,
+      query: submittedQuery,
       dbPath: DATABASE_URL,
       apiKey: API_KEY,
+      filterModel,
     }),
   });
 

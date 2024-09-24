@@ -9,7 +9,7 @@ import { useCallback, useEffect, useState } from 'react';
 import Calendar from 'react-calendar';
 
 // import ScrollToTop from 'react-scroll-to-top';
-import { addToCollection, splitIntoWords } from '@/helpers/functions';
+import { splitIntoWords } from '@/helpers/functions';
 
 const GardenDaily = () => {
   const searchParams = useSearchParams();
@@ -17,10 +17,10 @@ const GardenDaily = () => {
   const [selectedDay, setSelectedDay] = useState('');
   const [dateSelected, setDateSelected] = useState(new Date());
   const [loading, setLoading] = useState(false);
-  const [checkedButtons, setCheckedButtons] = useState<{
-    [key: string]: boolean;
-  }>({});
-  const [buildingCollection, setBuildingCollection] = useState(false);
+  // const [checkedButtons, setCheckedButtons] = useState<{
+  //   [key: string]: boolean;
+  // }>({});
+  // const [buildingCollection, setBuildingCollection] = useState(false);
   // const cache = getCache();
 
   const toHostname = (url: string) => {
@@ -187,7 +187,7 @@ const GardenDaily = () => {
               </svg>
             </a>
           </div>
-          <button
+          {/* <button
             type="button"
             className={`ml-4 rounded-full p-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-300 ${
               checkedButtons[result.id] ? 'bg-green-500' : 'bg-blue-500'
@@ -233,7 +233,7 @@ const GardenDaily = () => {
                 />
               </svg>
             )}
-          </button>
+          </button> */}
         </div>
       ))}
       {/* <ScrollToTop smooth /> */}
