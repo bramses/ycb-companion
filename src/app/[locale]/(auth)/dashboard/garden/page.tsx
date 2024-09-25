@@ -17,6 +17,7 @@ const GardenDaily = () => {
   const [selectedDay, setSelectedDay] = useState('');
   const [dateSelected, setDateSelected] = useState(new Date());
   const [loading, setLoading] = useState(false);
+
   // const [checkedButtons, setCheckedButtons] = useState<{
   //   [key: string]: boolean;
   // }>({});
@@ -60,7 +61,7 @@ const GardenDaily = () => {
       });
       const responseData = await response.json();
 
-      console.log('Fetched records:', responseData);
+      // console.log('Fetched records:', responseData);
       // set entries to the mapped data
       setEntries(responseData.data);
       setDateSelected(date);
@@ -112,6 +113,7 @@ const GardenDaily = () => {
           {entries.length > 0 ? `:: ${entries.length} entries` : ''}{' '}
         </small>
       </h1>
+
       {loading && <p>Loading...</p>}
       {entries.length === 0 ? <p>No entries for this day</p> : null}
 

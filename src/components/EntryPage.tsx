@@ -818,77 +818,74 @@ const EntryPage = () => {
         </button>
       </div>
 
-      {hasAliases &&
-        renderedData.metadata.aliasData &&
+      {renderedData.metadata.aliasData &&
         renderedData.metadata.aliasData.length > 0 && (
           <h2 className="my-4 text-4xl font-extrabold">Comments</h2>
         )}
 
-      {hasAliases && (
-        <div>
-          {renderedData?.metadata?.aliasData?.map((alias: any) => (
-            <div key={alias.aliasId} className="mb-4 flex flex-col items-start">
-              <EditModal
-                isOpen={modalStates[`alias-${alias.aliasId}`] || false}
-                closeModalFn={() => closeModal(`alias-${alias.aliasId}`)}
-                data={alias.aliasData}
-                id={alias.aliasId}
-                metadata={alias.aliasMetadata}
-                disabledKeys={['parent_id']}
-                onSave={(newData) => handleEditComment(alias.aliasId, newData)}
-              />
-              <div className="flex">
-                <div className="mr-2 flex size-6 shrink-0 items-center justify-center rounded-full bg-gray-300 text-xs font-bold text-white">
-                  {firstLastName.firstName && firstLastName.lastName ? (
-                    <>
-                      {firstLastName.firstName[0]}
-                      {firstLastName.lastName[0]}
-                    </>
-                  ) : (
-                    'YCB'
-                  )}
-                </div>
-                <p className="text-black">{alias.aliasData}</p>
+      <div>
+        {renderedData?.metadata?.aliasData?.map((alias: any) => (
+          <div key={alias.aliasId} className="mb-4 flex flex-col items-start">
+            <EditModal
+              isOpen={modalStates[`alias-${alias.aliasId}`] || false}
+              closeModalFn={() => closeModal(`alias-${alias.aliasId}`)}
+              data={alias.aliasData}
+              id={alias.aliasId}
+              metadata={alias.aliasMetadata}
+              disabledKeys={['parent_id']}
+              onSave={(newData) => handleEditComment(alias.aliasId, newData)}
+            />
+            <div className="flex">
+              <div className="mr-2 flex size-6 shrink-0 items-center justify-center rounded-full bg-gray-300 text-xs font-bold text-white">
+                {firstLastName.firstName && firstLastName.lastName ? (
+                  <>
+                    {firstLastName.firstName[0]}
+                    {firstLastName.lastName[0]}
+                  </>
+                ) : (
+                  'YCB'
+                )}
               </div>
-              <p className="text-sm text-gray-500">
-                Added to yCb: {alias.aliasCreatedAt}
-              </p>
-              <div className="flex">
-                <button
-                  className="mr-4 justify-start text-blue-600 hover:underline"
-                  type="button"
-                  onClick={() => {
-                    setModalStates((prev) => ({
-                      ...prev,
-                      searchModalBeta: true,
-                    }));
-                    setSearchBetaModalQuery(alias.aliasData);
-                  }}
-                >
-                  Search
-                </button>
-                <button
-                  className="mr-4 justify-start text-blue-600 hover:underline"
-                  type="button"
-                  onClick={() => openModal(`alias-${alias.aliasId}`)}
-                  aria-label="edit"
-                >
-                  Edit
-                </button>
-                <button
-                  className="justify-start text-blue-600 hover:underline"
-                  type="button"
-                  onClick={() => handleDeleteComment(alias.aliasId)}
-                  aria-label="delete"
-                >
-                  Delete Comment
-                </button>
-              </div>
-              <hr className="mt-2 w-full" />
+              <p className="text-black">{alias.aliasData}</p>
             </div>
-          ))}
-        </div>
-      )}
+            <p className="text-sm text-gray-500">
+              Added to yCb: {alias.aliasCreatedAt}
+            </p>
+            <div className="flex">
+              <button
+                className="mr-4 justify-start text-blue-600 hover:underline"
+                type="button"
+                onClick={() => {
+                  setModalStates((prev) => ({
+                    ...prev,
+                    searchModalBeta: true,
+                  }));
+                  setSearchBetaModalQuery(alias.aliasData);
+                }}
+              >
+                Search
+              </button>
+              <button
+                className="mr-4 justify-start text-blue-600 hover:underline"
+                type="button"
+                onClick={() => openModal(`alias-${alias.aliasId}`)}
+                aria-label="edit"
+              >
+                Edit
+              </button>
+              <button
+                className="justify-start text-blue-600 hover:underline"
+                type="button"
+                onClick={() => handleDeleteComment(alias.aliasId)}
+                aria-label="delete"
+              >
+                Delete Comment
+              </button>
+            </div>
+            <hr className="mt-2 w-full" />
+          </div>
+        ))}
+      </div>
 
       {showAliasError && (
         <div className="text-red-500">Error adding alias. Try again.</div>

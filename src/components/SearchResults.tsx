@@ -9,7 +9,22 @@ import { usePathname, useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import { docco } from 'react-syntax-highlighter/dist/esm/styles/hljs';
+import { Label, Pie, PieChart } from 'recharts';
 
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import type { ChartConfig } from '@/components/ui/chart';
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from '@/components/ui/chart';
 import { appendSearchToCache, clearCache, getCache } from '@/helpers/cache';
 
 import {
@@ -18,6 +33,43 @@ import {
   splitIntoWords,
 } from '../helpers/functions';
 import Loading from './Loading';
+
+const CustomLabel = ({
+  viewBox,
+  entriesCreated,
+  entriesUpdated,
+}: {
+  viewBox: any;
+  entriesCreated: number;
+  entriesUpdated: number;
+}) => {
+  if (viewBox && 'cx' in viewBox && 'cy' in viewBox) {
+    return (
+      <text
+        x={viewBox.cx}
+        y={viewBox.cy}
+        textAnchor="middle"
+        dominantBaseline="middle"
+      >
+        <tspan
+          x={viewBox.cx}
+          y={viewBox.cy}
+          className="fill-foreground text-3xl font-bold"
+        >
+          {entriesCreated + entriesUpdated}
+        </tspan>
+        <tspan
+          x={viewBox.cx}
+          y={(viewBox.cy || 0) + 24}
+          className="fill-muted-foreground"
+        >
+          Entries
+        </tspan>
+      </text>
+    );
+  }
+  return null;
+};
 
 const SearchResults = () => {
   const { user, isLoaded } = useUser();
@@ -29,6 +81,8 @@ const SearchResults = () => {
   //   [key: string]: boolean;
   // }>({});
   // const [buildingCollection, setBuildingCollection] = useState(false);
+  const [entriesCreated, setEntriesCreated] = useState(0);
+  const [entriesUpdated, setEntriesUpdated] = useState(0);
 
   const [firstLastName, setFirstLastName] = useState({
     firstName: '',
@@ -224,6 +278,73 @@ const SearchResults = () => {
     }
   }, [textAreaValue]);
 
+  useEffect(() => {
+    // fetch created and updated entries from /api/entriesSummary
+    const fetchEntriesSummary = async () => {
+      try {
+        const response = await fetch('/api/entriesSummary', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            numDays: 1,
+          }),
+        });
+        const data = await response.json();
+        console.log('Entries summary:', data);
+        setEntriesCreated(data.data.created);
+        setEntriesUpdated(data.data.updated);
+      } catch (error) {
+        console.error('Error fetching entries summary:', error);
+      }
+    };
+
+    fetchEntriesSummary();
+  }, []);
+
+  const chartData = [
+    {
+      browser: 'created',
+      visitors: entriesCreated,
+      fill: 'var(--color-chrome)',
+    },
+    {
+      browser: 'updated',
+      visitors: entriesUpdated,
+      fill: 'var(--color-safari)',
+    },
+  ];
+  const chartConfig = {
+    visitors: {
+      label: 'Entries',
+    },
+    chrome: {
+      label: 'Created',
+      color: 'hsl(var(--chart-1))',
+    },
+    safari: {
+      label: 'Updated',
+      color: 'hsl(var(--chart-2))',
+    },
+  } satisfies ChartConfig;
+
+  // const totalVisitors = useMemo(() => {
+  //   return entriesCreated;
+  // }, []);
+
+  const renderCustomLabel = (
+    props: any,
+    entriesCreatedLabel: number,
+    entriesUpdatedLabel: number,
+  ) => (
+    <CustomLabel
+      viewBox={props.viewBox}
+      entriesCreated={entriesCreatedLabel}
+      entriesUpdated={entriesUpdatedLabel}
+    />
+  );
+
   return (
     <div className="min-w-full">
       <textarea
@@ -297,6 +418,46 @@ const SearchResults = () => {
       >
         Refresh Feed
       </button>
+      <Card className="flex flex-col">
+        <CardHeader className="items-center pb-0">
+          <CardTitle>Entries Made & Entries Gardened</CardTitle>
+          <CardDescription>{new Date().toLocaleDateString()}</CardDescription>
+        </CardHeader>
+        <CardContent className="flex-1 pb-0">
+          <ChartContainer
+            config={chartConfig}
+            className="mx-auto aspect-square max-h-[250px]"
+          >
+            <PieChart>
+              <ChartTooltip
+                cursor={false}
+                content={<ChartTooltipContent hideLabel />}
+              />
+              <Pie
+                data={chartData}
+                dataKey="visitors"
+                nameKey="browser"
+                innerRadius={60}
+                strokeWidth={5}
+              >
+                <Label
+                  content={(props) =>
+                    renderCustomLabel(props, entriesCreated, entriesUpdated)
+                  }
+                />
+              </Pie>
+            </PieChart>
+          </ChartContainer>
+        </CardContent>
+        <CardFooter className="flex-col gap-2 text-sm">
+          {/* <div className="flex items-center gap-2 font-medium leading-none">
+            Trending up by 5.2% from yesterday <TrendingUp className="size-4" />
+          </div> */}
+          <div className="leading-none text-muted-foreground">
+            You&apos;ll see a weekly result in your email inbox on Sundays
+          </div>
+        </CardFooter>
+      </Card>
       {/* download collection btn only if buildingCollection is true */}
       {/* {buildingCollection && (
         <button
