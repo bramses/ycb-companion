@@ -21,7 +21,7 @@ export const POST = async (request: Request) => {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      numDays: 1,
+      numDays: 0,
       dbPath: DATABASE_URL,
       apiKey: API_KEY,
     }),
