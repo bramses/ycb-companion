@@ -60,7 +60,6 @@ const EntryPage = () => {
   const [hasImage, setHasImage] = useState(false);
   const [hasSpotifyEmbed, setHasSpotifyEmbed] = useState(false);
   const MemoizedTikTokEmbed = memo(TikTokEmbed);
-  const [hasAliases, setHasAliases] = useState(false);
   const [searchResults, setSearchResults] = useState<any[]>([]);
   // const router = useRouter();
   const [showAliasError] = useState(false);
@@ -237,7 +236,6 @@ const EntryPage = () => {
 
         if ('alias_ids' in res.metadata) {
           // fetch plaintext data from alias_ids
-          setHasAliases(true);
           const aliasData = await Promise.all(
             res.metadata.alias_ids.map((aliasId: string) => fetchByID(aliasId)),
           );
