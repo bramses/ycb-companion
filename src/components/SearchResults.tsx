@@ -450,9 +450,12 @@ const SearchResults = () => {
           </ChartContainer>
         </CardContent>
         <CardFooter className="flex-col gap-2 text-sm">
-          {/* <div className="flex items-center gap-2 font-medium leading-none">
-            Trending up by 5.2% from yesterday <TrendingUp className="size-4" />
-          </div> */}
+          <div className="flex items-center gap-2 font-medium leading-none">
+            Try to keep a 1:1 ratio of new entries to updates. Updating entries
+            increase the density of Your Commonbase and make it much better at
+            connecting your thoughts. If you don&apos;t know where to start, hit
+            the random button in the speed dial in the corner!
+          </div>
           <div className="leading-none text-muted-foreground">
             You&apos;ll see a weekly result in your email inbox on Sundays
           </div>
