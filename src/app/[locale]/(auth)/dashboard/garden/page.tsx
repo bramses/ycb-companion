@@ -135,7 +135,17 @@ const GardenDaily = () => {
                   className="mr-2"
                 />
                 <span className="font-medium">
-                  {result.data.split(' ').length > 12 ? (
+                  {/* eslint-disable no-nested-ternary */}
+                  {result.metadata &&
+                  JSON.parse(result.metadata).author &&
+                  JSON.parse(result.metadata).author.includes(
+                    'imagedelivery.net',
+                  ) ? (
+                    <img
+                      src={JSON.parse(result.metadata).author}
+                      alt="ycb-companion-image"
+                    />
+                  ) : result.data.split(' ').length > 12 ? (
                     <>
                       {splitIntoWords(result.data, 12, 0)}...
                       <span className="mt-1 block text-sm text-gray-500">
