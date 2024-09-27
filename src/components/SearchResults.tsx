@@ -83,6 +83,7 @@ const SearchResults = () => {
   // const [buildingCollection, setBuildingCollection] = useState(false);
   const [entriesCreated, setEntriesCreated] = useState(0);
   const [entriesUpdated, setEntriesUpdated] = useState(0);
+  const [showPieChart, setShowPieChart] = useState(false);
 
   const [firstLastName, setFirstLastName] = useState({
     firstName: '',
@@ -129,6 +130,7 @@ const SearchResults = () => {
     console.log('Searching for:', searchQuery);
     setShowLoading(true);
     setSearchResults([]);
+    setShowPieChart(false);
 
     // check if the query is in cache
     if (cache.searches[searchQuery]) {
@@ -263,6 +265,7 @@ const SearchResults = () => {
       return;
     setShowLoading(true);
     setSearchResults([]);
+    setShowPieChart(true);
     await fetchList(setSearchResults as any, 1);
     setShowLoading(false);
   };
@@ -418,49 +421,51 @@ const SearchResults = () => {
       >
         Refresh Feed
       </button>
-      <Card className="flex flex-col">
-        <CardHeader className="items-center pb-0">
-          <CardTitle>Entries Made & Entries Gardened</CardTitle>
-          <CardDescription>{new Date().toLocaleDateString()}</CardDescription>
-        </CardHeader>
-        <CardContent className="flex-1 pb-0">
-          <ChartContainer
-            config={chartConfig}
-            className="mx-auto aspect-square max-h-[250px]"
-          >
-            <PieChart>
-              <ChartTooltip
-                cursor={false}
-                content={<ChartTooltipContent hideLabel />}
-              />
-              <Pie
-                data={chartData}
-                dataKey="visitors"
-                nameKey="browser"
-                innerRadius={60}
-                strokeWidth={5}
-              >
-                <Label
-                  content={(props) =>
-                    renderCustomLabel(props, entriesCreated, entriesUpdated)
-                  }
+      {showPieChart && (
+        <Card className="flex flex-col">
+          <CardHeader className="items-center pb-0">
+            <CardTitle>Entries Made & Entries Gardened</CardTitle>
+            <CardDescription>{new Date().toLocaleDateString()}</CardDescription>
+          </CardHeader>
+          <CardContent className="flex-1 pb-0">
+            <ChartContainer
+              config={chartConfig}
+              className="mx-auto aspect-square max-h-[250px]"
+            >
+              <PieChart>
+                <ChartTooltip
+                  cursor={false}
+                  content={<ChartTooltipContent hideLabel />}
                 />
-              </Pie>
-            </PieChart>
-          </ChartContainer>
-        </CardContent>
-        <CardFooter className="flex-col gap-2 text-sm">
-          <div className="flex items-center gap-2 font-medium leading-none">
-            Try to keep a 1:1 ratio of new entries to updates. Updating entries
-            increase the density of Your Commonbase and make it much better at
-            connecting your thoughts. If you don&apos;t know where to start, hit
-            the random button in the speed dial in the corner!
-          </div>
-          <div className="leading-none text-muted-foreground">
-            You&apos;ll see a weekly result in your email inbox on Sundays
-          </div>
-        </CardFooter>
-      </Card>
+                <Pie
+                  data={chartData}
+                  dataKey="visitors"
+                  nameKey="browser"
+                  innerRadius={60}
+                  strokeWidth={5}
+                >
+                  <Label
+                    content={(props) =>
+                      renderCustomLabel(props, entriesCreated, entriesUpdated)
+                    }
+                  />
+                </Pie>
+              </PieChart>
+            </ChartContainer>
+          </CardContent>
+          <CardFooter className="flex-col gap-2 text-sm">
+            <div className="flex items-center gap-2 font-medium leading-none">
+              Try to keep a 1:1 ratio of new entries to updates. Updating
+              entries increase the density of Your Commonbase and make it much
+              better at connecting your thoughts. If you don&apos;t know where
+              to start, hit the random button in the speed dial in the corner!
+            </div>
+            <div className="leading-none text-muted-foreground">
+              You&apos;ll see a weekly result in your email inbox on Sundays
+            </div>
+          </CardFooter>
+        </Card>
+      )}
       {/* download collection btn only if buildingCollection is true */}
       {/* {buildingCollection && (
         <button
