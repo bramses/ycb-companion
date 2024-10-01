@@ -196,6 +196,26 @@ const SearchResults = () => {
     return result.data;
   };
 
+  const fetchEntriesSummary = async () => {
+    try {
+      const response = await fetch('/api/entriesSummary', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          numDays: 1,
+        }),
+      });
+      const data = await response.json();
+      console.log('Entries summary:', data);
+      setEntriesCreated(data.data.created);
+      setEntriesUpdated(data.data.updated);
+    } catch (error) {
+      console.error('Error fetching entries summary:', error);
+    }
+  };
+
   useEffect(() => {
     if (!isLoaded) return;
     // set first name as title
@@ -266,6 +286,8 @@ const SearchResults = () => {
     setShowLoading(true);
     setSearchResults([]);
     setShowPieChart(true);
+    // reload pie chart data
+    await fetchEntriesSummary();
     await fetchList(setSearchResults as any, 1);
     setShowLoading(false);
   };
@@ -283,26 +305,6 @@ const SearchResults = () => {
 
   useEffect(() => {
     // fetch created and updated entries from /api/entriesSummary
-    const fetchEntriesSummary = async () => {
-      try {
-        const response = await fetch('/api/entriesSummary', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            numDays: 1,
-          }),
-        });
-        const data = await response.json();
-        console.log('Entries summary:', data);
-        setEntriesCreated(data.data.created);
-        setEntriesUpdated(data.data.updated);
-      } catch (error) {
-        console.error('Error fetching entries summary:', error);
-      }
-    };
-
     fetchEntriesSummary();
   }, []);
 
