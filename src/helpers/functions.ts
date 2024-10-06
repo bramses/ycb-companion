@@ -574,3 +574,130 @@ export const fetchList = async (
     });
   });
 };
+
+// create a string in markdown that combines all elemements given
+export const createAmalgam = async (
+  data: any,
+  comments: any[] = [],
+  links: any[] = [],
+  relatedEntries: any[] = [],
+  options: any = {},
+) => {
+  let markdownString = ``;
+  // add the text from the data
+  markdownString += `${data.data}\n\n`;
+
+  const disabledKeys = [];
+  if (options.disableAliasKeysInMetadata) {
+    disabledKeys.push('alias_ids');
+    disabledKeys.push('aliasData');
+  }
+
+  const urlMaps: Record<string, string> = {
+    'youtube.com': 'YouTube',
+    'twitter.com': 'Twitter',
+    'instagram.com': 'Instagram',
+    'tiktok.com': 'TikTok',
+    'imagedelivery.net': 'Image',
+    'open.spotify.com': 'Spotify',
+    'x.com': 'Twitter',
+    't.co': 'Twitter',
+    'facebook.com': 'Facebook',
+    'linkedin.com': 'LinkedIn',
+    'github.com': 'GitHub',
+    'medium.com': 'Medium',
+    'reddit.com': 'Reddit',
+    'wikipedia.org': 'Wikipedia',
+    'pinterest.com': 'Pinterest',
+    'stackoverflow.com': 'Stack Overflow',
+    'stackexchange.com': 'Stack Exchange',
+    'ycb-companion.onrender.com': 'Your Commonbase Companion',
+  };
+  const keysFromUrlMaps = Object.keys(urlMaps);
+
+  // add metadata in Key: Value format
+  markdownString += `# Metadata\n\n`;
+  for (const [key, value] of Object.entries(data.metadata)) {
+    if (!disabledKeys.includes(key)) {
+      markdownString += `${key}: ${value}\n`;
+
+      if (key === 'author' && value && typeof value === 'string') {
+        const match = keysFromUrlMaps.filter((ke) => value.includes(ke));
+        if (match && match.length === 1 && match[0]) {
+          markdownString += `Domain: ${urlMaps[match[0]]}\n`;
+        }
+      }
+    }
+  }
+
+  markdownString += `\n`;
+
+  // add res createdAt and updatedAt converted to string like August 1, 2023
+  // markdownString += `Created At: ${new Date(data.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}\n`;
+  // markdownString += `Updated At: ${new Date(data.updatedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}\n`;
+
+  // markdownString += `\n`;
+
+  // add comments (just the aliasData)
+  if (comments.length > 0) {
+    markdownString += `# Comments\n\n`;
+    for (const comment of comments) {
+      markdownString += `- ${comment.aliasData}\n\n`;
+    }
+  }
+
+  // const commentDisabledKeys = [];
+  // if (options.disableAliasKeysInComments) {
+  //   commentDisabledKeys.push('aliasId');
+  //   commentDisabledKeys.push('parent_id');
+  //   commentDisabledKeys.push('aliasUpdatedAt');
+  // }
+
+  // // add comments
+  // console.log('comments:', comments);
+  // if (comments.length > 0) {
+  //   markdownString += `# Comments\n\n`;
+  //   for (const comment of comments) {
+  //     markdownString += `## Comment\n\n`;
+  //     for (const [key, value] of Object.entries(comment)) {
+  //       if (key !== 'aliasMetadata') {
+  //         if (!commentDisabledKeys.includes(key)) {
+  //           console.log('key:', key);
+  //           markdownString += `${key === 'aliasCreatedAt' ? 'Commented At' : key}: ${value}\n`;
+  //         }
+  //       } else {
+  //         markdownString += `Alias Metadata:\n\n`;
+  //         for (const [aliasKey, aliasValue] of Object.entries(
+  //           value as Record<string, unknown>,
+  //         )) {
+  //           if (!commentDisabledKeys.includes(aliasKey)) {
+  //             markdownString += `${aliasKey}: ${aliasValue}\n`;
+  //           }
+  //         }
+  //       }
+  //     }
+  //     markdownString += `\n`;
+  //   }
+  // }
+
+  // add links
+  if (links.length > 0) {
+    markdownString += `# Links\n\n`;
+    for (const link of links) {
+      markdownString += `## ${link.name}\n\n`;
+      markdownString += `${link.url}\n\n`;
+    }
+  }
+
+  // add related entries
+  if (relatedEntries.length > 0) {
+    markdownString += `# Related Entries\n\n`;
+    for (const entry of relatedEntries) {
+      markdownString += `## ${entry.data}\n\n`;
+      markdownString += `${entry.metadata.title}\n\n`;
+      markdownString += `${entry.metadata.author}\n\n`;
+    }
+  }
+
+  return markdownString;
+};

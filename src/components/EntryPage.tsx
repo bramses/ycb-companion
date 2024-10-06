@@ -22,6 +22,7 @@ import { Tweet } from 'react-tweet';
 import { v4 as uuidv4 } from 'uuid';
 
 import {
+  createAmalgam,
   deleteEntry as apiDeleteEntry,
   fetchByID,
   fetchSearchEntries,
@@ -224,7 +225,21 @@ const EntryPage = () => {
         const entryId = Array.isArray(id) ? id[0] : id; // Handle both string and string[]
         if (!entryId) return;
         let res;
-        const dt = await fetchByID(entryId);
+        let dt;
+
+        try {
+          dt = await fetchByID(entryId);
+        } catch (error: any) {
+          if (error.message.includes('No data returned from the API')) {
+            // remove current page from the history stack so user doesnt back to it for loop
+            window.history.pushState({}, '', window.location.pathname);
+            // Redirect to a 404 page
+            window.location.href = '/404';
+          }
+          // Handle other errors
+          console.error('An error occurred:', error);
+          throw error;
+        }
 
         if ('parent_id' in dt.metadata) {
           const parentData = await fetchByID(dt.metadata.parent_id);
@@ -283,6 +298,19 @@ const EntryPage = () => {
 
         // search for related entries
         handleSearch(res.data, res.id);
+        if (res) {
+          const amalgam = await createAmalgam(
+            res,
+            res.metadata.aliasData,
+            [],
+            [],
+            {
+              disableAliasKeysInMetadata: true,
+              disableAliasKeysInComments: true,
+            },
+          );
+          console.log('Amalgam:', amalgam);
+        }
       };
       asyncFn();
     }
@@ -681,8 +709,6 @@ const EntryPage = () => {
   const renderedData = transactionManager
     ? transactionManager.getDraftState()
     : data;
-
-  console.log('renderedData:', renderedData);
 
   return renderedData ? (
     <div className="my-4 min-w-full max-w-full">
