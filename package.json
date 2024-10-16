@@ -43,6 +43,7 @@
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
     "drizzle-orm": "^0.32.0",
+    "formidable": "^3.5.1",
     "lucide-react": "^0.445.0",
     "next": "^14.2.5",
     "next-intl": "^3.17.2",

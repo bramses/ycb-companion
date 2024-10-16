@@ -60,6 +60,7 @@ const EntryPage = () => {
   const [hasTikTokEmbed, setHasTikTokEmbed] = useState(false);
   const [hasImage, setHasImage] = useState(false);
   const [hasSpotifyEmbed, setHasSpotifyEmbed] = useState(false);
+  const [hasR2Dev, setHasR2Dev] = useState(false);
   const MemoizedTikTokEmbed = memo(TikTokEmbed);
   const [searchResults, setSearchResults] = useState<any[]>([]);
   // const router = useRouter();
@@ -153,6 +154,7 @@ const EntryPage = () => {
     fn_setHasImage: React.Dispatch<React.SetStateAction<boolean>>,
     fn_setHasSpotifyEmbed: React.Dispatch<React.SetStateAction<boolean>>,
     fn_setHasCodeBlock: React.Dispatch<React.SetStateAction<boolean>>,
+    fn_setHasR2Dev: React.Dispatch<React.SetStateAction<boolean>>,
   ) => {
     if (res.metadata.author.includes('youtube.com')) {
       fn_setHasYoutubeEmbed(true);
@@ -194,6 +196,11 @@ const EntryPage = () => {
       fn_setHasCodeBlock(true);
       // replace ```*``` in data.data with ''
       res.data = res.data.replace(/```[\s\S]*?```/g, '');
+    }
+
+    // check if the data has r2dev embed
+    if (res.metadata.author.includes('r2.dev')) {
+      fn_setHasR2Dev(true);
     }
   };
 
@@ -291,6 +298,7 @@ const EntryPage = () => {
           setHasImage,
           setHasSpotifyEmbed,
           setHasCodeBlock,
+          setHasR2Dev,
         );
 
         // set author to the URL
@@ -737,6 +745,13 @@ const EntryPage = () => {
         >
           {data.metadata.code}
         </SyntaxHighlighter>
+      )}
+      {hasR2Dev && (
+        <audio controls src={data?.metadata.author}>
+          <track kind="captions" />
+          Your browser does not support the
+          <code>audio</code> element.
+        </audio>
       )}
 
       {data ? (
