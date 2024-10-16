@@ -260,12 +260,7 @@ const Uploader = () => {
           or
         </span>
       </div>
-      <input
-        type="file"
-        accept="audio/*"
-        className="hidden"
-        id="file-input-audio"
-      />
+      <input type="file" className="hidden" id="file-input-audio" />
       <button
         type="button"
         onClick={uploadAudio}
