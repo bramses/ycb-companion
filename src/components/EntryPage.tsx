@@ -13,7 +13,6 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { memo, useEffect, useState } from 'react';
 import LiteYouTubeEmbed from 'react-lite-youtube-embed';
-import ReactMarkdown from 'react-markdown';
 import { InstagramEmbed, TikTokEmbed } from 'react-social-media-embed';
 import { Spotify } from 'react-spotify-embed';
 import SyntaxHighlighter from 'react-syntax-highlighter';
@@ -335,24 +334,24 @@ const EntryPage = () => {
     }
   }, [isLoaded, user]);
 
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'k') {
-        const selectedText = window.getSelection()?.toString();
-        if (selectedText) {
-          // open search modal beta
-          setModalStates((prev) => ({ ...prev, searchModalBeta: true }));
-          setSearchBetaModalQuery(selectedText);
-        }
-      }
-    };
+  // useEffect(() => {
+  //   const handleKeyDown = (event: KeyboardEvent) => {
+  //     if (event.key === 'k') {
+  //       const selectedText = window.getSelection()?.toString();
+  //       if (selectedText) {
+  //         // open search modal beta
+  //         setModalStates((prev) => ({ ...prev, searchModalBeta: true }));
+  //         setSearchBetaModalQuery(selectedText);
+  //       }
+  //     }
+  //   };
 
-    window.addEventListener('keydown', handleKeyDown);
+  //   window.addEventListener('keydown', handleKeyDown);
 
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-    };
-  }, []);
+  //   return () => {
+  //     window.removeEventListener('keydown', handleKeyDown);
+  //   };
+  // }, []);
 
   useEffect(() => {
     if (data) {
@@ -713,6 +712,72 @@ const EntryPage = () => {
     }
   };
 
+  const addDblSquareBracketLinks = (text: string) => {
+    // Match both [[link|alias]] and [[link]] patterns
+    const regex = /\[\[(.*?)(?:\|(.*?))?\]\]/g;
+
+    const handleLinkClick =
+      (link: string | undefined) => (_: React.MouseEvent<HTMLSpanElement>) => {
+        if (!link) return;
+        console.log('link:', link);
+        // Handle link click here, like opening a modal or navigating
+        setModalStates((prev) => ({
+          ...prev,
+          searchModalBeta: true,
+        }));
+        setSearchBetaModalQuery(link);
+      };
+
+    // Iterate over all matches in the string
+    const parts: JSX.Element[] = [];
+    let lastIndex = 0;
+    let match;
+
+    // Isolating the regex match from the while condition to avoid eslint no-cond-assign
+    while (true) {
+      match = regex.exec(text);
+      if (!match) break;
+
+      // eslint-disable-next-line
+      const [fullMatch, link, alias] = match;
+      const beforeText = text.slice(lastIndex, match.index);
+
+      // Add the text before the current match
+      if (beforeText) {
+        parts.push(<span key={lastIndex}>{beforeText}</span>);
+      }
+
+      // Add the matched link as a clickable span with role and keyboard support
+      parts.push(
+        <span
+          key={match.index}
+          onClick={handleLinkClick(link)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              handleLinkClick(link)(
+                e as unknown as React.MouseEvent<HTMLSpanElement>,
+              );
+            }
+          }}
+          role="button"
+          tabIndex={0}
+          className="cursor-pointer underline hover:underline"
+        >
+          {alias || link}
+        </span>,
+      );
+
+      lastIndex = regex.lastIndex;
+    }
+
+    // Add any remaining text after the last match
+    if (lastIndex < text.length) {
+      parts.push(<span key={lastIndex}>{text.slice(lastIndex)}</span>);
+    }
+
+    return parts;
+  };
+
   // Rendered Data
   const renderedData = transactionManager
     ? transactionManager.getDraftState()
@@ -756,9 +821,7 @@ const EntryPage = () => {
 
       {data ? (
         <div className="m-4 [&_p]:my-6">
-          <ReactMarkdown className="font-normal text-gray-900">
-            {renderedData.data}
-          </ReactMarkdown>
+          <div>{addDblSquareBracketLinks(renderedData.data)}</div>
 
           <EditModal
             isOpen={modalStates.editModal || false}
