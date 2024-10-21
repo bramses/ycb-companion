@@ -1,3 +1,10 @@
+# [1.40.0](https://github.com/bramses/ycb-companion/compare/v1.39.0...v1.40.0) (2024-10-21)
+
+
+### Features
+
+* Add NotFoundPage component to display a friendly message for 404 errors in the application ([9f8cce6](https://github.com/bramses/ycb-companion/commit/9f8cce65b3f17e56392d0cf2f226742bc02ecae1))
+
 # [1.39.0](https://github.com/bramses/ycb-companion/compare/v1.38.1...v1.39.0) (2024-09-08)
 
 
