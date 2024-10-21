@@ -1055,7 +1055,9 @@ const EntryPage = () => {
                   'YCB'
                 )}
               </div>
-              <p className="text-black">{alias.aliasData}</p>
+              <p className="text-black">
+                {processCustomMarkdown(alias.aliasData)}
+              </p>
             </div>
             <p className="text-sm text-gray-500">
               Added to yCb: {alias.aliasCreatedAt}
