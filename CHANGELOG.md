@@ -1,3 +1,10 @@
+## [1.40.3](https://github.com/bramses/ycb-companion/compare/v1.40.2...v1.40.3) (2024-10-21)
+
+
+### Bug Fixes
+
+* Remove unnecessary logging in auth API fetch route and refine metadata query replacement in search route ([e102ded](https://github.com/bramses/ycb-companion/commit/e102dedd206c0d6b49858bc9556069e85b4ca3ea))
+
 ## [1.40.2](https://github.com/bramses/ycb-companion/compare/v1.40.1...v1.40.2) (2024-10-21)
 
 
