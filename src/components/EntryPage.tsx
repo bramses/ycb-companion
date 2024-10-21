@@ -738,8 +738,7 @@ const EntryPage = () => {
       match = regex.exec(text);
       if (!match) break;
 
-      // eslint-disable-next-line
-      const [fullMatch, link, alias] = match;
+      const [, link, alias] = match;
       const beforeText = text.slice(lastIndex, match.index);
 
       // Add the text before the current match
