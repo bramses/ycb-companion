@@ -1,3 +1,10 @@
+## [1.40.1](https://github.com/bramses/ycb-companion/compare/v1.40.0...v1.40.1) (2024-10-21)
+
+
+### Bug Fixes
+
+* Update EntryPage to process alias data with custom markdown handling for improved rendering ([d88c2e1](https://github.com/bramses/ycb-companion/commit/d88c2e1d5e699fda57232181c4255bb0e391faa6))
+
 # [1.40.0](https://github.com/bramses/ycb-companion/compare/v1.39.0...v1.40.0) (2024-10-21)
 
 
