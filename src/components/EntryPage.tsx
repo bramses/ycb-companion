@@ -712,14 +712,80 @@ const EntryPage = () => {
     }
   };
 
-  const addDblSquareBracketLinks = (text: string) => {
-    // Match both [[link|alias]] and [[link]] patterns
-    const regex = /\[\[(.*?)(?:\|(.*?))?\]\]/g;
+  // const addDblSquareBracketLinks = (text: string) => {
+  //   // Match both [[link|alias]] and [[link]] patterns
+  //   const regex = /\[\[(.*?)(?:\|(.*?))?\]\]/g;
+
+  //   const handleLinkClick =
+  //     (link: string | undefined) => (_: React.MouseEvent<HTMLSpanElement>) => {
+  //       if (!link) return;
+  //       console.log('link:', link);
+  //       // Handle link click here, like opening a modal or navigating
+  //       setModalStates((prev) => ({
+  //         ...prev,
+  //         searchModalBeta: true,
+  //       }));
+  //       setSearchBetaModalQuery(link);
+  //     };
+
+  //   // Iterate over all matches in the string
+  //   const parts: JSX.Element[] = [];
+  //   let lastIndex = 0;
+  //   let match;
+
+  //   // Isolating the regex match from the while condition to avoid eslint no-cond-assign
+  //   while (true) {
+  //     match = regex.exec(text);
+  //     if (!match) break;
+
+  //     const [, link, alias] = match;
+  //     const beforeText = text.slice(lastIndex, match.index);
+
+  //     // Add the text before the current match
+  //     if (beforeText) {
+  //       parts.push(<span key={lastIndex}>{beforeText}</span>);
+  //     }
+
+  //     // Add the matched link as a clickable span with role and keyboard support
+  //     parts.push(
+  //       <span
+  //         key={match.index}
+  //         onClick={handleLinkClick(link)}
+  //         onKeyDown={(e) => {
+  //           if (e.key === 'Enter' || e.key === ' ') {
+  //             handleLinkClick(link)(
+  //               e as unknown as React.MouseEvent<HTMLSpanElement>,
+  //             );
+  //           }
+  //         }}
+  //         role="button"
+  //         tabIndex={0}
+  //         className="cursor-pointer underline hover:underline"
+  //       >
+  //         {alias || link}
+  //       </span>,
+  //     );
+
+  //     lastIndex = regex.lastIndex;
+  //   }
+
+  //   // Add any remaining text after the last match
+  //   if (lastIndex < text.length) {
+  //     parts.push(<span key={lastIndex}>{text.slice(lastIndex)}</span>);
+  //   }
+
+  //   return parts;
+  // };
+
+  const processCustomMarkdown = (text: string): JSX.Element[] => {
+    const elements: JSX.Element[] = [];
+    const lines = text.split('\n');
 
     const handleLinkClick =
       (link: string | undefined) => (_: React.MouseEvent<HTMLSpanElement>) => {
+        // console.log('link:', link);
         if (!link) return;
-        console.log('link:', link);
+
         // Handle link click here, like opening a modal or navigating
         setModalStates((prev) => ({
           ...prev,
@@ -728,53 +794,95 @@ const EntryPage = () => {
         setSearchBetaModalQuery(link);
       };
 
-    // Iterate over all matches in the string
-    const parts: JSX.Element[] = [];
-    let lastIndex = 0;
-    let match;
+    lines.forEach((line) => {
+      let lastIndex = 0;
+      const parts: JSX.Element[] = [];
 
-    // Isolating the regex match from the while condition to avoid eslint no-cond-assign
-    while (true) {
-      match = regex.exec(text);
-      if (!match) break;
+      const addTextBeforeMatch = (matchIndex: number) => {
+        const beforeText = line.slice(lastIndex, matchIndex);
+        if (beforeText) {
+          parts.push(<span key={`text-${uuidv4()}`}>{beforeText}</span>);
+        }
+      };
 
-      const [, link, alias] = match;
-      const beforeText = text.slice(lastIndex, match.index);
-
-      // Add the text before the current match
-      if (beforeText) {
-        parts.push(<span key={lastIndex}>{beforeText}</span>);
+      // Process custom link syntax [[link|alias]] or [[link]]
+      const customLinkRegex = /\[\[(.*?)(?:\|(.*?))?\]\]/g;
+      for (
+        let customLinkMatch = customLinkRegex.exec(line);
+        customLinkMatch !== null;
+        customLinkMatch = customLinkRegex.exec(line)
+      ) {
+        addTextBeforeMatch(customLinkMatch.index);
+        const [, link, alias] = customLinkMatch;
+        parts.push(
+          <span
+            key={`custom-link-${uuidv4()}`}
+            onClick={handleLinkClick(link)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                handleLinkClick(link)(
+                  e as unknown as React.MouseEvent<HTMLSpanElement>,
+                );
+              }
+            }}
+            role="button"
+            tabIndex={0}
+            className="cursor-pointer underline hover:bg-sky-700"
+          >
+            {alias || link}
+          </span>,
+        );
+        lastIndex = customLinkRegex.lastIndex;
       }
 
-      // Add the matched link as a clickable span with role and keyboard support
-      parts.push(
-        <span
-          key={match.index}
-          onClick={handleLinkClick(link)}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-              handleLinkClick(link)(
-                e as unknown as React.MouseEvent<HTMLSpanElement>,
-              );
-            }
-          }}
-          role="button"
-          tabIndex={0}
-          className="cursor-pointer underline hover:underline"
-        >
-          {alias || link}
-        </span>,
-      );
+      // Process image syntax ![](url)
+      const imageRegex = /!\[(.*?)\]\((.*?)\)/g;
+      for (
+        let imageMatch = imageRegex.exec(line);
+        imageMatch !== null;
+        imageMatch = imageRegex.exec(line)
+      ) {
+        addTextBeforeMatch(imageMatch.index);
+        const [, alt, src] = imageMatch;
+        parts.push(
+          <img key={`img-${uuidv4()}`} src={src} alt={alt} className="my-2" />,
+        );
+        lastIndex = imageRegex.lastIndex;
+      }
 
-      lastIndex = regex.lastIndex;
-    }
+      // Process standard link syntax [](url)
+      const linkRegex = /\[(.*?)\]\((.*?)\)/g;
+      for (
+        let linkMatch = linkRegex.exec(line);
+        linkMatch !== null;
+        linkMatch = linkRegex.exec(line)
+      ) {
+        addTextBeforeMatch(linkMatch.index);
+        const [, linkText, href] = linkMatch;
+        parts.push(
+          <a
+            key={`link-${uuidv4()}`}
+            href={href}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-blue-600 hover:underline"
+          >
+            {linkText}
+          </a>,
+        );
+        lastIndex = linkRegex.lastIndex;
+      }
 
-    // Add any remaining text after the last match
-    if (lastIndex < text.length) {
-      parts.push(<span key={lastIndex}>{text.slice(lastIndex)}</span>);
-    }
+      if (lastIndex < line.length) {
+        parts.push(
+          <span key={`text-${uuidv4()}`}>{line.slice(lastIndex)}</span>,
+        );
+      }
 
-    return parts;
+      elements.push(<p key={`line-${uuidv4()}`}>{parts}</p>);
+    });
+
+    return elements;
   };
 
   // Rendered Data
@@ -820,7 +928,7 @@ const EntryPage = () => {
 
       {data ? (
         <div className="m-4 [&_p]:my-6">
-          <div>{addDblSquareBracketLinks(renderedData.data)}</div>
+          <div>{processCustomMarkdown(renderedData.data)}</div>
 
           <EditModal
             isOpen={modalStates.editModal || false}
