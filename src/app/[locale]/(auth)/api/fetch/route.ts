@@ -27,7 +27,6 @@ export const POST = async (request: Request) => {
       apiKey: API_KEY,
     }),
   });
-  logger.info('resp:', resp);
   const data = await resp.json();
 
   try {

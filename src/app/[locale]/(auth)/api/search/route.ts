@@ -38,7 +38,7 @@ export const POST = async (request: Request) => {
         filter: value,
       },
     };
-    submittedQuery = query.replace(`metadata:${value}`, '');
+    submittedQuery = query.replace(`"metadata:${value}"`, '');
     logger.info('filterModel:', filterModel);
   }
 
