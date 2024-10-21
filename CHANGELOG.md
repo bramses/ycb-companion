@@ -1,3 +1,10 @@
+## [1.40.2](https://github.com/bramses/ycb-companion/compare/v1.40.1...v1.40.2) (2024-10-21)
+
+
+### Bug Fixes
+
+* Remove old NotFoundPage from src/app and migrate it to locale-specific directory ([6f15c33](https://github.com/bramses/ycb-companion/commit/6f15c33114bf21c4302a14eb264746f9e110373f))
+
 ## [1.40.1](https://github.com/bramses/ycb-companion/compare/v1.40.0...v1.40.1) (2024-10-21)
 
 
