@@ -925,9 +925,29 @@ const EntryPage = () => {
           <code>audio</code> element.
         </audio>
       )}
-
       {data ? (
         <div className="m-4 [&_p]:my-6">
+          <button
+            type="button"
+            className="my-2 me-2 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4"
+            onClick={async () => {
+              // update the entry with the new metadata if starred already remove "iStarred" from metadata if not starred add "isStarred" to metadata
+              if (data.metadata.isStarred) {
+                delete data.metadata.isStarred;
+                await apiUpdateEntry(data.id, data.data, {
+                  ...data.metadata,
+                });
+              } else {
+                data.metadata.isStarred = true;
+                await apiUpdateEntry(data.id, data.data, {
+                  ...data.metadata,
+                });
+              }
+              window.location.reload();
+            }}
+          >
+            {data.metadata.isStarred ? 'Unstar' : 'Star'}
+          </button>
           <div>{processCustomMarkdown(renderedData.data)}</div>
 
           <EditModal
@@ -989,7 +1009,6 @@ const EntryPage = () => {
       ) : (
         'Loading...'
       )}
-
       <button
         type="button"
         onClick={handleSaveAll}
@@ -997,7 +1016,6 @@ const EntryPage = () => {
       >
         {isSaving ? 'Saving...' : 'Save All Changes'}
       </button>
-
       <h2 className="my-4 text-4xl font-extrabold">Add Comment</h2>
       <div className="">
         <textarea
@@ -1026,12 +1044,10 @@ const EntryPage = () => {
           Add Comment
         </button>
       </div>
-
       {renderedData.metadata.aliasData &&
         renderedData.metadata.aliasData.length > 0 && (
           <h2 className="my-4 text-4xl font-extrabold">Comments</h2>
         )}
-
       <div>
         {renderedData?.metadata?.aliasData?.map((alias: any) => (
           <div key={alias.aliasId} className="mb-4 flex flex-col items-start">
@@ -1097,13 +1113,10 @@ const EntryPage = () => {
           </div>
         ))}
       </div>
-
       {showAliasError && (
         <div className="text-red-500">Error adding alias. Try again.</div>
       )}
-
       <h2 className="my-4 text-4xl font-extrabold">Add Links</h2>
-
       <button
         type="button"
         className="my-4 w-full rounded-lg bg-blue-700 px-5 py-2.5 text-sm font-medium text-white hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300"
@@ -1122,7 +1135,6 @@ const EntryPage = () => {
           onSearch={handleSearchLinksModal}
         />
       )}
-
       {renderedData.metadata.links &&
         renderedData.metadata.links.length > 0 && (
           <>
@@ -1152,7 +1164,6 @@ const EntryPage = () => {
             </div>
           </>
         )}
-
       <h2 className="my-4 text-4xl font-extrabold">{relatedText}</h2>
       {searchResults.map((result) => (
         <div key={result.id}>
@@ -1235,13 +1246,6 @@ const EntryPage = () => {
           <hr className="my-4" />
         </div>
       ))}
-
-      <Link
-        href="/dashboard"
-        className="mt-4 block text-blue-600 hover:underline"
-      >
-        Back to dashboard
-      </Link>
     </div>
   ) : (
     <Loading />

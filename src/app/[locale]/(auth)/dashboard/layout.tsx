@@ -85,10 +85,10 @@ export default function DashboardLayout(props: { children: React.ReactNode }) {
           </li>
           <li>
             <Link
-              href="/dashboard/paragraphs/"
+              href="/dashboard/starred-entries/"
               className="border-none text-gray-700 hover:text-gray-900"
             >
-              {t('uploader_link')}
+              {t('starred_entries_link')}
             </Link>
           </li>
           <li>

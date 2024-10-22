@@ -66,7 +66,7 @@
   "DashboardLayout": {
     "dashboard_link": "Dashboard",
     "user_profile_link": "Manage your account",
-    "uploader_link": "Long Form",
+    "starred_entries_link": "Starred Entries",
     "garden_link": "Garden",
     "grid_link": "Grid",
     "sign_out": "Sign out"
