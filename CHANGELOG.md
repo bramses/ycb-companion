@@ -1,3 +1,10 @@
+# [1.41.0](https://github.com/bramses/ycb-companion/compare/v1.40.3...v1.41.0) (2024-10-22)
+
+
+### Features
+
+* Implement "Starred Entries" feature in dashboard with button to star/unstar entries and update translation keys accordingly ([318ac9b](https://github.com/bramses/ycb-companion/commit/318ac9bda6b6032ca8115a1f85c80ff0f43ca2be))
+
 ## [1.40.3](https://github.com/bramses/ycb-companion/compare/v1.40.2...v1.40.3) (2024-10-21)
 
 
