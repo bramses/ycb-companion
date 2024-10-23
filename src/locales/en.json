@@ -67,6 +67,7 @@
     "dashboard_link": "Dashboard",
     "user_profile_link": "Manage your account",
     "starred_entries_link": "Starred Entries",
+    "inbox_link": "Inbox",
     "garden_link": "Garden",
     "grid_link": "Grid",
     "sign_out": "Sign out"

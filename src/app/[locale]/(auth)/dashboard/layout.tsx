@@ -71,6 +71,39 @@ export default function DashboardLayout(props: { children: React.ReactNode }) {
     };
   }, []);
 
+  const [inboxCount, setInboxCount] = useState<any>({
+    data: {
+      count: 0,
+    },
+  });
+  const fetchInboxCountHelper = async () => {
+    const inboxCountResponse = await fetch('/api/inboxCount', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    const inboxCountData = await inboxCountResponse.json();
+    console.log('Inbox count:', inboxCountData);
+    setInboxCount({
+      data: {
+        count: inboxCountData.data,
+      },
+    });
+  };
+
+  useEffect(() => {
+    const fetchInboxCount = async () => {
+      try {
+        await fetchInboxCountHelper();
+      } catch (error) {
+        console.error('Error fetching inbox count:', error);
+      }
+    };
+
+    fetchInboxCount();
+  }, []);
+
   return (
     <BaseTemplate
       leftNav={
@@ -90,6 +123,14 @@ export default function DashboardLayout(props: { children: React.ReactNode }) {
             >
               {t('starred_entries_link')}
             </Link>
+          </li>
+          <li className="border-none text-gray-700 hover:text-gray-900">
+            <Link href="/dashboard/inbox/" className="border-none">
+              {t('inbox_link')}
+            </Link>
+            <span>
+              {' '}({inboxCount.data.count})
+            </span>
           </li>
           <li>
             <Link
