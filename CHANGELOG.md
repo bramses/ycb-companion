@@ -1,3 +1,10 @@
+# [1.42.0](https://github.com/bramses/ycb-companion/compare/v1.41.0...v1.42.0) (2024-10-23)
+
+
+### Features
+
+* Add inbox feature to dashboard with count and fetch functionality, including new translations for the inbox link ([92652eb](https://github.com/bramses/ycb-companion/commit/92652eb51fdb59af7c5fd0f3bdea2449e73d1937))
+
 # [1.41.0](https://github.com/bramses/ycb-companion/compare/v1.40.3...v1.41.0) (2024-10-22)
 
 
