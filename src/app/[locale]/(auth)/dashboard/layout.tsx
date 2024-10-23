@@ -129,7 +129,7 @@ export default function DashboardLayout(props: { children: React.ReactNode }) {
               {t('inbox_link')}
             </Link>
             <span>
-              {' '}({inboxCount.data.count})
+            ` ({inboxCount.data.count})`
             </span>
           </li>
           <li>
