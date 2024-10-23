@@ -1,3 +1,10 @@
+## [1.42.2](https://github.com/bramses/ycb-companion/compare/v1.42.1...v1.42.2) (2024-10-23)
+
+
+### Bug Fixes
+
+* Improve formatting and reorganize imports in Inbox component for better readability and consistency ([1487055](https://github.com/bramses/ycb-companion/commit/148705512da4b2486b6934d95a31e9fcc5788ee9))
+
 ## [1.42.1](https://github.com/bramses/ycb-companion/compare/v1.42.0...v1.42.1) (2024-10-23)
 
 
