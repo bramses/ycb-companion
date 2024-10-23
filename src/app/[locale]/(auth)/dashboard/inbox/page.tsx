@@ -1,8 +1,9 @@
 'use client';
 
-import Loading from '@/components/Loading';
 import Link from 'next/link';
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
+
+import Loading from '@/components/Loading';
 
 const Inbox = () => {
   const [page, setPage] = useState(1);
@@ -12,21 +13,21 @@ const Inbox = () => {
   const fetchInboxEntries = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch("/api/inbox", {
-        method: "POST",
+      const response = await fetch('/api/inbox', {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           page,
         }),
       });
       const data = await response.json();
-      console.log("Inbox entries:", data);
+      console.log('Inbox entries:', data);
       setEntries(data.data);
       setIsLoading(false);
     } catch (error) {
-      console.error("Error fetching inbox entries:", error);
+      console.error('Error fetching inbox entries:', error);
     }
   };
   useEffect(() => {
@@ -64,9 +65,9 @@ const Inbox = () => {
                   Created: {new Date(entry.createdAt).toLocaleString()}
                   {entry.createdAt !== entry.updatedAt && (
                     <>
-                      {" "}
-                      | Last Updated:{" "}
-                      {new Date(entry.updatedAt).toLocaleString()}{" "}
+                      {' '}
+                      | Last Updated:{' '}
+                      {new Date(entry.updatedAt).toLocaleString()}{' '}
                     </>
                   )}
                 </div>
@@ -78,8 +79,9 @@ const Inbox = () => {
       )}
       {!isLoading && (
         <button
+          type="button"
           onClick={() => handlePageChange(page + 1)}
-          className="mt-4 px-4 py-2 bg-blue-500 text-white rounded"
+          className="mt-4 rounded bg-blue-500 px-4 py-2 text-white"
         >
           Load More
         </button>

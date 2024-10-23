@@ -128,9 +128,7 @@ export default function DashboardLayout(props: { children: React.ReactNode }) {
             <Link href="/dashboard/inbox/" className="border-none">
               {t('inbox_link')}
             </Link>
-            <span>
-            ` ({inboxCount.data.count})`
-            </span>
+            <span>` ({inboxCount.data.count})`</span>
           </li>
           <li>
             <Link
