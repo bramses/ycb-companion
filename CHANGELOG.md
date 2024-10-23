@@ -1,3 +1,10 @@
+## [1.42.1](https://github.com/bramses/ycb-companion/compare/v1.42.0...v1.42.1) (2024-10-23)
+
+
+### Bug Fixes
+
+* Correct rendering of inbox count in dashboard layout for improved display clarity ([882c7e7](https://github.com/bramses/ycb-companion/commit/882c7e7a45797f1bd9471b20e30882c500f907e6))
+
 # [1.42.0](https://github.com/bramses/ycb-companion/compare/v1.41.0...v1.42.0) (2024-10-23)
 
 
