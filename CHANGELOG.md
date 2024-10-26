@@ -1,3 +1,10 @@
+# [1.43.0](https://github.com/bramses/ycb-companion/compare/v1.42.2...v1.43.0) (2024-10-26)
+
+
+### Features
+
+* Add D3.js and related types for visualizing data with a Force Directed Graph component in EntryPage ([7c3bef7](https://github.com/bramses/ycb-companion/commit/7c3bef716c1970752b8cfe7cfd24114e946e3160))
+
 ## [1.42.2](https://github.com/bramses/ycb-companion/compare/v1.42.1...v1.42.2) (2024-10-23)
 
 
