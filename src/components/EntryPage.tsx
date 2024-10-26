@@ -46,6 +46,7 @@ const EntryPage = () => {
     metadata: any;
     id: string;
     createdAt: string;
+    updatedAt: string;
   } | null>(null);
   const [author, setAuthor] = useState(''); // author is the URL
   const pathname = usePathname();
@@ -97,6 +98,22 @@ const EntryPage = () => {
       return url;
     }
   };
+
+  const [highlightedText, setHighlightedText] = useState<string[]>([]);
+
+  // for highlighted text if h is pressed on keyboard, surround seleted text in [[ ]] and edit the entry object
+  const handleHighlightText = () => {
+    if (!data) return;
+    const selectedText = window.getSelection()?.toString();
+    console.log('selectedText:', selectedText);
+    if (!selectedText) return;
+    // add select text to array
+    setHighlightedText((prev) => [...prev, selectedText]);
+  };
+
+  useEffect(() => {
+    console.log('highlightedText:', highlightedText);
+  }, [highlightedText]);
 
   const renderResultData = (result: any) => {
     if (
@@ -223,6 +240,23 @@ const EntryPage = () => {
   };
 
   useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'h') {
+        const selectedText = window.getSelection()?.toString();
+        if (selectedText) {
+          handleHighlightText();
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [data]);
+
+  useEffect(() => {
     if (!data) {
       const asyncFn = async () => {
         // get id from pathname by popping the last element
@@ -279,6 +313,7 @@ const EntryPage = () => {
           metadata: res.metadata,
           id: res.id,
           createdAt: res.createdAt,
+          updatedAt: res.updatedAt,
         });
 
         // Initialize the TransactionManager with the current data
