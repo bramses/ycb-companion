@@ -8,7 +8,7 @@
 import 'react-lite-youtube-embed/dist/LiteYouTubeEmbed.css';
 
 import { useUser } from '@clerk/nextjs';
-import Image from 'next/image';
+// import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { memo, useEffect, useState } from 'react';
@@ -21,13 +21,13 @@ import { Tweet } from 'react-tweet';
 import { v4 as uuidv4 } from 'uuid';
 
 import {
-  createAmalgam,
+  // createAmalgam,
   deleteEntry as apiDeleteEntry,
   fetchByID,
-  fetchSearchEntries,
+  // fetchSearchEntries,
   fetchSearchEntriesHelper,
   formatDate,
-  splitIntoWords,
+  // splitIntoWords,
   updateEntry as apiUpdateEntry,
 } from '../helpers/functions';
 import { createEntryTransaction } from '../helpers/transactionFunctions';
@@ -62,7 +62,7 @@ const EntryPage = () => {
   const [hasSpotifyEmbed, setHasSpotifyEmbed] = useState(false);
   const [hasR2Dev, setHasR2Dev] = useState(false);
   const MemoizedTikTokEmbed = memo(TikTokEmbed);
-  const [searchResults, setSearchResults] = useState<any[]>([]);
+  // const [searchResults, setSearchResults] = useState<any[]>([]);
   // const router = useRouter();
   const [showAliasError] = useState(false);
   const { user, isLoaded } = useUser();
@@ -79,7 +79,7 @@ const EntryPage = () => {
     {},
   );
   const [isLinkModalOpen, setIsLinkModalOpen] = useState(false);
-  const [relatedText] = useState('Related Entries');
+  // const [relatedText] = useState('Related Entries');
 
   const [searchBetaModalQuery, setSearchBetaModalQuery] = useState('');
   const [isSaving, setIsSaving] = useState(false);
@@ -94,56 +94,56 @@ const EntryPage = () => {
   const closeModal = (key: string) =>
     setModalStates((prev) => ({ ...prev, [key]: false }));
 
-  const toHostname = (url: string) => {
-    try {
-      return new URL(url).hostname;
-    } catch (err) {
-      return url;
-    }
-  };
+  // const toHostname = (url: string) => {
+  //   try {
+  //     return new URL(url).hostname;
+  //   } catch (err) {
+  //     return url;
+  //   }
+  // };
 
-  const renderResultData = (result: any) => {
-    if (
-      result.metadata &&
-      result.metadata.author &&
-      result.metadata.author.includes('imagedelivery.net')
-    ) {
-      return <img src={result.metadata.author} alt="Image" />;
-    }
+  // const renderResultData = (result: any) => {
+  //   if (
+  //     result.metadata &&
+  //     result.metadata.author &&
+  //     result.metadata.author.includes('imagedelivery.net')
+  //   ) {
+  //     return <img src={result.metadata.author} alt="Image" />;
+  //   }
 
-    if (result.metadata && result.metadata.code) {
-      return (
-        <SyntaxHighlighter
-          language={
-            result.metadata.language === 'typescriptreact'
-              ? 'tsx'
-              : result.metadata.language
-          }
-          style={docco}
-          wrapLines
-          wrapLongLines
-          customStyle={{ height: '200px', overflow: 'scroll' }}
-        >
-          {result.metadata.code}
-        </SyntaxHighlighter>
-      );
-    }
+  //   if (result.metadata && result.metadata.code) {
+  //     return (
+  //       <SyntaxHighlighter
+  //         language={
+  //           result.metadata.language === 'typescriptreact'
+  //             ? 'tsx'
+  //             : result.metadata.language
+  //         }
+  //         style={docco}
+  //         wrapLines
+  //         wrapLongLines
+  //         customStyle={{ height: '200px', overflow: 'scroll' }}
+  //       >
+  //         {result.metadata.code}
+  //       </SyntaxHighlighter>
+  //     );
+  //   }
 
-    if (result.parentData) {
-      return result.parentData.data;
-    }
-    if (result.data.split(' ').length > 2200) {
-      return (
-        <>
-          {splitIntoWords(result.data, 22, 0)}...
-          <span className="mt-1 block text-sm text-gray-500">
-            ...{splitIntoWords(result.data, 22, 22)}...
-          </span>
-        </>
-      );
-    }
-    return result.data;
-  };
+  //   if (result.parentData) {
+  //     return result.parentData.data;
+  //   }
+  //   if (result.data.split(' ').length > 2200) {
+  //     return (
+  //       <>
+  //         {splitIntoWords(result.data, 22, 0)}...
+  //         <span className="mt-1 block text-sm text-gray-500">
+  //           ...{splitIntoWords(result.data, 22, 22)}...
+  //         </span>
+  //       </>
+  //     );
+  //   }
+  //   return result.data;
+  // };
 
   const checkEmbeds = (
     res: { data: any; metadata: any },
@@ -207,32 +207,32 @@ const EntryPage = () => {
     }
   };
 
-  const handleSearchHelper = async (entryData: string) => {
-    const parsedEntries = await fetchSearchEntries(
-      entryData,
-      setSearchResults,
-      null,
-    );
-    return parsedEntries;
-  };
+  // const handleSearchHelper = async (entryData: string) => {
+  //   const parsedEntries = await fetchSearchEntries(
+  //     entryData,
+  //     setSearchResults,
+  //     null,
+  //   );
+  //   return parsedEntries;
+  // };
 
   const handleSearchLinksModal = async (entryData: string) => {
     const parsedEntries = await fetchSearchEntriesHelper(entryData);
     return parsedEntries;
   };
 
-  const handleSearch = async (entryData: string, _: string) => {
-    const parsedEntries = await handleSearchHelper(entryData);
-    // add ids of parsed entries to uniqueRelationships
-    // parsedEntries.forEach((entry: any) => {
-    //   const { id } = entry;
-    //   if (id) {
-    //     setUniqueRelationships((prev: any) => new Set([...prev, id]));
-    //   }
-    //   // console.log('uniqueRelationships:', uniqueRelationships);
-    // });
-    setSearchResults(parsedEntries);
-  };
+  // const handleSearch = async (entryData: string, _: string) => {
+  //   const parsedEntries = await handleSearchHelper(entryData);
+  //   // add ids of parsed entries to uniqueRelationships
+  //   // parsedEntries.forEach((entry: any) => {
+  //   //   const { id } = entry;
+  //   //   if (id) {
+  //   //     setUniqueRelationships((prev: any) => new Set([...prev, id]));
+  //   //   }
+  //   //   // console.log('uniqueRelationships:', uniqueRelationships);
+  //   // });
+  //   setSearchResults(parsedEntries);
+  // };
 
   // useEffect(() => {
   //   if (data?.metadata?.aliasData) {
@@ -845,44 +845,7 @@ const EntryPage = () => {
 
     return elements;
   };
-
-  const fdataTest = {
-    entry: 'going back to paradise',
-    neighbors: [
-      {
-        id: '2756',
-        data: 'come back to me',
-        similarity: 0.522143625574224,
-        parent: {
-          id: '1887',
-          data: "gaming Nick how can you even say my seed is weak when you've never even experienced it bro 2",
-        },
-      },
-      {
-        id: '2235',
-        data: 'see you in hell if there is one',
-        similarity: 0.391994697809854,
-      },
-    ],
-    comments: [
-      {
-        comment: 'i cant stop im sorry',
-        penPals: [
-          {
-            id: '3277',
-            data: 'i dont know what im saying',
-            similarity: 0.459221782730712,
-            parent: {
-              id: '1886',
-              data: "gaming Nick how can you even say my seed is weak when you've never even experienced it bro ask any girl that I've cream pied and I if I if I even if I I could just wave the wand and say agane oh they' pull up they' pull up like [ __ ] hardcore Wow Fresh server bro",
-            },
-          },
-          { id: '3200', data: 'excuse me', similarity: 0.45140669039448 },
-        ],
-      },
-    ],
-  };
-
+  
   const searchNeighbors = async (query: string, skipIDS: string[] = []) => {
     const response = await fetch('/api/search', {
       method: 'POST',
