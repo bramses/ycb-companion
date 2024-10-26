@@ -1,3 +1,10 @@
+## [1.43.2](https://github.com/bramses/ycb-companion/compare/v1.43.1...v1.43.2) (2024-10-26)
+
+
+### Bug Fixes
+
+* Simplify event handling by removing unused parameter in click event for ForceDirectedGraph component ([9468116](https://github.com/bramses/ycb-companion/commit/9468116da6c6f5384c86d16c6cafdc7a0030b84f))
+
 ## [1.43.1](https://github.com/bramses/ycb-companion/compare/v1.43.0...v1.43.1) (2024-10-26)
 
 
