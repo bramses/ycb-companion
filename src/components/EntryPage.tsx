@@ -330,7 +330,7 @@ const EntryPage = () => {
         setAuthor(res.metadata.author);
 
         // search for related entries
-        //handleSearch(res.data, res.id);
+        // handleSearch(res.data, res.id);
         // if (res) {
         //   const amalgam = await createAmalgam(
         //     res,
@@ -845,7 +845,7 @@ const EntryPage = () => {
 
     return elements;
   };
-  
+
   const searchNeighbors = async (query: string, skipIDS: string[] = []) => {
     const response = await fetch('/api/search', {
       method: 'POST',
@@ -862,14 +862,15 @@ const EntryPage = () => {
     for await (const neighbor of res.data) {
       if (skipIDS.includes(neighbor.id)) {
         console.log('skipping neighbor:', neighbor.id);
-        continue;
       } else {
         if (JSON.parse(neighbor.metadata).parent_id) {
           console.log(
             'neighbor.metadata:',
             JSON.parse(neighbor.metadata).parent_id,
           );
-          const parent = await fetchByID(JSON.parse(neighbor.metadata).parent_id);
+          const parent = await fetchByID(
+            JSON.parse(neighbor.metadata).parent_id,
+          );
           neighbor.parent = parent;
         }
         console.log('pushing neighbor:', neighbor.id);
@@ -897,16 +898,18 @@ const EntryPage = () => {
     for await (const penPal of res.data) {
       if (skipIDS.includes(penPal.id)) {
         console.log('skipping penPal:', penPal.id);
-        continue;
       } else {
         if (JSON.parse(penPal.metadata).parent_id) {
-          console.log('penPal.metadata:', JSON.parse(penPal.metadata).parent_id);
+          console.log(
+            'penPal.metadata:',
+            JSON.parse(penPal.metadata).parent_id,
+          );
           const parent = await fetchByID(JSON.parse(penPal.metadata).parent_id);
           penPal.parent = parent;
         }
         console.log('pushing penPal:', penPal.id);
-      penPals.push(penPal);
-    }
+        penPals.push(penPal);
+      }
     }
 
     return penPals;
@@ -919,7 +922,10 @@ const EntryPage = () => {
     console.log('comments:', comments);
     const commentIDs = comments.map((comment: any) => comment.aliasId);
 
-    const neighbors = await searchNeighbors(entry.data, [entry.id, ...commentIDs]);
+    const neighbors = await searchNeighbors(entry.data, [
+      entry.id,
+      ...commentIDs,
+    ]);
     const neighborIDs = neighbors.map((neighbor: any) => neighbor.id);
     const commentsWithNeighbors = await Promise.all(
       comments.map(async (comment) => {
@@ -1019,8 +1025,6 @@ const EntryPage = () => {
           </h2>
         </div>
       )} */}
-      <h1>Force Directed Graph</h1>
-      {fData ? <ForceDirectedGraph data={fData} /> : null}
       {data ? (
         <div className="m-4 [&_p]:my-6">
           <button
@@ -1045,6 +1049,8 @@ const EntryPage = () => {
             {data.metadata.isStarred ? 'Unstar' : 'Star'}
           </button>
           <div>{processCustomMarkdown(renderedData.data)}</div>
+
+          {fData ? <ForceDirectedGraph data={fData} /> : null}
 
           <EditModal
             isOpen={modalStates.editModal || false}

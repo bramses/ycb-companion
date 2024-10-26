@@ -1,4 +1,5 @@
 // components/ForceDirectedGraph.js
+/* eslint-disable no-param-reassign */
 
 import * as d3 from 'd3';
 import Link from 'next/link';
@@ -22,7 +23,7 @@ const ForceDirectedGraph = ({ data }: any) => {
   useEffect(() => {
     if (!svgRef.current) return;
     if (!containerRef.current) return;
-    
+
     const containerWidth = containerRef.current.clientWidth;
     const width = containerWidth;
     const height = containerWidth;
@@ -89,6 +90,25 @@ const ForceDirectedGraph = ({ data }: any) => {
       ),
     ];
 
+    function drag(sSimulation: any) {
+      return d3
+        .drag()
+        .on('start', (event, d: any) => {
+          if (!event.active) sSimulation.alphaTarget(0.3).restart();
+          d.fx = d.x;
+          d.fy = d.y;
+        })
+        .on('drag', (event, d: any) => {
+          d.fx = event.x;
+          d.fy = event.y;
+        })
+        .on('end', (event, d: any) => {
+          if (!event.active) sSimulation.alphaTarget(0);
+          d.fx = null;
+          d.fy = null;
+        });
+    }
+
     const links = [
       ...data.neighbors.map((n: any) => ({
         source: data.entry,
@@ -110,7 +130,11 @@ const ForceDirectedGraph = ({ data }: any) => {
       // Link neighbors and penpals to their parents
       ...data.neighbors
         .filter((n: any) => n.parent)
-        .map((n: any) => ({ source: n.id, target: n.parent.id, similarity: 0.5 })),
+        .map((n: any) => ({
+          source: n.id,
+          target: n.parent.id,
+          similarity: 0.5,
+        })),
       ...data.comments.flatMap((comment: any) =>
         comment.penPals
           .filter((penPal: any) => penPal.parent)
@@ -187,31 +211,13 @@ const ForceDirectedGraph = ({ data }: any) => {
 
     // Correct type casting for SVG zoom
     svg.call(
-      d3.zoom<SVGSVGElement, unknown>()
+      d3
+        .zoom<SVGSVGElement, unknown>()
         .scaleExtent([0.5, 3])
-        .on("zoom", (event) => {
-          g.attr("transform", event.transform);
-        })
+        .on('zoom', (event) => {
+          g.attr('transform', event.transform);
+        }),
     );
-
-    function drag(simulation: any) {
-      return d3
-        .drag()
-        .on('start', (event, d: any) => {
-          if (!event.active) simulation.alphaTarget(0.3).restart();
-          d.fx = d.x;
-          d.fy = d.y;
-        })
-        .on('drag', (event, d: any) => {
-          d.fx = event.x;
-          d.fy = event.y;
-        })
-        .on('end', (event, d: any) => {
-          if (!event.active) simulation.alphaTarget(0);
-          d.fx = null;
-          d.fy = null;
-        });
-    }
   }, [data]);
 
   return (
@@ -236,8 +242,10 @@ const ForceDirectedGraph = ({ data }: any) => {
         <p>{modalContent.content}</p>
         <Link href={`/dashboard/entry/${modalContent.id}`} className="mt-4">
           View Entry
-          </Link>
-        <button onClick={closeModal}>Close</button>
+        </Link>
+        <button onClick={closeModal} type="button">
+          Close
+        </button>
       </Modal>
     </div>
   );
