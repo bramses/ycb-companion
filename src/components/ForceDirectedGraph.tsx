@@ -62,7 +62,7 @@ const ForceDirectedGraph = ({ data }: any) => {
         label: comment.comment,
         group: 'comment',
       })),
-      ...data.comments.flatMap((comment: any, idx: any) =>
+      ...data.comments.flatMap((comment: any) =>
         comment.penPals.map((penPal: any) => ({
           id: penPal.id,
           label: penPal.data,
