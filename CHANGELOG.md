@@ -1,3 +1,10 @@
+## [1.43.3](https://github.com/bramses/ycb-companion/compare/v1.43.2...v1.43.3) (2024-10-26)
+
+
+### Bug Fixes
+
+* Improve code clarity by formatting, cleaning up comments, and restructuring async function in EntryPage component ([98b57b0](https://github.com/bramses/ycb-companion/commit/98b57b0736638126e04b103ace8dd32720d4c7f0))
+
 ## [1.43.2](https://github.com/bramses/ycb-companion/compare/v1.43.1...v1.43.2) (2024-10-26)
 
 
