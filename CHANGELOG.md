@@ -1,3 +1,10 @@
+## [1.43.1](https://github.com/bramses/ycb-companion/compare/v1.43.0...v1.43.1) (2024-10-26)
+
+
+### Bug Fixes
+
+* Remove unnecessary index parameter in flatMap for clearer code in ForceDirectedGraph component ([e17a4a2](https://github.com/bramses/ycb-companion/commit/e17a4a2ef3bacc799371774ed6917f4971917191))
+
 # [1.43.0](https://github.com/bramses/ycb-companion/compare/v1.42.2...v1.43.0) (2024-10-26)
 
 
