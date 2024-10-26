@@ -34,6 +34,7 @@ import { createEntryTransaction } from '../helpers/transactionFunctions';
 import type { Transaction } from '../helpers/transactionManager';
 import { TransactionManager } from '../helpers/transactionManager';
 import EditModal from './EditModal';
+import ForceDirectedGraph from './ForceDirectedGraph';
 import LinksModal from './LinksModal';
 import Loading from './Loading';
 import SearchModalBeta from './SearchModalBeta';
@@ -70,6 +71,9 @@ const EntryPage = () => {
     lastName: '',
   });
   const [showDeleteError] = useState(false);
+  // const [uniqueRelationships, setUniqueRelationships] = useState<any>(
+  //   new Set(),
+  // );
 
   const [modalStates, setModalStates] = useState<{ [key: string]: boolean }>(
     {},
@@ -219,8 +223,30 @@ const EntryPage = () => {
 
   const handleSearch = async (entryData: string, _: string) => {
     const parsedEntries = await handleSearchHelper(entryData);
+    // add ids of parsed entries to uniqueRelationships
+    // parsedEntries.forEach((entry: any) => {
+    //   const { id } = entry;
+    //   if (id) {
+    //     setUniqueRelationships((prev: any) => new Set([...prev, id]));
+    //   }
+    //   // console.log('uniqueRelationships:', uniqueRelationships);
+    // });
     setSearchResults(parsedEntries);
   };
+
+  // useEffect(() => {
+  //   if (data?.metadata?.aliasData) {
+  //     data.metadata.aliasData.forEach(async (alias: any) => {
+  //       const parsedEntries = await handleSearchHelper(alias.aliasData);
+  //       parsedEntries.forEach((entry: any) => {
+  //         const { id } = entry;
+  //         if (id) {
+  //           setUniqueRelationships((prev: any) => new Set([...prev, id]));
+  //         }
+  //       });
+  //     });
+  //   }
+  // }, [data?.metadata?.aliasData]);
 
   useEffect(() => {
     if (!data) {
@@ -304,20 +330,20 @@ const EntryPage = () => {
         setAuthor(res.metadata.author);
 
         // search for related entries
-        handleSearch(res.data, res.id);
-        if (res) {
-          const amalgam = await createAmalgam(
-            res,
-            res.metadata.aliasData,
-            [],
-            [],
-            {
-              disableAliasKeysInMetadata: true,
-              disableAliasKeysInComments: true,
-            },
-          );
-          console.log('Amalgam:', amalgam);
-        }
+        //handleSearch(res.data, res.id);
+        // if (res) {
+        //   const amalgam = await createAmalgam(
+        //     res,
+        //     res.metadata.aliasData,
+        //     [],
+        //     [],
+        //     {
+        //       disableAliasKeysInMetadata: true,
+        //       disableAliasKeysInComments: true,
+        //     },
+        //   );
+        //   console.log('Amalgam:', amalgam);
+        // }
       };
       asyncFn();
     }
@@ -712,71 +738,6 @@ const EntryPage = () => {
     }
   };
 
-  // const addDblSquareBracketLinks = (text: string) => {
-  //   // Match both [[link|alias]] and [[link]] patterns
-  //   const regex = /\[\[(.*?)(?:\|(.*?))?\]\]/g;
-
-  //   const handleLinkClick =
-  //     (link: string | undefined) => (_: React.MouseEvent<HTMLSpanElement>) => {
-  //       if (!link) return;
-  //       console.log('link:', link);
-  //       // Handle link click here, like opening a modal or navigating
-  //       setModalStates((prev) => ({
-  //         ...prev,
-  //         searchModalBeta: true,
-  //       }));
-  //       setSearchBetaModalQuery(link);
-  //     };
-
-  //   // Iterate over all matches in the string
-  //   const parts: JSX.Element[] = [];
-  //   let lastIndex = 0;
-  //   let match;
-
-  //   // Isolating the regex match from the while condition to avoid eslint no-cond-assign
-  //   while (true) {
-  //     match = regex.exec(text);
-  //     if (!match) break;
-
-  //     const [, link, alias] = match;
-  //     const beforeText = text.slice(lastIndex, match.index);
-
-  //     // Add the text before the current match
-  //     if (beforeText) {
-  //       parts.push(<span key={lastIndex}>{beforeText}</span>);
-  //     }
-
-  //     // Add the matched link as a clickable span with role and keyboard support
-  //     parts.push(
-  //       <span
-  //         key={match.index}
-  //         onClick={handleLinkClick(link)}
-  //         onKeyDown={(e) => {
-  //           if (e.key === 'Enter' || e.key === ' ') {
-  //             handleLinkClick(link)(
-  //               e as unknown as React.MouseEvent<HTMLSpanElement>,
-  //             );
-  //           }
-  //         }}
-  //         role="button"
-  //         tabIndex={0}
-  //         className="cursor-pointer underline hover:underline"
-  //       >
-  //         {alias || link}
-  //       </span>,
-  //     );
-
-  //     lastIndex = regex.lastIndex;
-  //   }
-
-  //   // Add any remaining text after the last match
-  //   if (lastIndex < text.length) {
-  //     parts.push(<span key={lastIndex}>{text.slice(lastIndex)}</span>);
-  //   }
-
-  //   return parts;
-  // };
-
   const processCustomMarkdown = (text: string): JSX.Element[] => {
     const elements: JSX.Element[] = [];
     const lines = text.split('\n');
@@ -885,6 +846,155 @@ const EntryPage = () => {
     return elements;
   };
 
+  const fdataTest = {
+    entry: 'going back to paradise',
+    neighbors: [
+      {
+        id: '2756',
+        data: 'come back to me',
+        similarity: 0.522143625574224,
+        parent: {
+          id: '1887',
+          data: "gaming Nick how can you even say my seed is weak when you've never even experienced it bro 2",
+        },
+      },
+      {
+        id: '2235',
+        data: 'see you in hell if there is one',
+        similarity: 0.391994697809854,
+      },
+    ],
+    comments: [
+      {
+        comment: 'i cant stop im sorry',
+        penPals: [
+          {
+            id: '3277',
+            data: 'i dont know what im saying',
+            similarity: 0.459221782730712,
+            parent: {
+              id: '1886',
+              data: "gaming Nick how can you even say my seed is weak when you've never even experienced it bro ask any girl that I've cream pied and I if I if I even if I I could just wave the wand and say agane oh they' pull up they' pull up like [ __ ] hardcore Wow Fresh server bro",
+            },
+          },
+          { id: '3200', data: 'excuse me', similarity: 0.45140669039448 },
+        ],
+      },
+    ],
+  };
+
+  const searchNeighbors = async (query: string, skipIDS: string[] = []) => {
+    const response = await fetch('/api/search', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        query,
+      }),
+    });
+    const res = await response.json();
+    console.log('Neighbors:', res);
+    const neighbors = [];
+    for await (const neighbor of res.data) {
+      if (skipIDS.includes(neighbor.id)) {
+        console.log('skipping neighbor:', neighbor.id);
+        continue;
+      } else {
+        if (JSON.parse(neighbor.metadata).parent_id) {
+          console.log(
+            'neighbor.metadata:',
+            JSON.parse(neighbor.metadata).parent_id,
+          );
+          const parent = await fetchByID(JSON.parse(neighbor.metadata).parent_id);
+          neighbor.parent = parent;
+        }
+        console.log('pushing neighbor:', neighbor.id);
+        neighbors.push(neighbor);
+      }
+    }
+    return neighbors;
+  };
+
+  const searchPenPals = async (query: string, skipIDS: string[] = []) => {
+    const response = await fetch('/api/search', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        query,
+      }),
+    });
+    const res = await response.json();
+    const penPals = [];
+
+    // for pen pals if metadata.parent_id is not null, add it to the pen pals array fetch the parent entry and add it to the pen pal as a parent
+
+    for await (const penPal of res.data) {
+      if (skipIDS.includes(penPal.id)) {
+        console.log('skipping penPal:', penPal.id);
+        continue;
+      } else {
+        if (JSON.parse(penPal.metadata).parent_id) {
+          console.log('penPal.metadata:', JSON.parse(penPal.metadata).parent_id);
+          const parent = await fetchByID(JSON.parse(penPal.metadata).parent_id);
+          penPal.parent = parent;
+        }
+        console.log('pushing penPal:', penPal.id);
+      penPals.push(penPal);
+    }
+    }
+
+    return penPals;
+  };
+
+  const [fData, setFData] = useState<any>(null);
+
+  const generateFData = async (entry: any, comments: any[] = []) => {
+    // for data and each comment, run a search function to get the neighbors and penpals
+    console.log('comments:', comments);
+    const commentIDs = comments.map((comment: any) => comment.aliasId);
+
+    const neighbors = await searchNeighbors(entry.data, [entry.id, ...commentIDs]);
+    const neighborIDs = neighbors.map((neighbor: any) => neighbor.id);
+    const commentsWithNeighbors = await Promise.all(
+      comments.map(async (comment) => {
+        console.log('comment:', comment);
+        const penPals = await searchPenPals(comment.aliasData, [
+          ...neighborIDs,
+          entry.id,
+          ...commentIDs,
+        ]);
+        return {
+          comment: comment.aliasData,
+          penPals,
+        };
+      }),
+    );
+
+    console.log({
+      entry: entry.data,
+      neighbors,
+      comments: commentsWithNeighbors,
+    });
+
+    return {
+      entry: entry.data,
+      neighbors,
+      comments: commentsWithNeighbors,
+    };
+  };
+
+  useEffect(() => {
+    const asyncFn = async () => {
+      if (!data) return;
+      const fdata = await generateFData(data, data.metadata.aliasData);
+      setFData(fdata);
+    };
+    asyncFn();
+  }, [data]);
+
   // Rendered Data
   const renderedData = transactionManager
     ? transactionManager.getDraftState()
@@ -925,6 +1035,29 @@ const EntryPage = () => {
           <code>audio</code> element.
         </audio>
       )}
+      {/* {uniqueRelationships.size > 0 && (
+        <div className="my-4 flex flex-col gap-2">
+          <h2 className="my-4 text-4xl font-extrabold">
+            Relationships:
+            <span
+              className="text-sm text-gray-500"
+              onClick={() =>
+                uniqueRelationships.forEach((id: string) => {
+                  console.log('id:', id);
+                  console.log(`http://localhost:3000/dashboard/entry/${id}`);
+                })
+              }
+              role="button"
+              tabIndex={0}
+            >
+              {uniqueRelationships.size}
+              {uniqueRelationships.size > 1 ? ' entries' : ' entry'}
+            </span>
+          </h2>
+        </div>
+      )} */}
+      <h1>Force Directed Graph</h1>
+      {fData ? <ForceDirectedGraph data={fData} /> : null}
       {data ? (
         <div className="m-4 [&_p]:my-6">
           <button
@@ -1164,7 +1297,7 @@ const EntryPage = () => {
             </div>
           </>
         )}
-      <h2 className="my-4 text-4xl font-extrabold">{relatedText}</h2>
+      {/* <h2 className="my-4 text-4xl font-extrabold">{relatedText}</h2>
       {searchResults.map((result) => (
         <div key={result.id}>
           <div
@@ -1245,7 +1378,7 @@ const EntryPage = () => {
           </div>
           <hr className="my-4" />
         </div>
-      ))}
+      ))} */}
     </div>
   ) : (
     <Loading />
