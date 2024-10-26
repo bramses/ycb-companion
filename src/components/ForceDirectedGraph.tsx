@@ -158,7 +158,7 @@ const ForceDirectedGraph = ({ data }: any) => {
         if (d.group === 'parent') return 'purple';
         return 'gray';
       })
-      .on('click', (event, d) => openModal(d.label, d.id))
+      .on('click', (_, d) => openModal(d.label, d.id))
       .call(drag(simulation) as any);
 
     const labels = g
