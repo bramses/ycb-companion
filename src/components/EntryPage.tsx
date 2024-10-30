@@ -854,6 +854,7 @@ const EntryPage = () => {
       },
       body: JSON.stringify({
         query,
+        matchCount: 6,
       }),
     });
     const res = await response.json();
@@ -874,6 +875,14 @@ const EntryPage = () => {
           neighbor.parent = parent;
         }
         console.log('pushing neighbor:', neighbor.id);
+        // if metadata.author includes imagedelivery.net, add it to the thumbnails array
+        if (JSON.parse(neighbor.metadata).author) {
+          if (
+            JSON.parse(neighbor.metadata).author.includes('imagedelivery.net')
+          ) {
+            neighbor.image = JSON.parse(neighbor.metadata).author;
+          }
+        }
         neighbors.push(neighbor);
       }
     }
@@ -888,9 +897,11 @@ const EntryPage = () => {
       },
       body: JSON.stringify({
         query,
+        matchCount: 6,
       }),
     });
     const res = await response.json();
+    console.log('penPals:', res);
     const penPals = [];
 
     // for pen pals if metadata.parent_id is not null, add it to the pen pals array fetch the parent entry and add it to the pen pal as a parent
@@ -898,6 +909,8 @@ const EntryPage = () => {
     for await (const penPal of res.data) {
       if (skipIDS.includes(penPal.id)) {
         console.log('skipping penPal:', penPal.id);
+      } else if (penPal.similarity === 1.01) {
+        console.log('skipping penPal kw match:', penPal.id);
       } else {
         if (JSON.parse(penPal.metadata).parent_id) {
           console.log(
@@ -907,6 +920,13 @@ const EntryPage = () => {
           const parent = await fetchByID(JSON.parse(penPal.metadata).parent_id);
           penPal.parent = parent;
         }
+        if (JSON.parse(penPal.metadata).author) {
+          if (
+            JSON.parse(penPal.metadata).author.includes('imagedelivery.net')
+          ) {
+            penPal.image = JSON.parse(penPal.metadata).author;
+          }
+        }
         console.log('pushing penPal:', penPal.id);
         penPals.push(penPal);
       }
@@ -915,17 +935,67 @@ const EntryPage = () => {
     return penPals;
   };
 
+  const searchInternalLinks = async (query: string, skipIDS: string[] = []) => {
+    const response = await fetch('/api/search', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        query,
+        matchCount: 6,
+      }),
+    });
+    const res = await response.json();
+    console.log('internalLinks:', res);
+    const internalLinks = [];
+
+    // for internal links if metadata.parent_id is not null, add it to the internalLinks array fetch the parent entry and add it to the internalLinks as a parent
+
+    for await (const internalLink of res.data) {
+      if (skipIDS.includes(internalLink.id)) {
+        console.log('skipping internalLink:', internalLink.id);
+      } else if (internalLink.similarity === 1.01) {
+        console.log('skipping internalLink kw match:', internalLink.id);
+      } else {
+        if (JSON.parse(internalLink.metadata).parent_id) {
+          console.log(
+            'internalLink.metadata:',
+            JSON.parse(internalLink.metadata).parent_id,
+          );
+          const parent = await fetchByID(
+            JSON.parse(internalLink.metadata).parent_id,
+          );
+          internalLink.parent = parent;
+        }
+        console.log('pushing internalLink:', internalLink.id);
+        if (JSON.parse(internalLink.metadata).author) {
+          if (
+            JSON.parse(internalLink.metadata).author.includes(
+              'imagedelivery.net',
+            )
+          ) {
+            internalLink.image = JSON.parse(internalLink.metadata).author;
+          }
+        }
+        internalLinks.push(internalLink);
+      }
+    }
+
+    return internalLinks;
+  };
+
   const [fData, setFData] = useState<any>(null);
 
   const generateFData = async (entry: any, comments: any[] = []) => {
     // for data and each comment, run a search function to get the neighbors and penpals
-    console.log('comments:', comments);
     const commentIDs = comments.map((comment: any) => comment.aliasId);
 
     const neighbors = await searchNeighbors(entry.data, [
       entry.id,
       ...commentIDs,
     ]);
+
     const neighborIDs = neighbors.map((neighbor: any) => neighbor.id);
     const commentsWithNeighbors = await Promise.all(
       comments.map(async (comment) => {
@@ -942,15 +1012,53 @@ const EntryPage = () => {
       }),
     );
 
+    // internal links are [[links]] in the data
+    const internalLinks = [];
+
+    // extract [[links]] from data
+    const dataLinks = entry.data.match(/\[\[(.*?)\]\]/g);
+    if (dataLinks) {
+      for (const link of dataLinks) {
+        const linkData = link.replace('[[', '').replace(']]', '');
+        const linkParts = linkData.split('|');
+        if (linkParts.length === 2) {
+          const linkName = linkParts[0];
+          const linkUrl = linkParts[1];
+          internalLinks.push({ name: linkName, url: linkUrl });
+        } else {
+          internalLinks.push({ name: linkData, url: linkData });
+        }
+      }
+    }
+
+    // generate pen pals for internal links
+    console.log('internalLinks:', internalLinks);
+    const internalLinksWithPenPals = await Promise.all(
+      internalLinks.map(async (internalLink) => {
+        const penPals = await searchInternalLinks(internalLink.name, [
+          ...neighborIDs,
+          entry.id,
+          ...commentIDs,
+        ]);
+        return {
+          internalLink: internalLink.name,
+          penPals,
+        };
+      }),
+    );
+    console.log('internalLinksWithPenPals:', internalLinksWithPenPals);
+
     console.log({
       entry: entry.data,
       neighbors,
+      internalLinks: internalLinksWithPenPals,
       comments: commentsWithNeighbors,
     });
 
     return {
       entry: entry.data,
       neighbors,
+      internalLinks: internalLinksWithPenPals,
       comments: commentsWithNeighbors,
     };
   };
@@ -1004,27 +1112,6 @@ const EntryPage = () => {
           <code>audio</code> element.
         </audio>
       )}
-      {/* {uniqueRelationships.size > 0 && (
-        <div className="my-4 flex flex-col gap-2">
-          <h2 className="my-4 text-4xl font-extrabold">
-            Relationships:
-            <span
-              className="text-sm text-gray-500"
-              onClick={() =>
-                uniqueRelationships.forEach((id: string) => {
-                  console.log('id:', id);
-                  console.log(`http://localhost:3000/dashboard/entry/${id}`);
-                })
-              }
-              role="button"
-              tabIndex={0}
-            >
-              {uniqueRelationships.size}
-              {uniqueRelationships.size > 1 ? ' entries' : ' entry'}
-            </span>
-          </h2>
-        </div>
-      )} */}
       {data ? (
         <div className="m-4 [&_p]:my-6">
           <button

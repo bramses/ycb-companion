@@ -51,17 +51,35 @@ const ForceDirectedGraph = ({ data }: any) => {
 
     // Process nodes and links
     const nodes = [
-      { id: data.entry, label: data.entry, group: 'main' },
+      { id: data.entry, label: data.entry, group: 'main', image: data.image },
       ...data.neighbors.map((n: any) => ({
         id: n.id,
         label: n.data,
         group: 'neighbor',
         similarity: n.similarity,
+        image: n.image,
       })),
+      // Add internal links as nodes with 'internalLink' group
+      ...data.internalLinks.map((link: any, idx: any) => ({
+        id: `internalLink-${idx}`,
+        label: link.internalLink,
+        group: 'internalLink',
+        image: link.image,
+      })),
+      ...data.internalLinks.flatMap((link: any) =>
+        link.penPals.map((penPal: any) => ({
+          id: penPal.id,
+          label: penPal.data,
+          group: 'penPal',
+          similarity: penPal.similarity,
+          image: penPal.image,
+        })),
+      ),
       ...data.comments.map((comment: any, idx: any) => ({
         id: `comment-${idx}`,
         label: comment.comment,
         group: 'comment',
+        image: comment.image,
       })),
       ...data.comments.flatMap((comment: any) =>
         comment.penPals.map((penPal: any) => ({
@@ -69,6 +87,7 @@ const ForceDirectedGraph = ({ data }: any) => {
           label: penPal.data,
           group: 'penPal',
           similarity: penPal.similarity,
+          image: penPal.image,
         })),
       ),
       // Add parents of neighbors and penpals
@@ -79,6 +98,15 @@ const ForceDirectedGraph = ({ data }: any) => {
           label: n.parent.data,
           group: 'parent',
         })),
+      ...data.internalLinks.flatMap((link: any) =>
+        link.penPals
+          .filter((penPal: any) => penPal.parent)
+          .map((penPal: any) => ({
+            id: penPal.parent.id,
+            label: penPal.parent.data,
+            group: 'parent',
+          })),
+      ),
       ...data.comments.flatMap((comment: any) =>
         comment.penPals
           .filter((penPal: any) => penPal.parent)
@@ -89,6 +117,8 @@ const ForceDirectedGraph = ({ data }: any) => {
           })),
       ),
     ];
+
+    console.log('nodes:', nodes);
 
     function drag(sSimulation: any) {
       return d3
@@ -108,18 +138,29 @@ const ForceDirectedGraph = ({ data }: any) => {
           d.fy = null;
         });
     }
-
     const links = [
       ...data.neighbors.map((n: any) => ({
         source: data.entry,
         target: n.id,
         similarity: n.similarity,
       })),
+      ...data.internalLinks.map((_: any, idx: any) => ({
+        source: data.entry,
+        target: `internalLink-${idx}`,
+        similarity: 0.5,
+      })),
       ...data.comments.map((_: any, idx: any) => ({
         source: data.entry,
         target: `comment-${idx}`,
         similarity: 0.5,
       })),
+      ...data.internalLinks.flatMap((link: any, idx: any) =>
+        link.penPals.map((penPal: any) => ({
+          source: `internalLink-${idx}`,
+          target: penPal.id,
+          similarity: penPal.similarity,
+        })),
+      ),
       ...data.comments.flatMap((comment: any, idx: any) =>
         comment.penPals.map((penPal: any) => ({
           source: `comment-${idx}`,
@@ -137,6 +178,16 @@ const ForceDirectedGraph = ({ data }: any) => {
         })),
       ...data.comments.flatMap((comment: any) =>
         comment.penPals
+          .filter((penPal: any) => penPal.parent)
+          .map((penPal: any) => ({
+            source: penPal.id,
+            target: penPal.parent.id,
+            similarity: 0.5,
+          })),
+      ),
+      // Link internal links to pen pals
+      ...data.internalLinks.flatMap((link: any) =>
+        link.penPals
           .filter((penPal: any) => penPal.parent)
           .map((penPal: any) => ({
             source: penPal.id,
@@ -180,6 +231,7 @@ const ForceDirectedGraph = ({ data }: any) => {
         if (d.group === 'neighbor' || d.group === 'penPal') return 'green';
         if (d.group === 'comment') return 'yellow';
         if (d.group === 'parent') return 'purple';
+        if (d.group === 'internalLink') return 'brown'; // Internal links as brown nodes
         return 'gray';
       })
       .on('click', (_, d) => openModal(d.label, d.id))
@@ -187,15 +239,19 @@ const ForceDirectedGraph = ({ data }: any) => {
 
     const labels = g
       .append('g')
-      .selectAll('text')
+      .selectAll('foreignObject')
       .data(nodes)
-      .join('text')
-      .attr('dx', 12)
-      .attr('dy', '.35em')
-      .text((d) =>
-        d.label.length > 20 ? `${d.label.slice(0, 20)}...` : d.label,
-      )
-      .style('font-size', '12px');
+      .join('foreignObject')
+      .attr('width', 150) // Adjust width to fit text
+      .attr('height', 20) // Adjust height to fit text
+      .attr('x', (d) => d.x)
+      .attr('y', (d) => d.y)
+      .html((d) => {
+        if (d.image) {
+          return `<img src="${d.image}" alt="thumbnail" style="width: 20px; height: 20px;" />`;
+        }
+        return `<div style="font-size: 12px;">${d.label.length > 20 ? `${d.label.slice(0, 20)}...` : d.label}</div>`;
+      });
 
     simulation.on('tick', () => {
       link

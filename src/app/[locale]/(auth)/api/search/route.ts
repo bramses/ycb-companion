@@ -7,10 +7,23 @@ import { GET } from '../getCBPath/route';
 // import env variables
 
 export const POST = async (request: Request) => {
-  const { query } = await request.json();
+  const { query, matchCount } = await request.json();
   const { CLOUD_URL } = process.env;
 
   let submittedQuery = query;
+
+  let matchCt = matchCount;
+
+  if (matchCt === undefined) {
+    matchCt = 5;
+  }
+
+  if (matchCt > 10) {
+    matchCt = 10;
+  }
+  if (matchCt < 1) {
+    matchCt = 1;
+  }
 
   /*
   if query contains "metadata:example" take the ... and add a filterModel to the query and remove the metadata:example from the query
@@ -55,6 +68,7 @@ export const POST = async (request: Request) => {
     },
     body: JSON.stringify({
       query: submittedQuery,
+      match_count: matchCt,
       dbPath: DATABASE_URL,
       apiKey: API_KEY,
       filterModel,
