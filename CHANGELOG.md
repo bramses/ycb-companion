@@ -1,3 +1,10 @@
+## [1.43.4](https://github.com/bramses/ycb-companion/compare/v1.43.3...v1.43.4) (2024-10-30)
+
+
+### Bug Fixes
+
+* Add matchCount functionality to search route and enhance EntryPage for internal links and penPals clarity ([733b7ed](https://github.com/bramses/ycb-companion/commit/733b7ed216520bdc3057b5d2fbc7d648fd519ea9))
+
 ## [1.43.3](https://github.com/bramses/ycb-companion/compare/v1.43.2...v1.43.3) (2024-10-26)
 
 

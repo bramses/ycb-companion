@@ -1,6 +1,6 @@
 {
   "name": "next-js-boilerplate",
-  "version": "1.43.3",
+  "version": "1.43.4",
   "scripts": {
     "dev:spotlight": "spotlight-sidecar",
     "dev:next": "next dev",
