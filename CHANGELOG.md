@@ -1,3 +1,10 @@
+## [1.43.5](https://github.com/bramses/ycb-companion/compare/v1.43.4...v1.43.5) (2024-11-02)
+
+
+### Bug Fixes
+
+* Refactor EntryPage state management for neighbor, comment, and internal link processing with better clarity and incremental updates ([a2ac207](https://github.com/bramses/ycb-companion/commit/a2ac2077df1ce8da5182fa546aa282f53bc20538))
+
 ## [1.43.4](https://github.com/bramses/ycb-companion/compare/v1.43.3...v1.43.4) (2024-10-30)
 
 
