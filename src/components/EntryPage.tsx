@@ -985,92 +985,164 @@ const EntryPage = () => {
     return internalLinks;
   };
 
-  const [fData, setFData] = useState<any>(null);
+  const [fData, setFData] = useState<any>({
+    neighbors: [],
+    comments: [],
+    internalLinks: [],
+  });
 
   const generateFData = async (entry: any, comments: any[] = []) => {
-    // for data and each comment, run a search function to get the neighbors and penpals
     const commentIDs = comments.map((comment: any) => comment.aliasId);
 
+    // Fetch neighbors and update state incrementally
     const neighbors = await searchNeighbors(entry.data, [
       entry.id,
       ...commentIDs,
     ]);
+    setFData((prevData: any) => ({
+      ...prevData,
+      neighbors,
+    }));
 
     const neighborIDs = neighbors.map((neighbor: any) => neighbor.id);
-    const commentsWithNeighbors = await Promise.all(
-      comments.map(async (comment) => {
-        console.log('comment:', comment);
-        const penPals = await searchPenPals(comment.aliasData, [
-          ...neighborIDs,
-          entry.id,
-          ...commentIDs,
-        ]);
-        return {
-          comment: comment.aliasData,
-          penPals,
-        };
-      }),
-    );
 
-    // internal links are [[links]] in the data
-    const internalLinks = [];
-
-    // extract [[links]] from data
-    const dataLinks = entry.data.match(/\[\[(.*?)\]\]/g);
-    if (dataLinks) {
-      for (const link of dataLinks) {
-        const linkData = link.replace('[[', '').replace(']]', '');
-        const linkParts = linkData.split('|');
-        if (linkParts.length === 2) {
-          const linkName = linkParts[0];
-          const linkUrl = linkParts[1];
-          internalLinks.push({ name: linkName, url: linkUrl });
-        } else {
-          internalLinks.push({ name: linkData, url: linkData });
-        }
-      }
+    // Process comments and update state incrementally
+    for await (const comment of comments) {
+      const penPals = await searchPenPals(comment.aliasData, [
+        ...neighborIDs,
+        entry.id,
+        ...commentIDs,
+      ]);
+      setFData((prevData: any) => ({
+        ...prevData,
+        comments: [
+          ...(prevData.comments || []),
+          { comment: comment.aliasData, penPals },
+        ],
+      }));
     }
 
-    // generate pen pals for internal links
-    console.log('internalLinks:', internalLinks);
-    const internalLinksWithPenPals = await Promise.all(
-      internalLinks.map(async (internalLink) => {
-        const penPals = await searchInternalLinks(internalLink.name, [
-          ...neighborIDs,
-          entry.id,
-          ...commentIDs,
-        ]);
-        return {
-          internalLink: internalLink.name,
-          penPals,
-        };
-      }),
-    );
-    console.log('internalLinksWithPenPals:', internalLinksWithPenPals);
-
-    console.log({
-      entry: entry.data,
-      neighbors,
-      internalLinks: internalLinksWithPenPals,
-      comments: commentsWithNeighbors,
-    });
-
-    return {
-      entry: entry.data,
-      neighbors,
-      internalLinks: internalLinksWithPenPals,
-      comments: commentsWithNeighbors,
-    };
+    // Extract and process internal links, updating state incrementally
+    const dataLinks = entry.data.match(/\[\[(.*?)\]\]/g) || [];
+    for await (const link of dataLinks) {
+      const linkData = link.replace('[[', '').replace(']]', '');
+      const linkParts = linkData.split('|');
+      const internalLink = linkParts.length === 2 ? linkParts[0] : linkData;
+      const penPals = await searchInternalLinks(internalLink, [
+        ...neighborIDs,
+        entry.id,
+        ...commentIDs,
+      ]);
+      setFData((prevData: any) => ({
+        ...prevData,
+        internalLinks: [
+          ...(prevData.internalLinks || []),
+          { internalLink, penPals },
+        ],
+      }));
+    }
   };
 
   useEffect(() => {
     const asyncFn = async () => {
       if (!data) return;
-      const fdata = await generateFData(data, data.metadata.aliasData);
-      setFData(fdata);
+      setFData({
+        entry: data.data,
+        neighbors: [],
+        comments: [],
+        internalLinks: [],
+      });
+      await generateFData(data, data.metadata.aliasData);
+      // console.log('setting fdata:', fdata);
+      // setFData(fdata);
     };
     asyncFn();
   }, [data]);
+
+  // const generateFData = async (entry: any, comments: any[] = []) => {
+  //   // for data and each comment, run a search function to get the neighbors and penpals
+  //   const commentIDs = comments.map((comment: any) => comment.aliasId);
+
+  //   const neighbors = await searchNeighbors(entry.data, [
+  //     entry.id,
+  //     ...commentIDs,
+  //   ]);
+
+  //   const neighborIDs = neighbors.map((neighbor: any) => neighbor.id);
+  //   const commentsWithNeighbors = await Promise.all(
+  //     comments.map(async (comment) => {
+  //       console.log('comment:', comment);
+  //       const penPals = await searchPenPals(comment.aliasData, [
+  //         ...neighborIDs,
+  //         entry.id,
+  //         ...commentIDs,
+  //       ]);
+  //       return {
+  //         comment: comment.aliasData,
+  //         penPals,
+  //       };
+  //     }),
+  //   );
+
+  //   // internal links are [[links]] in the data
+  //   const internalLinks = [];
+
+  //   // extract [[links]] from data
+  //   const dataLinks = entry.data.match(/\[\[(.*?)\]\]/g);
+  //   if (dataLinks) {
+  //     for (const link of dataLinks) {
+  //       const linkData = link.replace('[[', '').replace(']]', '');
+  //       const linkParts = linkData.split('|');
+  //       if (linkParts.length === 2) {
+  //         const linkName = linkParts[0];
+  //         const linkUrl = linkParts[1];
+  //         internalLinks.push({ name: linkName, url: linkUrl });
+  //       } else {
+  //         internalLinks.push({ name: linkData, url: linkData });
+  //       }
+  //     }
+  //   }
+
+  //   // generate pen pals for internal links
+  //   console.log('internalLinks:', internalLinks);
+  //   const internalLinksWithPenPals = await Promise.all(
+  //     internalLinks.map(async (internalLink) => {
+  //       const penPals = await searchInternalLinks(internalLink.name, [
+  //         ...neighborIDs,
+  //         entry.id,
+  //         ...commentIDs,
+  //       ]);
+  //       return {
+  //         internalLink: internalLink.name,
+  //         penPals,
+  //       };
+  //     }),
+  //   );
+  //   console.log('internalLinksWithPenPals:', internalLinksWithPenPals);
+
+  //   console.log({
+  //     entry: entry.data,
+  //     neighbors,
+  //     internalLinks: internalLinksWithPenPals,
+  //     comments: commentsWithNeighbors,
+  //   });
+
+  //   return {
+  //     entry: entry.data,
+  //     neighbors,
+  //     internalLinks: internalLinksWithPenPals,
+  //     comments: commentsWithNeighbors,
+  //   };
+  // };
+
+  // useEffect(() => {
+  //   const asyncFn = async () => {
+  //     if (!data) return;
+  //     const fdata = await generateFData(data, data.metadata.aliasData);
+  //     setFData(fdata);
+  //   };
+  //   asyncFn();
+  // }, [data]);
 
   // Rendered Data
   const renderedData = transactionManager

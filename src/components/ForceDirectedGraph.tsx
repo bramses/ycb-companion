@@ -21,6 +21,7 @@ const ForceDirectedGraph = ({ data }: any) => {
   const closeModal = () => setShowModal(false);
 
   useEffect(() => {
+    if (!data.entry) return;
     if (!svgRef.current) return;
     if (!containerRef.current) return;
 
