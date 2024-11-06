@@ -10,11 +10,15 @@ const ForceDirectedGraph = ({ data }: any) => {
   const svgRef = useRef<SVGSVGElement | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const [modalContent, setModalContent] = useState({ content: '', id: '' });
+  const [modalContent, setModalContent] = useState({
+    content: '',
+    id: '',
+    image: '',
+  });
   const [showModal, setShowModal] = useState(false);
 
-  const openModal = (content: any, id: any) => {
-    setModalContent({ content, id });
+  const openModal = (content: any, id: any, image: any) => {
+    setModalContent({ content, id, image });
     setShowModal(true);
   };
 
@@ -235,7 +239,7 @@ const ForceDirectedGraph = ({ data }: any) => {
         if (d.group === 'internalLink') return 'brown'; // Internal links as brown nodes
         return 'gray';
       })
-      .on('click', (_, d) => openModal(d.label, d.id))
+      .on('click', (_, d) => openModal(d.label, d.id, d.image))
       .call(drag(simulation) as any);
 
     const labels = g
@@ -297,9 +301,18 @@ const ForceDirectedGraph = ({ data }: any) => {
         }}
       >
         <p>{modalContent.content}</p>
+        {modalContent.image && (
+          <img
+            src={modalContent.image}
+            alt="thumbnail"
+            style={{ width: 200 }}
+          />
+        )}
+        <br />
         <Link href={`/dashboard/entry/${modalContent.id}`} className="mt-4">
           View Entry
         </Link>
+        <br />
         <button onClick={closeModal} type="button">
           Close
         </button>

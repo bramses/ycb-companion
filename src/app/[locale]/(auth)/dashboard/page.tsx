@@ -1,8 +1,8 @@
-// import SearchBox from '@/components/SearchBox';
-import SearchResults from '@/components/SearchResults';
+// import SearchResults from '@/components/SearchResults';
+import SimpleDashboard from '@/components/SimpleDashboard';
 
 const Dashboard = () => {
-  return <SearchResults />;
+  return <SimpleDashboard />;
 };
 
 export default Dashboard;
