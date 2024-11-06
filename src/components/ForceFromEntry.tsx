@@ -6,10 +6,10 @@ import ForceDirectedGraph from './ForceDirectedGraph';
 
 const ForceFromEntry = ({
   inputEntry,
-  comments,
+  inputComments,
 }: {
   inputEntry: any;
-  comments: any[];
+  inputComments: any[];
 }) => {
   const [fData, setFData] = useState<any>({
     neighbors: [],
@@ -200,10 +200,10 @@ const ForceFromEntry = ({
         comments: [],
         internalLinks: [],
       });
-      await generateFData(inputEntry, comments);
+      await generateFData(inputEntry, inputComments);
     };
     asyncFn();
-  }, [inputEntry]);
+  }, [inputEntry, inputComments]);
   return <ForceDirectedGraph data={fData} />;
 };
 
