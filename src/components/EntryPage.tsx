@@ -88,6 +88,7 @@ const EntryPage = () => {
     useState<TransactionManager | null>(null);
   const [tempIds, setTempIds] = useState<string[]>([]);
   const [tempCommentIDs, setTempCommentIDs] = useState<any[]>([]);
+  const [cachedFData, setCachedFData] = useState<any>(null);
 
   const openModal = (key: string) =>
     setModalStates((prev) => ({ ...prev, [key]: true }));
@@ -728,7 +729,8 @@ const EntryPage = () => {
       setIsSaving(false);
       alert('All changes saved successfully.');
       // reload the page
-      window.location.reload();
+      // setCachedFData(fData);
+      // window.location.reload();
     } catch (error) {
       alert('Failed to save changes. Rolling back to the last saved state.');
       // Rollback UI to last saved state
@@ -1052,6 +1054,12 @@ const EntryPage = () => {
         comments: [],
         internalLinks: [],
       });
+
+      if (cachedFData) {
+        setFData(cachedFData);
+        console.log('using cached fdata:', cachedFData);
+        return;
+      }
       await generateFData(data, data.metadata.aliasData);
       // console.log('setting fdata:', fdata);
       // setFData(fdata);
@@ -1202,7 +1210,8 @@ const EntryPage = () => {
                   ...data.metadata,
                 });
               }
-              window.location.reload();
+              setCachedFData(fData);
+              //window.location.reload();
             }}
           >
             {data.metadata.isStarred ? 'Unstar' : 'Star'}

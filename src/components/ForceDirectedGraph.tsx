@@ -280,6 +280,7 @@ const ForceDirectedGraph = ({ data }: any) => {
         }),
     );
   }, [data]);
+  
 
   return (
     <div ref={containerRef} style={{ width: '100%', margin: '0 auto' }}>
@@ -289,18 +290,9 @@ const ForceDirectedGraph = ({ data }: any) => {
         onRequestClose={closeModal}
         contentLabel="Node Content"
         ariaHideApp={false}
-        style={{
-          content: {
-            top: '50%',
-            left: '50%',
-            right: 'auto',
-            bottom: 'auto',
-            marginRight: '-50%',
-            transform: 'translate(-50%, -50%)',
-          },
-        }}
       >
-        {modalContent.image ? (
+      <div className="flex flex-col">
+      {modalContent.image ? (
           <img
             src={modalContent.image}
             alt="thumbnail"
@@ -317,6 +309,7 @@ const ForceDirectedGraph = ({ data }: any) => {
         <button onClick={closeModal} type="button">
           Close
         </button>
+      </div>
       </Modal>
     </div>
   );
