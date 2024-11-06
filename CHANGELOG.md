@@ -1,3 +1,10 @@
+# [1.44.0](https://github.com/bramses/ycb-companion/compare/v1.43.5...v1.44.0) (2024-11-06)
+
+
+### Features
+
+* Update Dashboard to use SimpleDashboard component and enhance ForceDirectedGraph for modal image display ([a82ef82](https://github.com/bramses/ycb-companion/commit/a82ef8225413cfb20d7028b68e3fb30fcdfde6f6))
+
 ## [1.43.5](https://github.com/bramses/ycb-companion/compare/v1.43.4...v1.43.5) (2024-11-02)
 
 
