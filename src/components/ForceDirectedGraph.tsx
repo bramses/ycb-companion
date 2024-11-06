@@ -300,13 +300,14 @@ const ForceDirectedGraph = ({ data }: any) => {
           },
         }}
       >
-        <p>{modalContent.content}</p>
-        {modalContent.image && (
+        {modalContent.image ? (
           <img
             src={modalContent.image}
             alt="thumbnail"
-            style={{ width: 200 }}
+            style={{ width: '80%' }}
           />
+        ) : (
+          <p>{modalContent.content}</p>
         )}
         <br />
         <Link href={`/dashboard/entry/${modalContent.id}`} className="mt-4">

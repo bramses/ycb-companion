@@ -30,14 +30,19 @@ const Inbox = () => {
       console.error('Error fetching inbox entries:', error);
     }
   };
-  useEffect(() => {
-    fetchInboxEntries();
-  }, [page]);
 
   const handlePageChange = (newPage: number) => {
     setPage(newPage);
     fetchInboxEntries();
   };
+
+  useEffect(() => {
+    fetchInboxEntries();
+  }, [page]);
+
+  useEffect(() => {
+    document.title = 'Inbox';
+  }, []);
 
   return (
     <>
@@ -55,6 +60,7 @@ const Inbox = () => {
                   href={{
                     pathname: `/dashboard/entry/${entry.id}`,
                   }}
+                  target="_blank"
                   className="block text-gray-900 no-underline"
                 >
                   <div className="relative">

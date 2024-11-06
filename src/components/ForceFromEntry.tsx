@@ -4,7 +4,13 @@ import { fetchByID } from '@/helpers/functions';
 
 import ForceDirectedGraph from './ForceDirectedGraph';
 
-const ForceFromEntry = ({ inputEntry }: { inputEntry: any }) => {
+const ForceFromEntry = ({
+  inputEntry,
+  comments,
+}: {
+  inputEntry: any;
+  comments: any[];
+}) => {
   const [fData, setFData] = useState<any>({
     neighbors: [],
     comments: [],
@@ -194,7 +200,7 @@ const ForceFromEntry = ({ inputEntry }: { inputEntry: any }) => {
         comments: [],
         internalLinks: [],
       });
-      await generateFData(inputEntry, inputEntry.metadata.aliasData);
+      await generateFData(inputEntry, comments);
     };
     asyncFn();
   }, [inputEntry]);

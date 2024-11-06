@@ -4,7 +4,7 @@ import { useUser } from '@clerk/nextjs';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
-import { fetchRandomEntry } from '@/helpers/functions';
+import { fetchByID, fetchRandomEntry } from '@/helpers/functions';
 
 import ForceFromEntry from './ForceFromEntry';
 
@@ -12,6 +12,7 @@ const SimpleDashboard = () => {
   const router = useRouter();
 
   const [randomEntry, setRandomEntry] = useState<any>(null);
+  const [comments, setComments] = useState<any[]>([]);
 
   const [firstLastName, setFirstLastName] = useState({
     firstName: '',
@@ -22,8 +23,40 @@ const SimpleDashboard = () => {
   const { user, isLoaded } = useUser();
 
   const handleRandom = async () => {
+    setRandomEntry(null);
+    setComments([]);
     // fetch a random entry and open it
     const entry = await fetchRandomEntry();
+    // const entry = await fetchByID('9548');
+    // if entry has a parent_id, fetch the parent entry
+    let { metadata } = entry;
+    try {
+      metadata = JSON.parse(entry.metadata);
+    } catch (err) {
+      console.error('Error parsing metadata:', err);
+    }
+    if (metadata.alias_ids) {
+      const commentsList = [];
+      const aliasEntries = await Promise.all(
+        metadata.alias_ids.map(async (aliasId: string) => {
+          const aliasEntry = await fetchByID(aliasId);
+          return aliasEntry;
+        }),
+      );
+      for (const aliasEntry of aliasEntries) {
+        commentsList.push({
+          aliasId: aliasEntry.id,
+          aliasData: aliasEntry.data,
+          aliasMetadata: aliasEntry.metadata,
+        });
+      }
+      setComments(commentsList);
+    }
+    if (metadata.parent_id) {
+      const parentEntry = await fetchByID(metadata.parent_id);
+      setRandomEntry(parentEntry);
+      return parentEntry;
+    }
     setRandomEntry(entry);
     return entry;
   };
@@ -73,15 +106,15 @@ const SimpleDashboard = () => {
 
   return (
     <div>
-      <h1 className="mb-4 text-xl font-extrabold text-gray-900 md:text-xl lg:text-xl">
+      <h1 className="mb-4 mt-8 text-xl font-extrabold text-gray-900 md:text-xl lg:text-xl">
         Welcome Back to{' '}
         <span className="bg-gradient-to-r from-sky-400 to-emerald-600 bg-clip-text text-transparent">
           Your Commonbase
         </span>
         , {firstLastName.firstName}!
       </h1>
-      <ForceFromEntry inputEntry={randomEntry} />
-      <p>{randomEntry ? randomEntry.data : 'Loading...'}</p>
+      <ForceFromEntry inputEntry={randomEntry} comments={comments} />
+      <p className="my-4">{randomEntry ? randomEntry.data : 'Loading...'}</p>
       {randomEntry && (
         <>
           <button
