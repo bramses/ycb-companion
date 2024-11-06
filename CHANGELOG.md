@@ -1,3 +1,10 @@
+## [1.45.1](https://github.com/bramses/ycb-companion/compare/v1.45.0...v1.45.1) (2024-11-06)
+
+
+### Bug Fixes
+
+* Correctly update comments prop name in ForceFromEntry component and tidy up modal content structure in ForceDirectedGraph component ([7e8f92e](https://github.com/bramses/ycb-companion/commit/7e8f92e8830bb093e228423cd9e1c2843bee7eea))
+
 # [1.45.0](https://github.com/bramses/ycb-companion/compare/v1.44.1...v1.45.0) (2024-11-06)
 
 
