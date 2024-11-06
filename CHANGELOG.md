@@ -1,3 +1,10 @@
+## [1.44.1](https://github.com/bramses/ycb-companion/compare/v1.44.0...v1.44.1) (2024-11-06)
+
+
+### Bug Fixes
+
+* Update Inbox component to fetch entries on page change and set document title for improved user experience ([efcb312](https://github.com/bramses/ycb-companion/commit/efcb312f9602686b2c5d9814b7910fd5eb000418))
+
 # [1.44.0](https://github.com/bramses/ycb-companion/compare/v1.43.5...v1.44.0) (2024-11-06)
 
 
