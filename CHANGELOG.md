@@ -1,3 +1,10 @@
+# [1.45.0](https://github.com/bramses/ycb-companion/compare/v1.44.1...v1.45.0) (2024-11-06)
+
+
+### Features
+
+* Add cachedFData state to EntryPage component ([3999d0c](https://github.com/bramses/ycb-companion/commit/3999d0ca4b9c21dd6cd31ef6da32935bb6fdcca0))
+
 ## [1.44.1](https://github.com/bramses/ycb-companion/compare/v1.44.0...v1.44.1) (2024-11-06)
 
 
