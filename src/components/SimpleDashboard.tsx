@@ -106,7 +106,7 @@ const SimpleDashboard = () => {
 
   return (
     <div>
-      <h1 className="mb-4 mt-8 text-xl font-extrabold text-gray-900 md:text-xl lg:text-xl">
+      <h1 className="mx-2 mt-8 text-xl font-extrabold text-gray-900 md:text-xl lg:text-xl">
         Welcome Back to{' '}
         <span className="bg-gradient-to-r from-sky-400 to-emerald-600 bg-clip-text text-transparent">
           Your Commonbase
@@ -114,7 +114,9 @@ const SimpleDashboard = () => {
         , {firstLastName.firstName}!
       </h1>
       <ForceFromEntry inputEntry={randomEntry} comments={comments} />
-      <p className="my-4">{randomEntry ? randomEntry.data : 'Loading...'}</p>
+      <p className="mx-2 my-4">
+        {randomEntry ? randomEntry.data : 'Loading...'}
+      </p>
       {randomEntry && (
         <>
           <button
