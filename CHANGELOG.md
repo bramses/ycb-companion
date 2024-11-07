@@ -1,3 +1,10 @@
+## [1.45.3](https://github.com/bramses/ycb-companion/compare/v1.45.2...v1.45.3) (2024-11-07)
+
+
+### Bug Fixes
+
+* Remove unnecessary window reload in EntryPage component ([9f45a43](https://github.com/bramses/ycb-companion/commit/9f45a436d3308b2c9112ab547bd71e6f04c4ce8c))
+
 ## [1.45.2](https://github.com/bramses/ycb-companion/compare/v1.45.1...v1.45.2) (2024-11-07)
 
 
