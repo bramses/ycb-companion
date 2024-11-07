@@ -1,3 +1,10 @@
+## [1.45.2](https://github.com/bramses/ycb-companion/compare/v1.45.1...v1.45.2) (2024-11-07)
+
+
+### Bug Fixes
+
+* Update comments prop name to inputComments in ForceFromEntry component in SimpleDashboard ([2045b60](https://github.com/bramses/ycb-companion/commit/2045b60746512246fc311a64392ec9fc69f48f2f))
+
 ## [1.45.1](https://github.com/bramses/ycb-companion/compare/v1.45.0...v1.45.1) (2024-11-06)
 
 
