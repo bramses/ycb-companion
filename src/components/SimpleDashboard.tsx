@@ -113,7 +113,7 @@ const SimpleDashboard = () => {
         </span>
         , {firstLastName.firstName}!
       </h1>
-      <ForceFromEntry inputEntry={randomEntry} comments={comments} />
+      <ForceFromEntry inputEntry={randomEntry} inputComments={comments} />
       <p className="mx-2 my-4">
         {randomEntry ? randomEntry.data : 'Loading...'}
       </p>
