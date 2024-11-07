@@ -730,7 +730,7 @@ const EntryPage = () => {
       alert('All changes saved successfully.');
       // reload the page
       // setCachedFData(fData);
-      // window.location.reload();
+      window.location.reload();
     } catch (error) {
       alert('Failed to save changes. Rolling back to the last saved state.');
       // Rollback UI to last saved state
@@ -1211,6 +1211,7 @@ const EntryPage = () => {
                 });
               }
               setCachedFData(fData);
+              window.location.reload();
             }}
           >
             {data.metadata.isStarred ? 'Unstar' : 'Star'}
