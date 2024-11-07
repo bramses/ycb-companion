@@ -209,9 +209,10 @@ const ForceDirectedGraph = ({ data }: any) => {
         d3
           .forceLink(links)
           .id((d: any) => d.id)
-          .distance((d: any) => 100 - (d.similarity || 0) * 80),
+          .distance((d: any) => 150 - (d.similarity || 0) * 80),
       )
-      .force('charge', d3.forceManyBody().strength(-200))
+      .force('charge', d3.forceManyBody().strength(-300))
+      .force('collision', d3.forceCollide().radius(20))
       .force('center', d3.forceCenter(width / 2, height / 2));
 
     const g = svg.append('g');
