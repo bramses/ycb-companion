@@ -1211,7 +1211,6 @@ const EntryPage = () => {
                 });
               }
               setCachedFData(fData);
-              //window.location.reload();
             }}
           >
             {data.metadata.isStarred ? 'Unstar' : 'Star'}
