@@ -39,7 +39,6 @@ const SimpleDashboard = () => {
       console.error('Error parsing metadata:', err);
     }
     if (metadata.alias_ids) {
-      console.log('metadata.alias_ids:', metadata.alias_ids);
       const commentsList = [];
       const aliasEntries = await Promise.all(
         metadata.alias_ids.map(async (aliasId: string) => {
@@ -64,6 +63,25 @@ const SimpleDashboard = () => {
       } catch (err) {
         // pass
       }
+
+      if (parentEntry.metadata.alias_ids) {
+        const commentsList = [];
+        const aliasEntries = await Promise.all(
+          parentEntry.metadata.alias_ids.map(async (aliasId: string) => {
+            const aliasEntry = await fetchByID(aliasId);
+            return aliasEntry;
+          }),
+        );
+        for (const aliasEntry of aliasEntries) {
+          commentsList.push({
+            aliasId: aliasEntry.id,
+            aliasData: aliasEntry.data,
+            aliasMetadata: aliasEntry.metadata,
+          });
+        }
+        setComments(commentsList);
+      }
+
       setRandomEntry(parentEntry);
       return parentEntry;
     }
