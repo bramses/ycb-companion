@@ -58,8 +58,19 @@ const SimpleDashboard = () => {
     }
     if (metadata.parent_id) {
       const parentEntry = await fetchByID(metadata.parent_id);
+      // make sure metadata is JSON parseable
+      try {
+        parentEntry.metadata = JSON.parse(parentEntry.metadata);
+      } catch (err) {
+        // pass
+      }
       setRandomEntry(parentEntry);
       return parentEntry;
+    }
+    try {
+      entry.metadata = JSON.parse(entry.metadata);
+    } catch (err) {
+      // pass
     }
     setRandomEntry(entry);
     return entry;
@@ -130,9 +141,48 @@ const SimpleDashboard = () => {
         </span>
         , {firstLastName.firstName}!
       </h1>
-      <p className="mx-2 my-4">
-        {randomEntry ? randomEntry.data : 'Loading...'}
-      </p>
+      <div className="mx-2 my-4">
+        <p className="mb-4">{randomEntry ? randomEntry.data : 'Loading...'}</p>
+        {randomEntry && randomEntry.metadata.author && (
+          <>
+            <a
+              target="_blank"
+              href={randomEntry.metadata.author}
+              rel="noopener noreferrer"
+              className="inline-flex items-center font-medium text-blue-600 hover:underline"
+            >
+              {randomEntry.metadata.title}
+              <svg
+                className="ms-2.5 size-3 rtl:rotate-[270deg]"
+                aria-hidden="true"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 18 18"
+              >
+                <path
+                  stroke="currentColor"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M15 11v4.833A1.166 1.166 0 0 1 13.833 17H2.167A1.167 1.167 0 0 1 1 15.833V4.167A1.166 1.166 0 0 1 2.167 3h4.618m4.447-2H17v5.768M9.111 8.889l7.778-7.778"
+                />
+              </svg>
+            </a>
+            <button
+              type="button"
+              className="ms-2 inline-flex items-center rounded border border-gray-300 px-2 py-1 text-xs font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4"
+              onClick={() => {
+                setSearchModalBetaOpen(true);
+                setSearchBetaModalQuery(
+                  `"metadata:${randomEntry.metadata.title}"`,
+                );
+              }}
+            >
+              Search Metadata
+            </button>
+          </>
+        )}
+      </div>
       <ForceFromEntry inputEntry={randomEntry} inputComments={comments} />
       <SearchModalBeta
         isOpen={isSearchModalBetaOpen || false}
@@ -143,13 +193,6 @@ const SimpleDashboard = () => {
       {randomEntry && (
         <>
           <button
-            onClick={handleRandom}
-            type="button"
-            className="my-2 me-2 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4"
-          >
-            Random Entry
-          </button>
-          <button
             onClick={() => {
               const { id } = randomEntry;
               router.push(`/dashboard/entry/${id}`);
@@ -158,6 +201,13 @@ const SimpleDashboard = () => {
             className="my-2 me-2 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4"
           >
             Open Entry
+          </button>
+          <button
+            onClick={handleRandom}
+            type="button"
+            className="my-2 me-2 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4"
+          >
+            Next Entry
           </button>
         </>
       )}

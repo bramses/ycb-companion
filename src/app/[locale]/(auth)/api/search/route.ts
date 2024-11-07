@@ -39,11 +39,7 @@ export const POST = async (request: Request) => {
 
   let filterModel = null;
   if (query.includes('metadata:')) {
-    const value = query
-      .split('metadata:')[1]
-      .split(' ')[0]
-      .trim()
-      .replace(/"/g, '');
+    const value = query.split('metadata:')[1].trim().replace(/"/g, ''); // TODO does not work for quote chars in metadata
     filterModel = {
       metadata: {
         filterType: 'text',
