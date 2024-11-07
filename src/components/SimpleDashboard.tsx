@@ -39,6 +39,7 @@ const SimpleDashboard = () => {
       console.error('Error parsing metadata:', err);
     }
     if (metadata.alias_ids) {
+      console.log('metadata.alias_ids:', metadata.alias_ids);
       const commentsList = [];
       const aliasEntries = await Promise.all(
         metadata.alias_ids.map(async (aliasId: string) => {
