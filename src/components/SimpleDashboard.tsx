@@ -1,12 +1,13 @@
 'use client';
 
 import { useUser } from '@clerk/nextjs';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 import { fetchByID, fetchRandomEntry } from '@/helpers/functions';
 
 import ForceFromEntry from './ForceFromEntry';
+import SearchModalBeta from './SearchModalBeta';
 
 const SimpleDashboard = () => {
   const router = useRouter();
@@ -18,6 +19,8 @@ const SimpleDashboard = () => {
     firstName: '',
     lastName: '',
   });
+  const [isSearchModalBetaOpen, setSearchModalBetaOpen] = useState(false);
+  const [searchBetaModalQuery, setSearchBetaModalQuery] = useState('');
 
   // const [inboxEntries, setInboxEntries] = useState<any[]>([]);
   const { user, isLoaded } = useUser();
@@ -85,6 +88,17 @@ const SimpleDashboard = () => {
   //   fetchInboxEntries();
   // }, []);
 
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const query = searchParams.get('query');
+    if (query) {
+      // open search modal beta with query
+      setSearchModalBetaOpen(true);
+      setSearchBetaModalQuery(query);
+    }
+  }, [searchParams]);
+
   useEffect(() => {
     if (!isLoaded) return;
     // set first name as title
@@ -104,6 +118,8 @@ const SimpleDashboard = () => {
     fetchEntry();
   }, []);
 
+  const closeModal = () => setSearchModalBetaOpen(false);
+
   return (
     <div>
       <h1 className="mx-2 mt-8 text-xl font-extrabold text-gray-900 md:text-xl lg:text-xl">
@@ -113,10 +129,16 @@ const SimpleDashboard = () => {
         </span>
         , {firstLastName.firstName}!
       </h1>
-      <ForceFromEntry inputEntry={randomEntry} inputComments={comments} />
       <p className="mx-2 my-4">
         {randomEntry ? randomEntry.data : 'Loading...'}
       </p>
+      <ForceFromEntry inputEntry={randomEntry} inputComments={comments} />
+      <SearchModalBeta
+        isOpen={isSearchModalBetaOpen || false}
+        closeModalFn={() => closeModal()}
+        inputQuery={searchBetaModalQuery}
+      />
+
       {randomEntry && (
         <>
           <button
