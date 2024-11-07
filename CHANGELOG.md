@@ -1,3 +1,10 @@
+## [1.45.4](https://github.com/bramses/ycb-companion/compare/v1.45.3...v1.45.4) (2024-11-07)
+
+
+### Bug Fixes
+
+* Ensure window reload is called after saving changes in EntryPage component ([f961e32](https://github.com/bramses/ycb-companion/commit/f961e322a1d0c7b449a6f6a4bae81aa18c026c19))
+
 ## [1.45.3](https://github.com/bramses/ycb-companion/compare/v1.45.2...v1.45.3) (2024-11-07)
 
 
