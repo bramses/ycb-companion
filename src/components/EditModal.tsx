@@ -1,4 +1,3 @@
-import { useEffect, useRef } from 'react';
 import Modal from 'react-modal';
 
 const EditModal = ({
@@ -18,14 +17,14 @@ const EditModal = ({
   disabledKeys: string[];
   onSave: (data: any, metadata: any, id: string) => void;
 }) => {
-  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+  // const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
-  useEffect(() => {
-    if (textareaRef.current) {
-      textareaRef.current.style.height = 'auto'; // Reset the height
-      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`; // Set it to the scroll height
-    }
-  }, [data]);
+  // useEffect(() => {
+  //   if (textareaRef.current) {
+  //     textareaRef.current.style.height = 'auto'; // Reset the height
+  //     textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`; // Set it to the scroll height
+  //   }
+  // }, [data]);
 
   return (
     <Modal
@@ -39,16 +38,10 @@ const EditModal = ({
       </button>
       <textarea
         id="edit-modal-textarea"
-        ref={textareaRef}
         rows={5}
         style={{ fontSize: '17px' }}
         className="my-4 block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500"
         defaultValue={data}
-        onInput={(e) => {
-          const target = e.target as HTMLTextAreaElement;
-          target.style.height = 'auto'; // Reset the height
-          target.style.height = `${target.scrollHeight}px`; // Set it to the scroll height
-        }}
       />
       {metadata
         ? Object.entries(metadata)

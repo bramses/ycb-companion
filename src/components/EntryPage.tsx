@@ -1223,23 +1223,6 @@ const EntryPage = () => {
                 editModal: true,
               }));
             }}
-            onTouchStart={(e) => {
-              e.preventDefault();
-              const longPressTimeout = setTimeout(() => {
-                setModalStates((prev) => ({
-                  ...prev,
-                  editModal: true,
-                }));
-              }, 500); // 500ms for long press
-
-              e.currentTarget.addEventListener(
-                'touchend',
-                () => {
-                  clearTimeout(longPressTimeout);
-                },
-                { once: true },
-              );
-            }}
           >
             {processCustomMarkdown(renderedData.data)}
           </div>
