@@ -1,6 +1,7 @@
 'use client';
 
 import { useUser } from '@clerk/nextjs';
+import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
@@ -8,7 +9,6 @@ import { fetchByID, fetchRandomEntry } from '@/helpers/functions';
 
 import ForceFromEntry from './ForceFromEntry';
 import SearchModalBeta from './SearchModalBeta';
-import Link from 'next/link';
 
 const SimpleDashboard = () => {
   const router = useRouter();
@@ -168,28 +168,30 @@ const SimpleDashboard = () => {
       const data = await response.json();
       console.log('Log entries:', data);
       // if createdAt == updatedAt, say "added", else "updated"
-      const log = data.data.map((entry: any) => {
-        // skip entries with parent_id
-        let metadata;
-        try {
-          metadata = JSON.parse(entry.metadata);
-        } catch (err) {
-          console.error('Error parsing metadata:', err);
-        }
-        if (metadata.parent_id) {
-          return null;
-        }
-        if (entry.createdAt === entry.updatedAt) {
+      const log = data.data
+        .map((entry: any) => {
+          // skip entries with parent_id
+          let metadata;
+          try {
+            metadata = JSON.parse(entry.metadata);
+          } catch (err) {
+            console.error('Error parsing metadata:', err);
+          }
+          if (metadata.parent_id) {
+            return null;
+          }
+          if (entry.createdAt === entry.updatedAt) {
+            return {
+              ...entry,
+              action: 'added',
+            };
+          }
           return {
             ...entry,
-            action: 'added',
+            action: 'updated',
           };
-        }
-        return {
-          ...entry,
-          action: 'updated',
-        };
-      }).filter((entry: any) => entry !== null);
+        })
+        .filter((entry: any) => entry !== null);
       console.log('Log:', log);
       setLogEntries(log);
     } catch (error) {
@@ -318,7 +320,9 @@ const SimpleDashboard = () => {
                   },
                 }),
               });
-              (document.getElementById('journal-message') as HTMLInputElement).value = ''; // Clear textarea
+              (
+                document.getElementById('journal-message') as HTMLInputElement
+              ).value = ''; // Clear textarea
               await fetchLogEntries(); // Reload log entries
             } catch (error) {
               console.error('Error saving journal entry:', error);
@@ -327,11 +331,11 @@ const SimpleDashboard = () => {
             }
           }}
           disabled={isSaving} // Disable button while saving
-  className={`mt-2 w-full rounded-lg ${
-    isSaving ? 'bg-gray-400' : 'bg-blue-700'
-  } px-5 py-2.5 text-sm font-medium text-white ${
-    isSaving ? '' : 'hover:bg-blue-800'
-  } focus:outline-none focus:ring-4 focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800`}
+          className={`mt-2 w-full rounded-lg ${
+            isSaving ? 'bg-gray-400' : 'bg-blue-700'
+          } px-5 py-2.5 text-sm font-medium text-white ${
+            isSaving ? '' : 'hover:bg-blue-800'
+          } focus:outline-none focus:ring-4 focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800`}
         >
           {isSaving ? 'Loading...' : 'Save'}
         </button>
@@ -355,17 +359,17 @@ const SimpleDashboard = () => {
                   className="block text-gray-900 no-underline"
                 >
                   <div className="relative">
-                    <span className="font-normal">
-                      {entry.data}
-                    </span>
+                    <span className="font-normal">{entry.data}</span>
                   </div>
                 </Link>
                 <div className="text-sm text-gray-500">
-                  {entry.action === 'added'
-                    ? <b>Added</b>
-                    : entry.action === 'updated'
-                    ? <b>Updated</b>
-                    : 'Deleted'}{' '}
+                  {entry.action === 'added' ? (
+                    <b>Added</b>
+                  ) : entry.action === 'updated' ? (
+                    <b>Updated</b>
+                  ) : (
+                    'Deleted'
+                  )}{' '}
                   {new Date(entry.updatedAt).toLocaleDateString()}
                 </div>
               </div>
