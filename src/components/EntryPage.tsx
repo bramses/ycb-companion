@@ -876,7 +876,6 @@ const EntryPage = () => {
           );
           neighbor.parent = parent;
         }
-        console.log('pushing neighbor:', neighbor.id);
         // if metadata.author includes imagedelivery.net, add it to the thumbnails array
         if (JSON.parse(neighbor.metadata).author) {
           if (
@@ -884,6 +883,9 @@ const EntryPage = () => {
           ) {
             neighbor.image = JSON.parse(neighbor.metadata).author;
           }
+        }
+        if (JSON.parse(neighbor.metadata).title) {
+          neighbor.title = JSON.parse(neighbor.metadata).title;
         }
         neighbors.push(neighbor);
       }
@@ -929,7 +931,9 @@ const EntryPage = () => {
             penPal.image = JSON.parse(penPal.metadata).author;
           }
         }
-        console.log('pushing penPal:', penPal.id);
+        if (JSON.parse(penPal.metadata).title) {
+          penPal.title = JSON.parse(penPal.metadata).title;
+        }
         penPals.push(penPal);
       }
     }
@@ -970,7 +974,6 @@ const EntryPage = () => {
           );
           internalLink.parent = parent;
         }
-        console.log('pushing internalLink:', internalLink.id);
         if (JSON.parse(internalLink.metadata).author) {
           if (
             JSON.parse(internalLink.metadata).author.includes(
@@ -979,6 +982,9 @@ const EntryPage = () => {
           ) {
             internalLink.image = JSON.parse(internalLink.metadata).author;
           }
+        }
+        if (JSON.parse(internalLink.metadata).title) {
+          internalLink.title = JSON.parse(internalLink.metadata).title;
         }
         internalLinks.push(internalLink);
       }

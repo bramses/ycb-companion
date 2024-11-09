@@ -48,6 +48,9 @@ const ForceFromEntry = ({
             neighbor.image = JSON.parse(neighbor.metadata).author;
           }
         }
+        if (JSON.parse(neighbor.metadata).title) {
+          neighbor.title = JSON.parse(neighbor.metadata).title;
+        }
         neighbors.push(neighbor);
       }
     }
@@ -86,6 +89,9 @@ const ForceFromEntry = ({
           ) {
             penPal.image = JSON.parse(penPal.metadata).author;
           }
+        }
+        if (JSON.parse(penPal.metadata).title) {
+          penPal.title = JSON.parse(penPal.metadata).title;
         }
         penPals.push(penPal);
       }
@@ -131,6 +137,9 @@ const ForceFromEntry = ({
           ) {
             internalLink.image = JSON.parse(internalLink.metadata).author;
           }
+        }
+        if (JSON.parse(internalLink.metadata).title) {
+          internalLink.title = JSON.parse(internalLink.metadata).title;
         }
         internalLinks.push(internalLink);
       }

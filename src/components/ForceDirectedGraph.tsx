@@ -14,11 +14,13 @@ const ForceDirectedGraph = ({ data }: any) => {
     content: '',
     id: '',
     image: '',
+    title: '',
   });
   const [showModal, setShowModal] = useState(false);
 
-  const openModal = (content: any, id: any, image: any) => {
-    setModalContent({ content, id, image });
+  const openModal = (content: any, id: any, image: any, title: any) => {
+    console.log('title:', title);
+    setModalContent({ content, id, image, title });
     setShowModal(true);
   };
 
@@ -63,6 +65,7 @@ const ForceDirectedGraph = ({ data }: any) => {
         group: 'neighbor',
         similarity: n.similarity,
         image: n.image,
+        title: n.title,
       })),
       // Add internal links as nodes with 'internalLink' group
       ...data.internalLinks.map((link: any, idx: any) => ({
@@ -70,6 +73,7 @@ const ForceDirectedGraph = ({ data }: any) => {
         label: link.internalLink,
         group: 'internalLink',
         image: link.image,
+        title: link.title,
       })),
       ...data.internalLinks.flatMap((link: any) =>
         link.penPals.map((penPal: any) => ({
@@ -78,6 +82,7 @@ const ForceDirectedGraph = ({ data }: any) => {
           group: 'penPal',
           similarity: penPal.similarity,
           image: penPal.image,
+          title: penPal.title,
         })),
       ),
       ...data.comments.map((comment: any, idx: any) => ({
@@ -85,6 +90,7 @@ const ForceDirectedGraph = ({ data }: any) => {
         label: comment.comment,
         group: 'comment',
         image: comment.image,
+        title: comment.title,
       })),
       ...data.comments.flatMap((comment: any) =>
         comment.penPals.map((penPal: any) => ({
@@ -93,6 +99,7 @@ const ForceDirectedGraph = ({ data }: any) => {
           group: 'penPal',
           similarity: penPal.similarity,
           image: penPal.image,
+          title: penPal.title,
         })),
       ),
       // Add parents of neighbors and penpals
@@ -240,7 +247,7 @@ const ForceDirectedGraph = ({ data }: any) => {
         if (d.group === 'internalLink') return 'brown'; // Internal links as brown nodes
         return 'gray';
       })
-      .on('click', (_, d) => openModal(d.label, d.id, d.image))
+      .on('click', (_, d) => openModal(d.label, d.id, d.image, d.title))
       .call(drag(simulation) as any);
 
     const labels = g
@@ -301,6 +308,10 @@ const ForceDirectedGraph = ({ data }: any) => {
           ) : (
             <p>{modalContent.content}</p>
           )}
+          <br />
+          <p className="text-sm text-gray-500">
+            {modalContent.title}
+          </p>
           <br />
           <Link href={`/dashboard/entry/${modalContent.id}`} className="mt-4">
             View Entry

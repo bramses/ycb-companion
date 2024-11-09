@@ -8,6 +8,7 @@ import { fetchByID, fetchRandomEntry } from '@/helpers/functions';
 
 import ForceFromEntry from './ForceFromEntry';
 import SearchModalBeta from './SearchModalBeta';
+import Link from 'next/link';
 
 const SimpleDashboard = () => {
   const router = useRouter();
@@ -21,6 +22,8 @@ const SimpleDashboard = () => {
   });
   const [isSearchModalBetaOpen, setSearchModalBetaOpen] = useState(false);
   const [searchBetaModalQuery, setSearchBetaModalQuery] = useState('');
+  const [logEntries, setLogEntries] = useState<any[]>([]);
+  const [isSaving, setIsSaving] = useState(false);
 
   // const [inboxEntries, setInboxEntries] = useState<any[]>([]);
   const { user, isLoaded } = useUser();
@@ -148,6 +151,56 @@ const SimpleDashboard = () => {
     fetchEntry();
   }, []);
 
+  // get log entries
+  const fetchLogEntries = async () => {
+    try {
+      const response = await fetch('/api/log', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          page: 1,
+          limit: 10,
+          sortModel: [{ colId: 'createdAt', sort: 'desc' }],
+        }),
+      });
+      const data = await response.json();
+      console.log('Log entries:', data);
+      // if createdAt == updatedAt, say "added", else "updated"
+      const log = data.data.map((entry: any) => {
+        // skip entries with parent_id
+        let metadata;
+        try {
+          metadata = JSON.parse(entry.metadata);
+        } catch (err) {
+          console.error('Error parsing metadata:', err);
+        }
+        if (metadata.parent_id) {
+          return null;
+        }
+        if (entry.createdAt === entry.updatedAt) {
+          return {
+            ...entry,
+            action: 'added',
+          };
+        }
+        return {
+          ...entry,
+          action: 'updated',
+        };
+      }).filter((entry: any) => entry !== null);
+      console.log('Log:', log);
+      setLogEntries(log);
+    } catch (error) {
+      console.error('Error fetching log entries:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchLogEntries();
+  }, []);
+
   const closeModal = () => setSearchModalBetaOpen(false);
 
   return (
@@ -207,7 +260,6 @@ const SimpleDashboard = () => {
         closeModalFn={() => closeModal()}
         inputQuery={searchBetaModalQuery}
       />
-
       {randomEntry && (
         <>
           <button
@@ -229,6 +281,99 @@ const SimpleDashboard = () => {
           </button>
         </>
       )}
+
+      {/* ask the user what they are thinking about right now in a text box and add it as an entry -- like a journal */}
+      <h1 className="my-4 text-xl font-extrabold text-gray-900 md:text-xl lg:text-xl">
+        Journal
+      </h1>
+      <div className="mx-2 my-4">
+        <textarea
+          id="journal-message"
+          rows={4}
+          className="mt-4 block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500"
+          placeholder="What are you thinking about right now?"
+        />
+        <button
+          type="button"
+          onClick={async () => {
+            const journalMessage = (
+              document.getElementById('journal-message') as HTMLInputElement
+            ).value;
+            if (!journalMessage) {
+              return;
+            }
+            setIsSaving(true); // Set loading state
+            try {
+              // add the journal message as an entry
+              await fetch('/api/add', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  data: journalMessage,
+                  metadata: {
+                    author: randomEntry.metadata.author,
+                    title: 'Journal',
+                  },
+                }),
+              });
+              (document.getElementById('journal-message') as HTMLInputElement).value = ''; // Clear textarea
+              await fetchLogEntries(); // Reload log entries
+            } catch (error) {
+              console.error('Error saving journal entry:', error);
+            } finally {
+              setIsSaving(false); // Reset loading state
+            }
+          }}
+          disabled={isSaving} // Disable button while saving
+  className={`mt-2 w-full rounded-lg ${
+    isSaving ? 'bg-gray-400' : 'bg-blue-700'
+  } px-5 py-2.5 text-sm font-medium text-white ${
+    isSaving ? '' : 'hover:bg-blue-800'
+  } focus:outline-none focus:ring-4 focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800`}
+        >
+          {isSaving ? 'Loading...' : 'Save'}
+        </button>
+      </div>
+
+      <h1 className="my-4 text-xl font-extrabold text-gray-900 md:text-xl lg:text-xl">
+        Recent Activity
+      </h1>
+      <div className="mx-2 my-4">
+        {logEntries.map((entry: any) => (
+          <div key={entry.id}>
+            <div
+              key={entry.id}
+              className="mx-2 mb-4 flex items-center justify-between"
+            >
+              <div className="grow">
+                <Link
+                  href={{
+                    pathname: `/dashboard/entry/${entry.id}`,
+                  }}
+                  className="block text-gray-900 no-underline"
+                >
+                  <div className="relative">
+                    <span className="font-normal">
+                      {entry.data}
+                    </span>
+                  </div>
+                </Link>
+                <div className="text-sm text-gray-500">
+                  {entry.action === 'added'
+                    ? <b>Added</b>
+                    : entry.action === 'updated'
+                    ? <b>Updated</b>
+                    : 'Deleted'}{' '}
+                  {new Date(entry.updatedAt).toLocaleDateString()}
+                </div>
+              </div>
+            </div>
+            {/* <hr className="my-4" /> */}
+          </div>
+        ))}
+      </div>
     </div>
   );
 };
