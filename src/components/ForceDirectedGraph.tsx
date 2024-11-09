@@ -309,9 +309,7 @@ const ForceDirectedGraph = ({ data }: any) => {
             <p>{modalContent.content}</p>
           )}
           <br />
-          <p className="text-sm text-gray-500">
-            {modalContent.title}
-          </p>
+          <p className="text-sm text-gray-500">{modalContent.title}</p>
           <br />
           <Link href={`/dashboard/entry/${modalContent.id}`} className="mt-4">
             View Entry
