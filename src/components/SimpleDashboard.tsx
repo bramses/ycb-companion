@@ -363,13 +363,15 @@ const SimpleDashboard = () => {
                   </div>
                 </Link>
                 <div className="text-sm text-gray-500">
-                  {entry.action === 'added' ? (
-                    <b>Added</b>
-                  ) : entry.action === 'updated' ? (
-                    <b>Updated</b>
-                  ) : (
-                    'Deleted'
-                  )}{' '}
+                  {(() => {
+                    if (entry.action === 'added') {
+                      return <b>Added</b>;
+                    }
+                    if (entry.action === 'updated') {
+                      return <b>Updated</b>;
+                    }
+                    return 'Deleted';
+                  })()}{' '}
                   {new Date(entry.updatedAt).toLocaleDateString()}
                 </div>
               </div>
