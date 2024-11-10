@@ -363,25 +363,54 @@ const EntryPage = () => {
   }, [isLoaded, user]);
 
   useEffect(() => {
-    console.log('isInDraftState:', isInDraftState);
-
     const handleBeforeUnload = (event: BeforeUnloadEvent) => {
       if (isInDraftState) {
         event.preventDefault();
-        // const returnValue = ''; // Use a separate variable
-        // event.returnValue = returnValue; // Assign the variable
         return 'leaving the page will discard your changes';
       }
       console.log('not in draft state');
       return null;
     };
 
+    const handlePopState = (event: PopStateEvent) => {
+      if (isInDraftState) {
+        const confirmationMessage =
+          'leaving the page will discard your changes';
+        if (!window.confirm(confirmationMessage)) {
+          event.preventDefault();
+          window.history.pushState(null, '', window.location.href);
+        }
+      }
+    };
+
+    const handleLinkClick = (event: MouseEvent) => {
+      if (isInDraftState) {
+        const target = event.target as HTMLAnchorElement;
+        if (target.tagName === 'A' && target.href) {
+          const confirmationMessage =
+            'leaving the page will discard your changes';
+          if (!window.confirm(confirmationMessage)) {
+            event.preventDefault();
+          }
+        }
+      }
+    };
+
     window.addEventListener('beforeunload', handleBeforeUnload);
-    console.log('Added beforeunload event listener');
+    window.addEventListener('popstate', handlePopState);
+    document.addEventListener('click', handleLinkClick);
+
+    console.log(
+      'Added event listeners for beforeunload, popstate, and link clicks',
+    );
 
     return () => {
       window.removeEventListener('beforeunload', handleBeforeUnload);
-      console.log('Removed beforeunload event listener');
+      window.removeEventListener('popstate', handlePopState);
+      document.removeEventListener('click', handleLinkClick);
+      console.log(
+        'Removed event listeners for beforeunload, popstate, and link clicks',
+      );
     };
   }, [isInDraftState]);
 
