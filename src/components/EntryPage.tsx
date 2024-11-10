@@ -89,6 +89,7 @@ const EntryPage = () => {
   const [tempIds, setTempIds] = useState<string[]>([]);
   const [tempCommentIDs, setTempCommentIDs] = useState<any[]>([]);
   const [cachedFData, setCachedFData] = useState<any>(null);
+  const [isInDraftState, setIsInDraftState] = useState(false);
 
   const openModal = (key: string) =>
     setModalStates((prev) => ({ ...prev, [key]: true }));
@@ -361,6 +362,29 @@ const EntryPage = () => {
     }
   }, [isLoaded, user]);
 
+  useEffect(() => {
+    console.log('isInDraftState:', isInDraftState);
+
+    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+      if (isInDraftState) {
+        event.preventDefault();
+        // const returnValue = ''; // Use a separate variable
+        // event.returnValue = returnValue; // Assign the variable
+        return 'leaving the page will discard your changes';
+      }
+      console.log('not in draft state');
+      return null;
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    console.log('Added beforeunload event listener');
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      console.log('Removed beforeunload event listener');
+    };
+  }, [isInDraftState]);
+
   // useEffect(() => {
   //   const handleKeyDown = (event: KeyboardEvent) => {
   //     if (event.key === 'k') {
@@ -400,6 +424,7 @@ const EntryPage = () => {
     draftState.metadata = newMetadata;
 
     // Update UI immediately
+    setIsInDraftState(true);
     setData({ ...draftState });
 
     // Add transaction
@@ -464,6 +489,7 @@ const EntryPage = () => {
     draftState.metadata.alias_ids = [...(draftState.metadata.alias_ids || [])];
 
     // Update UI immediately
+    setIsInDraftState(true);
     setData({ ...draftState });
 
     // Transaction to create the alias entry
@@ -581,6 +607,7 @@ const EntryPage = () => {
     ).filter((id: string) => id !== aliasId);
 
     // Update UI immediately
+    setIsInDraftState(true);
     setData({ ...draftState });
 
     if (
@@ -628,6 +655,7 @@ const EntryPage = () => {
     }
 
     // Update UI immediately
+    setIsInDraftState(true);
     setData({ ...draftState });
 
     // if editing a comment with a temp id change it in place
@@ -673,6 +701,7 @@ const EntryPage = () => {
     draftState.metadata.links = [...(draftState.metadata.links || []), newLink];
 
     // Update UI immediately
+    setIsInDraftState(true);
     setData({ ...draftState });
 
     const addLinkTxName = `addLinkTx-${uuidv4()}`;
@@ -701,6 +730,7 @@ const EntryPage = () => {
     }
 
     // Update UI immediately
+    setIsInDraftState(true);
     setData({ ...draftState });
 
     // Add transaction to update the entry
@@ -721,6 +751,7 @@ const EntryPage = () => {
 
     try {
       setIsSaving(true);
+      setIsInDraftState(false);
       handleSaveComments();
 
       await transactionManager.executeTransactions();
@@ -1054,6 +1085,10 @@ const EntryPage = () => {
   useEffect(() => {
     const asyncFn = async () => {
       if (!data) return;
+      // if in draft state, return
+
+      if (isInDraftState) return;
+
       setFData({
         entry: data.data,
         neighbors: [],
@@ -1294,13 +1329,16 @@ const EntryPage = () => {
       ) : (
         'Loading...'
       )}
-      <button
-        type="button"
-        onClick={handleSaveAll}
-        className="my-2 w-full rounded-lg bg-green-500 px-5 py-2.5 text-sm font-medium text-white hover:bg-green-700 focus:outline-none"
-      >
-        {isSaving ? 'Saving...' : 'Save All Changes'}
-      </button>
+      {isInDraftState && (
+        <button
+          type="button"
+          onClick={handleSaveAll}
+          className="my-2 w-full rounded-lg bg-green-500 px-5 py-2.5 text-sm font-medium text-white hover:bg-green-700 focus:outline-none"
+        >
+          {isSaving ? 'Saving...' : 'Save All Changes'}
+        </button>
+      )}
+      {!isInDraftState && isSaving && <p>Saving changes...</p>}
       <h2 className="my-4 text-4xl font-extrabold">Add Comment</h2>
       <div className="">
         <textarea
