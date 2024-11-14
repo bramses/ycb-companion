@@ -33,6 +33,7 @@ import {
 import { createEntryTransaction } from '../helpers/transactionFunctions';
 import type { Transaction } from '../helpers/transactionManager';
 import { TransactionManager } from '../helpers/transactionManager';
+import Chat from './Chat';
 import EditModal from './EditModal';
 import ForceDirectedGraph from './ForceDirectedGraph';
 import LinksModal from './LinksModal';
@@ -474,6 +475,8 @@ const EntryPage = () => {
       'Are you sure you want to delete this entry?',
     );
     if (!confirmDelete) return;
+
+    setIsInDraftState(true);
 
     // Update the draft state
     const draftState = transactionManager.getDraftState();
@@ -1137,90 +1140,10 @@ const EntryPage = () => {
     asyncFn();
   }, [data]);
 
-  // const generateFData = async (entry: any, comments: any[] = []) => {
-  //   // for data and each comment, run a search function to get the neighbors and penpals
-  //   const commentIDs = comments.map((comment: any) => comment.aliasId);
-
-  //   const neighbors = await searchNeighbors(entry.data, [
-  //     entry.id,
-  //     ...commentIDs,
-  //   ]);
-
-  //   const neighborIDs = neighbors.map((neighbor: any) => neighbor.id);
-  //   const commentsWithNeighbors = await Promise.all(
-  //     comments.map(async (comment) => {
-  //       console.log('comment:', comment);
-  //       const penPals = await searchPenPals(comment.aliasData, [
-  //         ...neighborIDs,
-  //         entry.id,
-  //         ...commentIDs,
-  //       ]);
-  //       return {
-  //         comment: comment.aliasData,
-  //         penPals,
-  //       };
-  //     }),
-  //   );
-
-  //   // internal links are [[links]] in the data
-  //   const internalLinks = [];
-
-  //   // extract [[links]] from data
-  //   const dataLinks = entry.data.match(/\[\[(.*?)\]\]/g);
-  //   if (dataLinks) {
-  //     for (const link of dataLinks) {
-  //       const linkData = link.replace('[[', '').replace(']]', '');
-  //       const linkParts = linkData.split('|');
-  //       if (linkParts.length === 2) {
-  //         const linkName = linkParts[0];
-  //         const linkUrl = linkParts[1];
-  //         internalLinks.push({ name: linkName, url: linkUrl });
-  //       } else {
-  //         internalLinks.push({ name: linkData, url: linkData });
-  //       }
-  //     }
-  //   }
-
-  //   // generate pen pals for internal links
-  //   console.log('internalLinks:', internalLinks);
-  //   const internalLinksWithPenPals = await Promise.all(
-  //     internalLinks.map(async (internalLink) => {
-  //       const penPals = await searchInternalLinks(internalLink.name, [
-  //         ...neighborIDs,
-  //         entry.id,
-  //         ...commentIDs,
-  //       ]);
-  //       return {
-  //         internalLink: internalLink.name,
-  //         penPals,
-  //       };
-  //     }),
-  //   );
-  //   console.log('internalLinksWithPenPals:', internalLinksWithPenPals);
-
-  //   console.log({
-  //     entry: entry.data,
-  //     neighbors,
-  //     internalLinks: internalLinksWithPenPals,
-  //     comments: commentsWithNeighbors,
-  //   });
-
-  //   return {
-  //     entry: entry.data,
-  //     neighbors,
-  //     internalLinks: internalLinksWithPenPals,
-  //     comments: commentsWithNeighbors,
-  //   };
-  // };
-
-  // useEffect(() => {
-  //   const asyncFn = async () => {
-  //     if (!data) return;
-  //     const fdata = await generateFData(data, data.metadata.aliasData);
-  //     setFData(fdata);
-  //   };
-  //   asyncFn();
-  // }, [data]);
+  // log fdata to console
+  useEffect(() => {
+    console.log('fdata:', fData);
+  }, [fData]);
 
   // Rendered Data
   const renderedData = transactionManager
@@ -1298,6 +1221,27 @@ const EntryPage = () => {
           </div>
 
           {fData ? <ForceDirectedGraph data={fData} /> : null}
+
+          <hr className="my-4" />
+          <h2 className="my-4 text-4xl font-extrabold">Chat (experimental)</h2>
+          <Chat
+            seedMessages={[
+              `this data is pulled from a semantic search around an entry. you have to help me make next actions of thinking from this data supply: external context from the world, using specificity and details. instead of just returning a list imagine that you are a person who has a chain of thought that is being inspired by the entry and the neighbors and the penpals to almost ramble your way into an interesting conclusion. the goal is to help the reader have new avenues to research a new ideas to think about from the currently provided data which they already know. you don’t need to remind me about the data that we already have given you you need to tell me new things from the data that I might be interested in looking at further to develop this graph 
+
+again:
+- tell me new information don’t just rehash the information that I’ve already given. Don’t waste words showing me things that I’ve given you again. I don’t need to see them. I need you to suggest me new things that are outside of the context that I’ve already provided. Think of it as new neighbors or new relationship relationships that aren’t in the current scope.
+- Don’t return items as a list
+- think about this is one thought inspiring another like you’re out on a walk and you’re thinking about something
+- You are a writer’s assistant so you’re helping us conduct thoughts that will make you better creations and better thinking
+- Be specific as possible with avenues to research again outside of the context don’t just tell me what’s already in here
+
+	1.	“Push ideas into radical, unexpected territory.” Indicate that you want ideas not typically seen in conventional academic, educational, or analytical settings.
+	2.	“Avoid conventional explanations; go for provocative thought experiments.” This reminds me to generate ideas that challenge norms and venture into speculative or experimental concepts.
+	3.	“Imagine an entirely new framework, even if impractical.” This suggests creating possibilities that stretch beyond the current constraints of the field, leading to more exploratory thinking.
+  4. You have access to Markdown, so use google query links in the form of []() to make it easy to research. Just underline any links to make them easier to see. Put in lots of Google links, we want to make research fun and engaging.\n\nData:${JSON.stringify(fData)}`,
+            ]}
+          />
+          <hr className="my-4" />
 
           <EditModal
             isOpen={modalStates.editModal || false}

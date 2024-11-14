@@ -27,6 +27,7 @@
     "prepare": "husky"
   },
   "dependencies": {
+    "@ai-sdk/openai": "^0.0.72",
     "@clerk/localizations": "^2.4.8",
     "@clerk/nextjs": "^5.3.7",
     "@electric-sql/pglite": "^0.1.5",
@@ -39,6 +40,7 @@
     "add": "^2.0.6",
     "ag-grid-community": "^32.1.0",
     "ag-grid-react": "^32.1.0",
+    "ai": "^3.4.33",
     "chart": "^0.1.2",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",

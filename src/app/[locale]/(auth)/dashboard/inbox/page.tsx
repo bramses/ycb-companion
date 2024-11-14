@@ -60,7 +60,6 @@ const Inbox = () => {
                   href={{
                     pathname: `/dashboard/entry/${entry.id}`,
                   }}
-                  target="_blank"
                   className="block text-gray-900 no-underline"
                 >
                   <div className="relative">
