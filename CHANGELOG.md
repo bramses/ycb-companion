@@ -1,3 +1,10 @@
+# [1.46.0](https://github.com/bramses/ycb-companion/compare/v1.45.4...v1.46.0) (2024-11-14)
+
+
+### Features
+
+* Integrate AI features into dashboard with chat component and OpenAI API for streamlined user interaction and insights ([e449329](https://github.com/bramses/ycb-companion/commit/e4493296e3705ff450aa69d7b989a28dd239412a))
+
 ## [1.45.4](https://github.com/bramses/ycb-companion/compare/v1.45.3...v1.45.4) (2024-11-07)
 
 
