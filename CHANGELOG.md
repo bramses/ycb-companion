@@ -1,3 +1,10 @@
+# [1.47.0](https://github.com/bramses/ycb-companion/compare/v1.46.0...v1.47.0) (2024-11-14)
+
+
+### Features
+
+* Add custom link component in Chat for improved Markdown link rendering and better user experience ([7cbc174](https://github.com/bramses/ycb-companion/commit/7cbc174eee14d3c6e9af9eecdf05b02946a3d06d))
+
 # [1.46.0](https://github.com/bramses/ycb-companion/compare/v1.45.4...v1.46.0) (2024-11-14)
 
 
