@@ -246,7 +246,6 @@ const SimpleDashboard = () => {
       await handleRandom();
     };
     fetchEntry();
-    fetchTimeMachineEntries();
   }, []);
 
   // get log entries
