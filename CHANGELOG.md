@@ -1,3 +1,10 @@
+# [1.48.0](https://github.com/bramses/ycb-companion/compare/v1.47.0...v1.48.0) (2024-11-15)
+
+
+### Features
+
+* Implement time machine functionality to fetch and display historical entries based on selected timeframe in SimpleDashboard ([72c4805](https://github.com/bramses/ycb-companion/commit/72c4805e625d7aa8da8db0c7349258cd3bd0dd30))
+
 # [1.47.0](https://github.com/bramses/ycb-companion/compare/v1.46.0...v1.47.0) (2024-11-14)
 
 
