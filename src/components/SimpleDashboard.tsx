@@ -2,7 +2,7 @@
 
 import { useUser } from '@clerk/nextjs';
 import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 import { fetchByID, fetchRandomEntry } from '@/helpers/functions';
@@ -11,8 +11,6 @@ import ForceFromEntry from './ForceFromEntry';
 import SearchModalBeta from './SearchModalBeta';
 
 const SimpleDashboard = () => {
-  const router = useRouter();
-
   const [randomEntry, setRandomEntry] = useState<any>(null);
   const [comments, setComments] = useState<any[]>([]);
 
@@ -266,7 +264,6 @@ const SimpleDashboard = () => {
         }),
       });
       const data = await response.json();
-      console.log('Log entries:', data);
       // if createdAt == updatedAt, say "added", else "updated"
       const log = data.data
         .map((entry: any) => {
