@@ -1,3 +1,10 @@
+# [1.49.0](https://github.com/bramses/ycb-companion/compare/v1.48.0...v1.49.0) (2024-11-15)
+
+
+### Features
+
+* Add functionality to fetch and display random time machine entries in SimpleDashboard with a new button for user interaction ([9886b9d](https://github.com/bramses/ycb-companion/commit/9886b9d9037470d93d0ded2608fcae4e235ab2b6))
+
 # [1.48.0](https://github.com/bramses/ycb-companion/compare/v1.47.0...v1.48.0) (2024-11-15)
 
 
