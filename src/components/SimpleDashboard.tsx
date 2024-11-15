@@ -460,6 +460,7 @@ const SimpleDashboard = () => {
           id="journal-message"
           rows={4}
           className="mt-4 block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500"
+          style={{ fontSize: '17px' }}
           placeholder="What are you thinking about right now?"
         />
         <button
