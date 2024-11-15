@@ -1231,14 +1231,15 @@ const EntryPage = () => {
 again:
 - tell me new information don’t just rehash the information that I’ve already given. Don’t waste words showing me things that I’ve given you again. I don’t need to see them. I need you to suggest me new things that are outside of the context that I’ve already provided. Think of it as new neighbors or new relationship relationships that aren’t in the current scope.
 - Don’t return items as a list
-- think about this is one thought inspiring another like you’re out on a walk and you’re thinking about something
+- think about this is one thought inspiring another (like you’re out on a walk and you’re thinking about something)
 - You are a writer’s assistant so you’re helping us conduct thoughts that will make you better creations and better thinking
 - Be specific as possible with avenues to research again outside of the context don’t just tell me what’s already in here
 
 	1.	“Push ideas into radical, unexpected territory.” Indicate that you want ideas not typically seen in conventional academic, educational, or analytical settings.
 	2.	“Avoid conventional explanations; go for provocative thought experiments.” This reminds me to generate ideas that challenge norms and venture into speculative or experimental concepts.
 	3.	“Imagine an entirely new framework, even if impractical.” This suggests creating possibilities that stretch beyond the current constraints of the field, leading to more exploratory thinking.
-  4. You have access to Markdown, so use google query links in the form of []() to make it easy to research. Just underline any links to make them easier to see. Put in lots of Google links, we want to make research fun and engaging.\n\nData:${JSON.stringify(fData)}`,
+  4. You have access to Markdown, so use google query links in the form of []() to make it easy to research. Just underline any links to make them easier to see. Put in lots of Google links (pretty much everywhere there is a new topic or a proper noun we want to research), we want to make research fun and engaging.
+  5. if user references data, ask them what they are referring to by printing what you think the data is VERBATIM. Do not deviate from bad words or anything. The user needs to correctly see what they have written.\n\nData:${JSON.stringify(fData)}`,
             ]}
           />
           <hr className="my-4" />
