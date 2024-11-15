@@ -24,6 +24,9 @@ const SimpleDashboard = () => {
   const [searchBetaModalQuery, setSearchBetaModalQuery] = useState('');
   const [logEntries, setLogEntries] = useState<any[]>([]);
   const [isSaving, setIsSaving] = useState(false);
+  const [timeMachine, setTimeMachine] = useState<any>('week');
+  const [randomTimeMachineEntry, setRandomTimeMachineEntry] =
+    useState<any>(null);
 
   // const [inboxEntries, setInboxEntries] = useState<any[]>([]);
   const { user, isLoaded } = useUser();
@@ -97,6 +100,101 @@ const SimpleDashboard = () => {
     return entry;
   };
 
+  // for time machine, fetch entries from the past week, month, or year depending on the timeMachine state and select a random entry from the fetched entries
+  /*
+
+  const fetchRecords = useCallback(
+    async (date: Date) => {
+      // convert date to form 2024-01-01
+      const year = date.getFullYear();
+      const month = date.getMonth() + 1;
+      let monthString = month.toString();
+      // put a 0 in front of month if it is less than 10
+      if (month < 10) {
+        monthString = `0${month}`;
+      }
+      const day = date.getDate();
+      let dayString = day.toString();
+      if (day < 10) {
+        dayString = `0${day}`;
+      }
+      const dateString = `${year}-${monthString}-${dayString}`;
+      setSelectedDay(dateString);
+      setLoading(true);
+
+      // run a post request to fetch records for that date at /api/daily
+      const response = await fetch('/api/daily', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ date: dateString }),
+      });
+      const responseData = await response.json();
+
+      // console.log('Fetched records:', responseData);
+      // set entries to the mapped data
+      setEntries(responseData.data);
+      setDateSelected(date);
+      setLoading(false);
+    },
+    [setSelectedDay, setLoading, setEntries],
+  );
+  */
+  const fetchTimeMachineEntries = async () => {
+    try {
+      const date = new Date();
+      switch (timeMachine) {
+        case 'week':
+          date.setDate(date.getDate() - 7);
+          break;
+        case 'month':
+          date.setMonth(date.getMonth() - 1);
+          break;
+        case 'year':
+          date.setFullYear(date.getFullYear() - 1);
+          break;
+        default:
+          break;
+      }
+      // use daily endpoint to fetch entries from the past week, month, or year
+
+      // convert date to form 2024-01-01
+      const year = date.getFullYear();
+      const month = date.getMonth() + 1;
+      let monthString = month.toString();
+      // put a 0 in front of month if it is less than 10
+      if (month < 10) {
+        monthString = `0${month}`;
+      }
+      const day = date.getDate();
+      let dayString = day.toString();
+      if (day < 10) {
+        dayString = `0${day}`;
+      }
+      const dateString = `${year}-${monthString}-${dayString}`;
+
+      const response = await fetch('/api/daily', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ date: dateString }),
+      });
+      const responseData = await response.json();
+      console.log('Time Machine entries:', responseData);
+      // math random number between 0 and the length of the responseData.data array
+      const randomIndex = Math.floor(Math.random() * responseData.data.length);
+      setRandomTimeMachineEntry(responseData.data[randomIndex]);
+    } catch (error) {
+      console.error('Error fetching time machine entries:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchTimeMachineEntries();
+  }, [timeMachine]);
+
   // const fetchInboxEntries = async () => {
   //   try {
   //     setIsLoading(true);
@@ -149,6 +247,7 @@ const SimpleDashboard = () => {
       await handleRandom();
     };
     fetchEntry();
+    fetchTimeMachineEntries();
   }, []);
 
   // get log entries
@@ -215,7 +314,12 @@ const SimpleDashboard = () => {
         , {firstLastName.firstName}!
       </h1>
       <div className="mx-2 my-4">
-        <p className="mb-4">{randomEntry ? randomEntry.data : 'Loading...'}</p>
+        <Link
+          href={`/dashboard/entry/${randomEntry ? randomEntry.id : '#'}`}
+          className="mb-4 inline-block"
+        >
+          {randomEntry ? randomEntry.data : 'Loading...'}
+        </Link>
         {randomEntry && randomEntry.metadata.author && (
           <>
             <a
@@ -264,7 +368,7 @@ const SimpleDashboard = () => {
       />
       {randomEntry && (
         <>
-          <button
+          {/* <button
             onClick={() => {
               const { id } = randomEntry;
               router.push(`/dashboard/entry/${id}`);
@@ -273,7 +377,7 @@ const SimpleDashboard = () => {
             className="my-2 me-2 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4"
           >
             Open Entry
-          </button>
+          </button> */}
           <button
             onClick={handleRandom}
             type="button"
@@ -284,6 +388,56 @@ const SimpleDashboard = () => {
         </>
       )}
 
+      <div>
+        <h1 className="my-4 text-xl font-extrabold text-gray-900 md:text-xl lg:text-xl">
+          Last {timeMachine}, you were thinking about:
+        </h1>
+        <div className="mx-2 my-4">
+          <select
+            value={timeMachine}
+            onChange={(e) => setTimeMachine(e.target.value)}
+            className="mt-2 block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500"
+          >
+            <option value="week">Week</option>
+            <option value="month">Month</option>
+            <option value="year">Year</option>
+          </select>
+        </div>
+        {/* {
+    "id": "14586",
+    "data": "This is a crucial, often missed, point about the transition from foraging to farming. The change wasn’t merely a pivotal point in how our species lived in the world. It marked a fundamental shift in what kind of world human beings inhabited, both materially and conceptually. It isn’t hyperbole to say that agriculture extracted humans from the world and pitted us against it. Niles Eldredge of the American Museum of Natural History has written that the shift to agriculture and resulting civilization removed our species from the relation with the natural world that we had until then shared with every other species since life began. “We abruptly stepped out of the local ecosystem.… Our interests no longer dovetail[ed] with those of the natural world around us.…” Adopting agriculture was “tantamount to declaring war on local ecosystems.”",
+    "metadata": "{\"author\":\"https://readwise.io/open/626412500\",\"title\":\"Civilized to Death - Christopher Ryan\",\"readwise_id\":626412500}",
+    "createdAt": "2023-11-14T19:38:04.037Z",
+    "updatedAt": "2024-10-18T00:47:41.990Z"
+} */}
+
+        {randomTimeMachineEntry && (
+          <Link
+            href={{
+              pathname: `/dashboard/entry/${randomTimeMachineEntry.id}`,
+            }}
+            className="block text-gray-900 no-underline"
+          >
+            <div className="relative">
+              <span className="font-normal">{randomTimeMachineEntry.data}</span>
+            </div>
+            <div className="text-sm text-gray-500">
+              Created:{' '}
+              {new Date(randomTimeMachineEntry.createdAt).toLocaleDateString()}
+              {randomTimeMachineEntry.createdAt !==
+                randomTimeMachineEntry.updatedAt && (
+                <>
+                  {' '}
+                  | Last Updated:{' '}
+                  {new Date(
+                    randomTimeMachineEntry.updatedAt,
+                  ).toLocaleDateString()}{' '}
+                </>
+              )}
+            </div>
+          </Link>
+        )}
+      </div>
       {/* ask the user what they are thinking about right now in a text box and add it as an entry -- like a journal */}
       <h1 className="my-4 text-xl font-extrabold text-gray-900 md:text-xl lg:text-xl">
         Journal
@@ -315,7 +469,7 @@ const SimpleDashboard = () => {
                 body: JSON.stringify({
                   data: journalMessage,
                   metadata: {
-                    author: randomEntry.metadata.author,
+                    author: 'https://ycb-companion.onrender.com/dashboard',
                     title: 'Journal',
                   },
                 }),
