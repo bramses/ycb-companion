@@ -27,6 +27,7 @@ const SimpleDashboard = () => {
   const [timeMachine, setTimeMachine] = useState<any>('week');
   const [randomTimeMachineEntry, setRandomTimeMachineEntry] =
     useState<any>(null);
+  const [timeMachineEntries, setTimeMachineEntries] = useState<any[]>([]);
 
   // const [inboxEntries, setInboxEntries] = useState<any[]>([]);
   const { user, isLoaded } = useUser();
@@ -182,7 +183,7 @@ const SimpleDashboard = () => {
         body: JSON.stringify({ date: dateString }),
       });
       const responseData = await response.json();
-      console.log('Time Machine entries:', responseData);
+      setTimeMachineEntries(responseData.data);
       // math random number between 0 and the length of the responseData.data array
       const randomIndex = Math.floor(Math.random() * responseData.data.length);
       setRandomTimeMachineEntry(responseData.data[randomIndex]);
@@ -436,6 +437,21 @@ const SimpleDashboard = () => {
               )}
             </div>
           </Link>
+        )}
+        {/* if timeMachineEntries is > 1 length, a btn fetches a new random entry from the timeMachineEntries array */}
+        {timeMachineEntries.length > 1 && (
+          <button
+            onClick={() => {
+              const randomIndex = Math.floor(
+                Math.random() * timeMachineEntries.length,
+              );
+              setRandomTimeMachineEntry(timeMachineEntries[randomIndex]);
+            }}
+            type="button"
+            className="my-2 me-2 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4 focus:ring-gray-300"
+          >
+            Next Entry
+          </button>
         )}
       </div>
       {/* ask the user what they are thinking about right now in a text box and add it as an entry -- like a journal */}
