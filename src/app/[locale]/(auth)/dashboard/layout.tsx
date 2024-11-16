@@ -71,38 +71,38 @@ export default function DashboardLayout(props: { children: React.ReactNode }) {
     };
   }, []);
 
-  const [inboxCount, setInboxCount] = useState<any>({
-    data: {
-      count: 0,
-    },
-  });
-  const fetchInboxCountHelper = async () => {
-    const inboxCountResponse = await fetch('/api/inboxCount', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-    const inboxCountData = await inboxCountResponse.json();
-    console.log('Inbox count:', inboxCountData);
-    setInboxCount({
-      data: {
-        count: inboxCountData.data,
-      },
-    });
-  };
+  // const [inboxCount, setInboxCount] = useState<any>({
+  //   data: {
+  //     count: 0,
+  //   },
+  // });
+  // const fetchInboxCountHelper = async () => {
+  //   const inboxCountResponse = await fetch('/api/inboxCount', {
+  //     method: 'POST',
+  //     headers: {
+  //       'Content-Type': 'application/json',
+  //     },
+  //   });
+  //   const inboxCountData = await inboxCountResponse.json();
+  //   console.log('Inbox count:', inboxCountData);
+  //   setInboxCount({
+  //     data: {
+  //       count: inboxCountData.data,
+  //     },
+  //   });
+  // };
 
-  useEffect(() => {
-    const fetchInboxCount = async () => {
-      try {
-        await fetchInboxCountHelper();
-      } catch (error) {
-        console.error('Error fetching inbox count:', error);
-      }
-    };
+  // useEffect(() => {
+  //   const fetchInboxCount = async () => {
+  //     try {
+  //       await fetchInboxCountHelper();
+  //     } catch (error) {
+  //       console.error('Error fetching inbox count:', error);
+  //     }
+  //   };
 
-    fetchInboxCount();
-  }, []);
+  //   fetchInboxCount();
+  // }, []);
 
   return (
     <BaseTemplate
@@ -128,7 +128,7 @@ export default function DashboardLayout(props: { children: React.ReactNode }) {
             <Link href="/dashboard/inbox/" className="border-none">
               {t('inbox_link')}
             </Link>
-            <span> ({inboxCount.data.count})</span>
+            {/* <span> ({inboxCount.data.count})</span> */}
           </li>
           <li>
             <Link
