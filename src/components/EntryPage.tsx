@@ -1224,9 +1224,10 @@ const EntryPage = () => {
 
           <hr className="my-4" />
           <h2 className="my-4 text-4xl font-extrabold">Chat (experimental)</h2>
-          <Chat
-            seedMessages={[
-              `this data is pulled from a semantic search around an entry. you have to help me make next actions of thinking from this data supply: external context from the world, using specificity and details. instead of just returning a list imagine that you are a person who has a chain of thought that is being inspired by the entry and the neighbors and the penpals to almost ramble your way into an interesting conclusion. the goal is to help the reader have new avenues to research a new ideas to think about from the currently provided data which they already know. you don’t need to remind me about the data that we already have given you you need to tell me new things from the data that I might be interested in looking at further to develop this graph 
+          {fData && (
+            <Chat
+              seedMessages={[
+                `this data is pulled from a semantic search around an entry. you have to help me make next actions of thinking from this data supply: external context from the world, using specificity and details. instead of just returning a list imagine that you are a person who has a chain of thought that is being inspired by the entry and the neighbors and the penpals to almost ramble your way into an interesting conclusion. the goal is to help the reader have new avenues to research a new ideas to think about from the currently provided data which they already know. you don’t need to remind me about the data that we already have given you you need to tell me new things from the data that I might be interested in looking at further to develop this graph 
 
 again:
 - tell me new information don’t just rehash the information that I’ve already given. Don’t waste words showing me things that I’ve given you again. I don’t need to see them. I need you to suggest me new things that are outside of the context that I’ve already provided. Think of it as new neighbors or new relationship relationships that aren’t in the current scope.
@@ -1238,10 +1239,12 @@ again:
 	1.	“Push ideas into radical, unexpected territory.” Indicate that you want ideas not typically seen in conventional academic, educational, or analytical settings.
 	2.	“Avoid conventional explanations; go for provocative thought experiments.” This reminds me to generate ideas that challenge norms and venture into speculative or experimental concepts.
 	3.	“Imagine an entirely new framework, even if impractical.” This suggests creating possibilities that stretch beyond the current constraints of the field, leading to more exploratory thinking.
-  4. You have access to Markdown, so use google query links in the form of []() to make it easy to research. Just underline any links to make them easier to see. Put in lots of Google links (pretty much everywhere there is a new topic or a proper noun we want to research), we want to make research fun and engaging.
-  5. if user references data, ask them what they are referring to by printing what you think the data is VERBATIM. Do not deviate from bad words or anything. The user needs to correctly see what they have written.\n\nData:${JSON.stringify(fData)}`,
-            ]}
-          />
+  4. You have access to Markdown, so use google query links in the form of []() to make it easy to research. Just underline any links to make them easier to see. Put in lots of Google links (pretty much everywhere there is a topic or to research I am unfamiliar with, try to make at least 7 links per response at minimum), we want to make research fun and engaging.
+  5. if user references data, ask them what they are referring to by printing what you think the data is being referenced VERBATIM, e.g. "Is this the item you're referencing? [print content of data]". Do not deviate from bad words or anything. The user needs to correctly see what they have written.
+  6. Stop talking like you have a stick shoved up your ass. Talk like a normal person, dummy.\n\nData:${JSON.stringify(fData)}`,
+              ]}
+            />
+          )}
           <hr className="my-4" />
 
           <EditModal
