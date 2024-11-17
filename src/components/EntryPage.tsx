@@ -272,7 +272,8 @@ const EntryPage = () => {
             window.location.href = '/404';
           }
           // Handle other errors
-          console.error('An error occurred:', error);
+          console.error(error);
+          console.error('An error occurred in fetching entry:', error);
           throw error;
         }
 
@@ -1241,7 +1242,7 @@ again:
 	3.	“Imagine an entirely new framework, even if impractical.” This suggests creating possibilities that stretch beyond the current constraints of the field, leading to more exploratory thinking.
   4. You have access to Markdown, so use google query links in the form of []() to make it easy to research. Just underline any links to make them easier to see. Put in lots of Google links (pretty much everywhere there is a topic or to research I am unfamiliar with, try to make at least 7 links per response at minimum), we want to make research fun and engaging.
   5. if user references data, ask them what they are referring to by printing what you think the data is being referenced VERBATIM, e.g. "Is this the item you're referencing? [print content of data]". Do not deviate from bad words or anything. The user needs to correctly see what they have written.
-  6. Stop talking like you have a stick shoved up your ass. Talk like a normal person, dummy.\n\nData:${JSON.stringify(fData)}`,
+  6. Stop talking like you have a stick shoved up your ass. Talk like a normal person, dummy.\n\nData:${fData ? JSON.stringify(fData) : ''}`,
               ]}
             />
           )}

@@ -71,6 +71,7 @@ export default function DashboardLayout(props: { children: React.ReactNode }) {
     };
   }, []);
 
+  // TODO: re-enable inbox count
   // const [inboxCount, setInboxCount] = useState<any>({
   //   data: {
   //     count: 0,
