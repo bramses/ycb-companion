@@ -72,9 +72,6 @@ const EntryPage = () => {
     lastName: '',
   });
   const [showDeleteError] = useState(false);
-  // const [uniqueRelationships, setUniqueRelationships] = useState<any>(
-  //   new Set(),
-  // );
 
   const [modalStates, setModalStates] = useState<{ [key: string]: boolean }>(
     {},
@@ -224,131 +221,106 @@ const EntryPage = () => {
     return parsedEntries;
   };
 
-  // const handleSearch = async (entryData: string, _: string) => {
-  //   const parsedEntries = await handleSearchHelper(entryData);
-  //   // add ids of parsed entries to uniqueRelationships
-  //   // parsedEntries.forEach((entry: any) => {
-  //   //   const { id } = entry;
-  //   //   if (id) {
-  //   //     setUniqueRelationships((prev: any) => new Set([...prev, id]));
-  //   //   }
-  //   //   // console.log('uniqueRelationships:', uniqueRelationships);
-  //   // });
-  //   setSearchResults(parsedEntries);
-  // };
+  const asyncFn = async () => {
+    // get id from pathname by popping the last element
+    const id = pathname.split('/').pop();
+    if (!id) return;
+    const entryId = Array.isArray(id) ? id[0] : id; // Handle both string and string[]
+    if (!entryId) return;
+    let res;
+    let dt;
 
-  // useEffect(() => {
-  //   if (data?.metadata?.aliasData) {
-  //     data.metadata.aliasData.forEach(async (alias: any) => {
-  //       const parsedEntries = await handleSearchHelper(alias.aliasData);
-  //       parsedEntries.forEach((entry: any) => {
-  //         const { id } = entry;
-  //         if (id) {
-  //           setUniqueRelationships((prev: any) => new Set([...prev, id]));
-  //         }
-  //       });
-  //     });
-  //   }
-  // }, [data?.metadata?.aliasData]);
+    try {
+      dt = await fetchByID(entryId);
+    } catch (error: any) {
+      if (error.message.includes('No data returned from the API')) {
+        // remove current page from the history stack so user doesnt back to it for loop
+        window.history.pushState({}, '', window.location.pathname);
+        // Redirect to a 404 page
+        window.location.href = '/404';
+      }
+      // Handle other errors
+      console.error(error);
+      console.error('An error occurred in fetching entry:', error);
+      throw error;
+    }
+
+    if ('parent_id' in dt.metadata) {
+      const parentData = await fetchByID(dt.metadata.parent_id);
+      // set res to parentData
+      res = parentData;
+    }
+    // set res to dt if parentData is not available
+    res = res || dt;
+
+    if ('alias_ids' in res.metadata) {
+      // fetch plaintext data from alias_ids
+      const aliasData = await Promise.all(
+        res.metadata.alias_ids.map((aliasId: string) => fetchByID(aliasId)),
+      );
+      // replace alias_ids with aliasData
+      res.metadata.aliasData = aliasData
+        .map((ad) => {
+          return {
+            aliasData: ad.data,
+            aliasId: ad.id,
+            aliasCreatedAt: formatDate(ad.createdAt),
+            aliasUpdatedAt: formatDate(ad.updatedAt),
+            aliasMetadata: ad.metadata,
+          };
+        })
+        .reverse();
+    }
+
+    setData({
+      data: res.data,
+      metadata: res.metadata,
+      id: res.id,
+      createdAt: res.createdAt,
+    });
+
+    if (!transactionManager) setTransactionManager(new TransactionManager(res));
+
+    // check if the data has youtube embed
+    checkEmbeds(
+      res,
+      setHasYoutubeEmbed,
+      setYoutubeId,
+      setYoutubeStart,
+      setHasTwitterEmbed,
+      setTweetId,
+      setHasInstagramEmbed,
+      setHasTikTokEmbed,
+      setHasImage,
+      setHasSpotifyEmbed,
+      setHasCodeBlock,
+      setHasR2Dev,
+    );
+
+    // set author to the URL
+    setAuthor(res.metadata.author);
+
+    // search for related entries
+    // handleSearch(res.data, res.id);
+    // if (res) {
+    //   const amalgam = await createAmalgam(
+    //     res,
+    //     res.metadata.aliasData,
+    //     [],
+    //     [],
+    //     {
+    //       disableAliasKeysInMetadata: true,
+    //       disableAliasKeysInComments: true,
+    //     },
+    //   );
+    //   console.log('Amalgam:', amalgam);
+    // }
+  };
 
   useEffect(() => {
     if (!data) {
-      const asyncFn = async () => {
-        // get id from pathname by popping the last element
-        const id = pathname.split('/').pop();
-        if (!id) return;
-        const entryId = Array.isArray(id) ? id[0] : id; // Handle both string and string[]
-        if (!entryId) return;
-        let res;
-        let dt;
-
-        try {
-          dt = await fetchByID(entryId);
-        } catch (error: any) {
-          if (error.message.includes('No data returned from the API')) {
-            // remove current page from the history stack so user doesnt back to it for loop
-            window.history.pushState({}, '', window.location.pathname);
-            // Redirect to a 404 page
-            window.location.href = '/404';
-          }
-          // Handle other errors
-          console.error(error);
-          console.error('An error occurred in fetching entry:', error);
-          throw error;
-        }
-
-        if ('parent_id' in dt.metadata) {
-          const parentData = await fetchByID(dt.metadata.parent_id);
-          // set res to parentData
-          res = parentData;
-        }
-        // set res to dt if parentData is not available
-        res = res || dt;
-
-        if ('alias_ids' in res.metadata) {
-          // fetch plaintext data from alias_ids
-          const aliasData = await Promise.all(
-            res.metadata.alias_ids.map((aliasId: string) => fetchByID(aliasId)),
-          );
-          // replace alias_ids with aliasData
-          res.metadata.aliasData = aliasData
-            .map((ad) => {
-              return {
-                aliasData: ad.data,
-                aliasId: ad.id,
-                aliasCreatedAt: formatDate(ad.createdAt),
-                aliasUpdatedAt: formatDate(ad.updatedAt),
-                aliasMetadata: ad.metadata,
-              };
-            })
-            .reverse();
-        }
-
-        setData({
-          data: res.data,
-          metadata: res.metadata,
-          id: res.id,
-          createdAt: res.createdAt,
-        });
-
-        // Initialize the TransactionManager with the current data
-        setTransactionManager(new TransactionManager(res));
-
-        // check if the data has youtube embed
-        checkEmbeds(
-          res,
-          setHasYoutubeEmbed,
-          setYoutubeId,
-          setYoutubeStart,
-          setHasTwitterEmbed,
-          setTweetId,
-          setHasInstagramEmbed,
-          setHasTikTokEmbed,
-          setHasImage,
-          setHasSpotifyEmbed,
-          setHasCodeBlock,
-          setHasR2Dev,
-        );
-
-        // set author to the URL
-        setAuthor(res.metadata.author);
-
-        // search for related entries
-        // handleSearch(res.data, res.id);
-        // if (res) {
-        //   const amalgam = await createAmalgam(
-        //     res,
-        //     res.metadata.aliasData,
-        //     [],
-        //     [],
-        //     {
-        //       disableAliasKeysInMetadata: true,
-        //       disableAliasKeysInComments: true,
-        //     },
-        //   );
-        //   console.log('Amalgam:', amalgam);
-        // }
-      };
+      console.log('calling asyncFn from useEffect');
+      // Initialize the TransactionManager with the current data
       asyncFn();
     }
   }, [pathname, data]);
@@ -402,17 +374,10 @@ const EntryPage = () => {
     window.addEventListener('popstate', handlePopState);
     document.addEventListener('click', handleLinkClick);
 
-    console.log(
-      'Added event listeners for beforeunload, popstate, and link clicks',
-    );
-
     return () => {
       window.removeEventListener('beforeunload', handleBeforeUnload);
       window.removeEventListener('popstate', handlePopState);
       document.removeEventListener('click', handleLinkClick);
-      console.log(
-        'Removed event listeners for beforeunload, popstate, and link clicks',
-      );
     };
   }, [isInDraftState]);
 
@@ -789,12 +754,21 @@ const EntryPage = () => {
 
       await transactionManager.executeTransactions();
       // Update the data with the latest draft state
-      setData(transactionManager.getDraftState());
-      setIsSaving(false);
-      alert('All changes saved successfully.');
+      console.log(
+        'async transactionManager.getDraftState():',
+        transactionManager.getDraftState(),
+      );
+      // setData(transactionManager.getDraftState());
+
+      // alert('All changes saved successfully.');
       // reload the page
       // setCachedFData(fData);
-      window.location.reload();
+      console.log('async reload data:', data);
+      setTransactionManager(null);
+      await asyncFn();
+      
+      setIsSaving(false);
+      // window.location.reload();
     } catch (error) {
       alert('Failed to save changes. Rolling back to the last saved state.');
       // Rollback UI to last saved state
@@ -1141,15 +1115,12 @@ const EntryPage = () => {
     asyncFn();
   }, [data]);
 
-  // log fdata to console
-  useEffect(() => {
-    console.log('fdata:', fData);
-  }, [fData]);
-
   // Rendered Data
   const renderedData = transactionManager
     ? transactionManager.getDraftState()
     : data;
+
+    console.log('renderedData:', renderedData);
 
   return renderedData ? (
     <div className="my-4 min-w-full max-w-full">

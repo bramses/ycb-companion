@@ -37,6 +37,17 @@ export class TransactionManager {
     this.transactions.push({ transaction, options });
   }
 
+  reset() {
+    this.transactions = [];
+    this.idMapping.clear();
+    this.errorLog = [];
+    this.draftState = null;
+  }
+
+  setDraftState(state: any) {
+    this.draftState = state;
+  }
+
   async executeTransactions() {
     try {
       // Sort transactions based on dependencies

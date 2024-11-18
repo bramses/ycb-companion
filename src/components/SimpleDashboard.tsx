@@ -30,6 +30,57 @@ const SimpleDashboard = () => {
   // const [inboxEntries, setInboxEntries] = useState<any[]>([]);
   const { user, isLoaded } = useUser();
 
+  // get log entries
+  const fetchLogEntries = async () => {
+    try {
+      const response = await fetch('/api/log', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          page: 1,
+          limit: 10,
+          sortModel: [{ colId: 'createdAt', sort: 'desc' }],
+        }),
+      });
+      const data = await response.json();
+      // if createdAt == updatedAt, say "added", else "updated"
+      const log = data.data
+        .map((entry: any) => {
+          // skip entries with parent_id
+          let metadata;
+          try {
+            metadata = JSON.parse(entry.metadata);
+          } catch (err) {
+            console.error('Error parsing metadata:', err);
+          }
+          if (metadata.parent_id) {
+            return null;
+          }
+          if (entry.createdAt === entry.updatedAt) {
+            return {
+              ...entry,
+              action: 'added',
+            };
+          }
+          return {
+            ...entry,
+            action: 'updated',
+          };
+        })
+        .filter((entry: any) => entry !== null);
+      console.log('Log:', log);
+      setLogEntries(log);
+    } catch (error) {
+      console.error('Error fetching log entries:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchLogEntries();
+  }, []);
+
   const handleRandom = async () => {
     setRandomEntry(null);
     setComments([]);
@@ -243,60 +294,9 @@ const SimpleDashboard = () => {
   useEffect(() => {
     const fetchEntry = async () => {
       // fetch random entry
-      await handleRandom();
+      handleRandom();
     };
     fetchEntry();
-  }, []);
-
-  // get log entries
-  const fetchLogEntries = async () => {
-    try {
-      const response = await fetch('/api/log', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          page: 1,
-          limit: 10,
-          sortModel: [{ colId: 'createdAt', sort: 'desc' }],
-        }),
-      });
-      const data = await response.json();
-      // if createdAt == updatedAt, say "added", else "updated"
-      const log = data.data
-        .map((entry: any) => {
-          // skip entries with parent_id
-          let metadata;
-          try {
-            metadata = JSON.parse(entry.metadata);
-          } catch (err) {
-            console.error('Error parsing metadata:', err);
-          }
-          if (metadata.parent_id) {
-            return null;
-          }
-          if (entry.createdAt === entry.updatedAt) {
-            return {
-              ...entry,
-              action: 'added',
-            };
-          }
-          return {
-            ...entry,
-            action: 'updated',
-          };
-        })
-        .filter((entry: any) => entry !== null);
-      console.log('Log:', log);
-      setLogEntries(log);
-    } catch (error) {
-      console.error('Error fetching log entries:', error);
-    }
-  };
-
-  useEffect(() => {
-    fetchLogEntries();
   }, []);
 
   const closeModal = () => setSearchModalBetaOpen(false);
