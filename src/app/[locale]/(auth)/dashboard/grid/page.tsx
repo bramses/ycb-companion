@@ -119,6 +119,41 @@ const Grid = () => {
     params.api.setGridOption('datasource', dataSource);
   }, []);
 
+  const [isDownloading, setIsDownloading] = useState(false);
+
+  async function downloadEntries() {
+    setIsDownloading(true);
+    try {
+      const response = await fetch('/api/download', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          // Add any necessary request body data here
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'entries.json';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Error downloading the file:', error);
+    } finally {
+      setIsDownloading(false);
+    }
+  }
+
   const deleteEntry = async (id: string) => {
     fetch(`/api/delete`, {
       method: 'POST',
@@ -286,6 +321,17 @@ const Grid = () => {
             />
           </div>
         </div>
+        <button
+          type="button"
+          onClick={() => {
+            downloadEntries();
+            console.log('Downloading data...');
+          }}
+          disabled={isDownloading}
+          className="mt-2 w-full rounded-lg bg-blue-700 px-5 py-2.5 text-sm font-medium text-white hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+        >
+          {isDownloading ? 'Downloading...' : 'Download Data'}
+        </button>
       </main>
     </div>
   );
