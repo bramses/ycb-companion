@@ -15,6 +15,7 @@ const ForceFromEntry = ({
     neighbors: [],
     comments: [],
     internalLinks: [],
+    expansion: [],
   });
 
   const searchNeighbors = async (query: string, skipIDS: string[] = []) => {
@@ -208,6 +209,7 @@ const ForceFromEntry = ({
         neighbors: [],
         comments: [],
         internalLinks: [],
+        expansion: [],
       });
       await generateFData(inputEntry, inputComments);
     };

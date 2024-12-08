@@ -6,21 +6,29 @@ import Link from 'next/link';
 import React, { useEffect, useRef, useState } from 'react';
 import Modal from 'react-modal';
 
-const ForceDirectedGraph = ({ data }: any) => {
+const ForceDirectedGraph = ({ data, onExpand }: any) => {
   const svgRef = useRef<SVGSVGElement | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  const [showModal, setShowModal] = useState(false);
 
   const [modalContent, setModalContent] = useState({
     content: '',
     id: '',
     image: '',
     title: '',
+    group: '',
   });
-  const [showModal, setShowModal] = useState(false);
 
-  const openModal = (content: any, id: any, image: any, title: any) => {
-    console.log('title:', title);
-    setModalContent({ content, id, image, title });
+  // Update the openModal function to accept 'group'
+  const openModal = (
+    content: any,
+    id: any,
+    image: any,
+    title: any,
+    group: any,
+  ) => {
+    setModalContent({ content, id, image, title, group });
     setShowModal(true);
   };
 
@@ -59,6 +67,7 @@ const ForceDirectedGraph = ({ data }: any) => {
     // Process nodes and links
     const nodes = [
       { id: data.entry, label: data.entry, group: 'main', image: data.image },
+      // Add neighbors
       ...data.neighbors.map((n: any) => ({
         id: n.id,
         label: n.data,
@@ -85,6 +94,7 @@ const ForceDirectedGraph = ({ data }: any) => {
           title: penPal.title,
         })),
       ),
+      // Add comments
       ...data.comments.map((comment: any, idx: any) => ({
         id: `comment-${idx}`,
         label: comment.comment,
@@ -102,6 +112,30 @@ const ForceDirectedGraph = ({ data }: any) => {
           title: penPal.title,
         })),
       ),
+      // add expansion nodes i need a nested array of expansions
+      /* expansion: [
+        ...prevData.expansion,
+        { parent: entry.id, children: newNeighbors },
+      ] */
+      ...data.expansion.flatMap((expansion: any) => [
+        // // Add the parent node
+        // {
+        //   id: expansion.parent.id,
+        //   label: expansion.parent.data,
+        //   group: 'expansionParent',
+        //   image: expansion.parent.image,
+        //   title: expansion.parent.title,
+        // },
+        // Add the children nodes
+        ...expansion.children.map((child: any) => ({
+          id: child.id,
+          label: child.data,
+          group: 'expansionChild',
+          image: child.image,
+          title: child.title,
+        })),
+      ]),
+
       // Add parents of neighbors and penpals
       ...data.neighbors
         .filter((n: any) => n.parent)
@@ -166,6 +200,13 @@ const ForceDirectedGraph = ({ data }: any) => {
         target: `comment-${idx}`,
         similarity: 0.5,
       })),
+      ...data.expansion.flatMap((expansion: any) =>
+        expansion.children.flatMap((child: any) => ({
+          source: expansion.parent,
+          target: child.id,
+          similarity: child.similarity,
+        })),
+      ),
       ...data.internalLinks.flatMap((link: any, idx: any) =>
         link.penPals.map((penPal: any) => ({
           source: `internalLink-${idx}`,
@@ -247,7 +288,9 @@ const ForceDirectedGraph = ({ data }: any) => {
         if (d.group === 'internalLink') return 'brown'; // Internal links as brown nodes
         return 'gray';
       })
-      .on('click', (_, d) => openModal(d.label, d.id, d.image, d.title))
+      .on('click', (_, d) =>
+        openModal(d.label, d.id, d.image, d.title, d.group),
+      )
       .call(drag(simulation) as any);
 
     const labels = g
@@ -315,6 +358,15 @@ const ForceDirectedGraph = ({ data }: any) => {
             View Entry
           </Link>
           <br />
+          {/* a search btn that uses the modal content as the query and expands the force directed graph with the new search results */}
+          <button
+            onClick={() => {
+              onExpand(modalContent.id);
+            }}
+            type="button"
+          >
+            Expand
+          </button>
           <button onClick={closeModal} type="button">
             Close
           </button>

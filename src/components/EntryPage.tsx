@@ -79,6 +79,7 @@ const EntryPage = () => {
   const [modalStates, setModalStates] = useState<{ [key: string]: boolean }>(
     {},
   );
+  const [isImageUploading, setIsImageUploading] = useState(false);
   const [isLinkModalOpen, setIsLinkModalOpen] = useState(false);
   // const [relatedText] = useState('Related Entries');
 
@@ -96,6 +97,8 @@ const EntryPage = () => {
     setModalStates((prev) => ({ ...prev, [key]: true }));
   const closeModal = (key: string) =>
     setModalStates((prev) => ({ ...prev, [key]: false }));
+
+  const apiKey = process.env.NEXT_PUBLIC_API_KEY_CF_IMG;
 
   // const toHostname = (url: string) => {
   //   try {
@@ -566,23 +569,72 @@ const EntryPage = () => {
     // });
   };
 
+  const handleImageUploadComment = async (input: any, imageUrl: any) => {
+    if (!transactionManager || !data) return;
+    console.log('input:', input);
+    console.log('imageUrl:', imageUrl);
+    // Assign a temporary ID
+    const tempAliasId = `temp-${uuidv4()}`;
+
+    // Update the draft state
+    const draftState = transactionManager.getDraftState();
+    const newAliasData = {
+      aliasId: tempAliasId,
+      aliasData: input,
+      aliasCreatedAt: new Date().toISOString(),
+      aliasUpdatedAt: new Date().toISOString(),
+      aliasMetadata: {
+        title: 'Image',
+        author: imageUrl,
+        parent_id: data.id,
+      },
+    };
+    draftState.metadata.aliasData = [
+      newAliasData,
+      ...(draftState.metadata.aliasData || []),
+    ];
+    draftState.metadata.alias_ids = [...(draftState.metadata.alias_ids || [])];
+
+    // Update UI immediately
+    setIsInDraftState(true);
+    setData({ ...draftState });
+
+    setTempCommentIDs((prev) => [
+      ...prev,
+      { tempAliasId, aliasInput: input, aliasImageUrl: imageUrl },
+    ]);
+  };
+
   const handleSaveComments = async () => {
     if (!transactionManager || !data) return;
 
     // for each tempCommentIDs add a transaction
     for (const tempCommentId of tempCommentIDs) {
-      const { tempAliasId, aliasInput } = tempCommentId;
+      const { tempAliasId, aliasInput, aliasImageUrl } = tempCommentId;
       console.log('tempCommentId and aliasInput:', { tempAliasId, aliasInput });
-      transactionManager.addTransaction(
-        createEntryTransaction(tempAliasId, aliasInput, {
-          parent_id: data.id,
-          title: data.metadata.title,
-          author: data.metadata.author,
-        }),
-        {
-          tempId: tempAliasId,
-        },
-      );
+      if (!aliasImageUrl) {
+        transactionManager.addTransaction(
+          createEntryTransaction(tempAliasId, aliasInput, {
+            parent_id: data.id,
+            title: data.metadata.title,
+            author: data.metadata.author,
+          }),
+          {
+            tempId: tempAliasId,
+          },
+        );
+      } else {
+        transactionManager.addTransaction(
+          createEntryTransaction(tempAliasId, aliasInput, {
+            parent_id: data.id,
+            title: 'Image',
+            author: aliasImageUrl,
+          }),
+          {
+            tempId: tempAliasId,
+          },
+        );
+      }
     }
 
     // Transaction to update the parent entry with the new alias ID
@@ -675,7 +727,12 @@ const EntryPage = () => {
   };
 
   // Handle Edit Comment
-  const handleEditComment = (aliasId: string, newAliasData: string) => {
+  const handleEditComment = (
+    aliasId: string,
+    newAliasData: string,
+    newAliasAuthor: any = null,
+    newAliasTitle: any = null,
+  ) => {
     if (!transactionManager || !data) return;
 
     // Update the draft state
@@ -685,6 +742,23 @@ const EntryPage = () => {
     );
     if (aliasIndex !== -1) {
       draftState.metadata.aliasData[aliasIndex].aliasData = newAliasData;
+
+      if (
+        newAliasAuthor &&
+        newAliasAuthor !==
+          draftState.metadata.aliasData[aliasIndex].aliasMetadata.author
+      ) {
+        draftState.metadata.aliasData[aliasIndex].aliasMetadata.author =
+          newAliasAuthor;
+      }
+      if (
+        newAliasTitle &&
+        newAliasTitle !==
+          draftState.metadata.aliasData[aliasIndex].aliasMetadata.title
+      ) {
+        draftState.metadata.aliasData[aliasIndex].aliasMetadata.title =
+          newAliasTitle;
+      }
     }
 
     // Update UI immediately
@@ -977,8 +1051,6 @@ const EntryPage = () => {
     for await (const penPal of res.data) {
       if (skipIDS.includes(penPal.id)) {
         console.log('skipping penPal:', penPal.id);
-      } else if (penPal.similarity === 1.01) {
-        console.log('skipping penPal kw match:', penPal.id);
       } else {
         if (JSON.parse(penPal.metadata).parent_id) {
           console.log(
@@ -1061,7 +1133,134 @@ const EntryPage = () => {
     neighbors: [],
     comments: [],
     internalLinks: [],
+    expansion: [],
   });
+
+  const getAllNodeIds = (inputFData: any) => {
+    const neighborIds = inputFData.neighbors.map(
+      (neighbor: any) => neighbor.id,
+    );
+    const commentIds = inputFData.comments.map(
+      (_: any, idx: number) => `comment-${idx}`,
+    );
+    const internalLinkIds = inputFData.internalLinks.map(
+      (_: any, idx: number) => `internalLink-${idx}`,
+    );
+    const penPalIds = inputFData.comments.flatMap((comment: any) =>
+      comment.penPals.map((penPal: any) => penPal.id),
+    );
+    const internalPenPalIds = inputFData.internalLinks.flatMap((link: any) =>
+      link.penPals.map((penPal: any) => penPal.id),
+    );
+    return [
+      inputFData.entry?.id,
+      ...neighborIds,
+      ...commentIds,
+      ...internalLinkIds,
+      ...penPalIds,
+      ...internalPenPalIds,
+    ].filter(Boolean);
+  };
+
+  // const handleExpand = async (nodeId: string) => {
+  //   // Fetch the node's data and metadata
+  //   const nodeData = await fetchByID(nodeId);
+  //   if (!nodeData) {
+  //     console.error(`Cannot fetch data for node with id ${nodeId}`);
+  //     return;
+  //   }
+
+  //   const comments = nodeData.metadata.aliasData || [];
+  //   const commentIDs = comments.map((comment: any) => comment.aliasId);
+
+  //   // Get all existing node IDs to avoid duplicates
+  //   const existingNodeIds = getAllNodeIds(fData);
+
+  //   // Fetch neighbors, excluding already existing nodes
+  //   const neighbors = await searchNeighbors(nodeData.data, [
+  //     nodeId,
+  //     ...commentIDs,
+  //     ...existingNodeIds,
+  //   ]);
+
+  //   const newNeighbors = neighbors.filter(
+  //     (neighbor: any) => !existingNodeIds.includes(neighbor.id),
+  //   );
+
+  //   // Update fData with new neighbors
+  //   setFData((prevData: any) => ({
+  //     ...prevData,
+  //     neighbors: [...prevData.neighbors, ...newNeighbors],
+  //   }));
+
+  //   // Process comments and internal links similarly...
+
+  //   // Check if new data was added
+  //   if (newNeighbors.length === 0 /* && other checks */) {
+  //     alert('Area is fully explored');
+  //   }
+  // };
+
+  // Implement the 'expandFData' function to merge new data into 'fData'
+  const expandFData = async (entry: any, comments: any[] = []) => {
+    const commentIDs = comments.map((comment: any) => comment.aliasId);
+    const existingNodeIds = getAllNodeIds(fData);
+
+    // Fetch neighbors
+    const neighbors = await searchNeighbors(entry.data, [
+      entry.id,
+      ...commentIDs,
+      ...existingNodeIds,
+    ]);
+
+    const newNeighbors = neighbors.filter(
+      (neighbor: any) => !existingNodeIds.includes(neighbor.id),
+    );
+
+    // Update 'fData' with new neighbors
+    setFData((prevData: any) => ({
+      ...prevData,
+      // neighbors: [...prevData.neighbors, ...newNeighbors],
+      expansion: [
+        ...prevData.expansion,
+        { parent: entry.id, children: newNeighbors },
+      ],
+    }));
+
+    // Process comments and internal links similarly...
+
+    // Return whether new data was added
+    const newDataAdded = newNeighbors.length > 0; // Add checks for comments and internal links if processed
+    return newDataAdded;
+  };
+
+  const handleExpand = async (nodeId: string, nodeGroup: string) => {
+    let nodeData;
+
+    // Fetch data based on the node type
+    if (nodeGroup === 'comment') {
+      nodeData = await fetchByID(nodeId);
+    } else if (nodeGroup === 'internalLink') {
+      nodeData = await fetchByID(nodeId);
+    } else {
+      nodeData = await fetchByID(nodeId);
+    }
+
+    if (!nodeData) {
+      console.error(`Cannot fetch data for node with id ${nodeId}`);
+      return;
+    }
+
+    // Expand the graph with the new data
+    const newDataAdded = await expandFData(
+      nodeData,
+      nodeData.metadata.aliasData,
+    );
+
+    if (!newDataAdded) {
+      alert('Area is fully explored');
+    }
+  };
 
   const generateFData = async (entry: any, comments: any[] = []) => {
     const commentIDs = comments.map((comment: any) => comment.aliasId);
@@ -1127,6 +1326,7 @@ const EntryPage = () => {
         neighbors: [],
         comments: [],
         internalLinks: [],
+        expansion: [],
       });
 
       if (cachedFData) {
@@ -1140,11 +1340,6 @@ const EntryPage = () => {
     };
     asyncFn();
   }, [data]);
-
-  // log fdata to console
-  useEffect(() => {
-    console.log('fdata:', fData);
-  }, [fData]);
 
   // Rendered Data
   const renderedData = transactionManager
@@ -1221,7 +1416,9 @@ const EntryPage = () => {
             {processCustomMarkdown(renderedData.data)}
           </div>
 
-          {fData ? <ForceDirectedGraph data={fData} /> : null}
+          {fData ? (
+            <ForceDirectedGraph data={fData} onExpand={handleExpand} />
+          ) : null}
 
           <hr className="my-4" />
           <h2 className="my-4 text-4xl font-extrabold">Chat (experimental)</h2>
@@ -1291,7 +1488,6 @@ again:
             </div>
           )}
 
-          <h3 className="my-4 text-2xl font-bold">Added to yCb</h3>
           <a
             href={`/dashboard/garden?date=${new Date(renderedData.createdAt)
               .toLocaleDateString()
@@ -1344,6 +1540,47 @@ again:
         >
           Add Comment
         </button>
+        <input
+          type="file"
+          className="hidden"
+          id="file-input-image"
+          onChange={(e) => {}}
+          accept="image/*"
+        />
+        <button
+          type="button"
+          onClick={() => {
+            setIsImageUploading(true);
+            const fileInput = document.getElementById('file-input-image');
+            if (!fileInput) return;
+            (fileInput as HTMLInputElement).click();
+
+            fileInput.addEventListener('change', async (event) => {
+              const file = (event.target as HTMLInputElement).files?.[0];
+              if (!file) return;
+
+              const formData = new FormData();
+              formData.append('file', file);
+
+              const worker = new Worker('/imageWorker.js');
+              worker.postMessage({ file, apiKey });
+
+              worker.onmessage = (e) => {
+                const { success, data, error } = e.data;
+                if (success) {
+                  console.log('Image description:', data);
+                  handleImageUploadComment(data.data, data.metadata.imageUrl);
+                } else {
+                  console.error('Error uploading image:', error);
+                }
+                setIsImageUploading(false);
+              };
+            });
+          }}
+          className="mb-2 me-2 mt-4 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4 focus:ring-gray-300 dark:bg-gray-600 dark:hover:bg-gray-700 dark:focus:ring-blue-800"
+        >
+          {isImageUploading ? 'Uploading...' : 'Upload Image Comment'}
+        </button>
       </div>
       {renderedData.metadata.aliasData &&
         renderedData.metadata.aliasData.length > 0 && (
@@ -1372,6 +1609,13 @@ again:
                   'YCB'
                 )}
               </div>
+              {alias && alias.aliasMetadata && alias.aliasMetadata.author && (
+                // show image if author is an image
+                <img
+                  src={alias.aliasMetadata.author}
+                  alt="ycb-companion-image"
+                />
+              )}
               <p className="text-black">
                 {processCustomMarkdown(alias.aliasData)}
               </p>
