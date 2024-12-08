@@ -569,41 +569,42 @@ const EntryPage = () => {
     // });
   };
 
-  const handleImageUploadComment = async (input: any, imageUrl: any) => {
-    if (!transactionManager || !data) return;
-    console.log('input:', input);
-    console.log('imageUrl:', imageUrl);
-    // Assign a temporary ID
-    const tempAliasId = `temp-${uuidv4()}`;
+  // todo: implement image upload
+  // const handleImageUploadComment = async (input: any, imageUrl: any) => {
+  //   if (!transactionManager || !data) return;
+  //   console.log('input:', input);
+  //   console.log('imageUrl:', imageUrl);
+  //   // Assign a temporary ID
+  //   const tempAliasId = `temp-${uuidv4()}`;
 
-    // Update the draft state
-    const draftState = transactionManager.getDraftState();
-    const newAliasData = {
-      aliasId: tempAliasId,
-      aliasData: input,
-      aliasCreatedAt: new Date().toISOString(),
-      aliasUpdatedAt: new Date().toISOString(),
-      aliasMetadata: {
-        title: 'Image',
-        author: imageUrl,
-        parent_id: data.id,
-      },
-    };
-    draftState.metadata.aliasData = [
-      newAliasData,
-      ...(draftState.metadata.aliasData || []),
-    ];
-    draftState.metadata.alias_ids = [...(draftState.metadata.alias_ids || [])];
+  //   // Update the draft state
+  //   const draftState = transactionManager.getDraftState();
+  //   const newAliasData = {
+  //     aliasId: tempAliasId,
+  //     aliasData: input,
+  //     aliasCreatedAt: new Date().toISOString(),
+  //     aliasUpdatedAt: new Date().toISOString(),
+  //     aliasMetadata: {
+  //       title: 'Image',
+  //       author: imageUrl,
+  //       parent_id: data.id,
+  //     },
+  //   };
+  //   draftState.metadata.aliasData = [
+  //     newAliasData,
+  //     ...(draftState.metadata.aliasData || []),
+  //   ];
+  //   draftState.metadata.alias_ids = [...(draftState.metadata.alias_ids || [])];
 
-    // Update UI immediately
-    setIsInDraftState(true);
-    setData({ ...draftState });
+  //   // Update UI immediately
+  //   setIsInDraftState(true);
+  //   setData({ ...draftState });
 
-    setTempCommentIDs((prev) => [
-      ...prev,
-      { tempAliasId, aliasInput: input, aliasImageUrl: imageUrl },
-    ]);
-  };
+  //   setTempCommentIDs((prev) => [
+  //     ...prev,
+  //     { tempAliasId, aliasInput: input, aliasImageUrl: imageUrl },
+  //   ]);
+  // };
 
   const handleSaveComments = async () => {
     if (!transactionManager || !data) return;
