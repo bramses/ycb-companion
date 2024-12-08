@@ -79,7 +79,9 @@ const EntryPage = () => {
   const [modalStates, setModalStates] = useState<{ [key: string]: boolean }>(
     {},
   );
-  const [isImageUploading, setIsImageUploading] = useState(false);
+  // todo: implement image upload
+  // const [isImageUploading, setIsImageUploading] = useState(false);
+  // const apiKey = process.env.NEXT_PUBLIC_API_KEY_CF_IMG;
   const [isLinkModalOpen, setIsLinkModalOpen] = useState(false);
   // const [relatedText] = useState('Related Entries');
 
@@ -97,8 +99,6 @@ const EntryPage = () => {
     setModalStates((prev) => ({ ...prev, [key]: true }));
   const closeModal = (key: string) =>
     setModalStates((prev) => ({ ...prev, [key]: false }));
-
-  const apiKey = process.env.NEXT_PUBLIC_API_KEY_CF_IMG;
 
   // const toHostname = (url: string) => {
   //   try {
@@ -1540,14 +1540,16 @@ again:
         >
           Add Comment
         </button>
+        {/* 
+        todo: implement image upload
         <input
           type="file"
           className="hidden"
           id="file-input-image"
           onChange={(e) => {}}
           accept="image/*"
-        />
-        <button
+        /> */}
+        {/* <button
           type="button"
           onClick={() => {
             setIsImageUploading(true);
@@ -1580,7 +1582,7 @@ again:
           className="mb-2 me-2 mt-4 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4 focus:ring-gray-300 dark:bg-gray-600 dark:hover:bg-gray-700 dark:focus:ring-blue-800"
         >
           {isImageUploading ? 'Uploading...' : 'Upload Image Comment'}
-        </button>
+        </button> */}
       </div>
       {renderedData.metadata.aliasData &&
         renderedData.metadata.aliasData.length > 0 && (
