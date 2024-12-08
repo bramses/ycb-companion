@@ -1,6 +1,8 @@
 // src/app/[locale]/(auth)/api/download/route.ts
 import { NextResponse } from 'next/server';
+
 import { logger } from '@/libs/Logger';
+
 import { GET } from '../getCBPath/route';
 
 export const POST = async (request: Request) => {
