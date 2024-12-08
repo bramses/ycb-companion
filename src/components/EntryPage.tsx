@@ -1051,8 +1051,6 @@ const EntryPage = () => {
     for await (const penPal of res.data) {
       if (skipIDS.includes(penPal.id)) {
         console.log('skipping penPal:', penPal.id);
-      } else if (penPal.similarity === 1.01) {
-        console.log('skipping penPal kw match:', penPal.id);
       } else {
         if (JSON.parse(penPal.metadata).parent_id) {
           console.log(
