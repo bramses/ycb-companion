@@ -6,18 +6,19 @@ import Link from 'next/link';
 import React, { useEffect, useRef, useState } from 'react';
 import Modal from 'react-modal';
 
-const ForceDirectedGraph = ({ data, onExpand }: any) => {
+const ForceDirectedGraph = ({ data, onExpand, onAddComment }: any) => {
   const svgRef = useRef<SVGSVGElement | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
   const [showModal, setShowModal] = useState(false);
 
-  const [modalContent, setModalContent] = useState({
+  const [modalContent, setModalContent] = useState<any>({
     content: '',
     id: '',
     image: '',
     title: '',
     group: '',
+    comments: [],
   });
 
   // Update the openModal function to accept 'group'
@@ -26,13 +27,20 @@ const ForceDirectedGraph = ({ data, onExpand }: any) => {
     id: any,
     image: any,
     title: any,
+    author: any,
     group: any,
+    comments: any,
   ) => {
-    setModalContent({ content, id, image, title, group });
+    setModalContent({ content, id, image, title, author, group, comments });
     setShowModal(true);
   };
 
   const closeModal = () => setShowModal(false);
+
+  const handleAddComment = async (comment: string, parent: any) => {
+    // send data to parent
+    onAddComment(comment, parent);
+  };
 
   useEffect(() => {
     if (!data.entry) return;
@@ -66,7 +74,13 @@ const ForceDirectedGraph = ({ data, onExpand }: any) => {
 
     // Process nodes and links
     const nodes = [
-      { id: data.entry, label: data.entry, group: 'main', image: data.image },
+      {
+        id: data.entry,
+        label: data.entry,
+        group: 'main',
+        image: data.image,
+        comments: data.comments,
+      },
       // Add neighbors
       ...data.neighbors.map((n: any) => ({
         id: n.id,
@@ -75,6 +89,7 @@ const ForceDirectedGraph = ({ data, onExpand }: any) => {
         similarity: n.similarity,
         image: n.image,
         title: n.title,
+        comments: n.comments,
       })),
       // Add internal links as nodes with 'internalLink' group
       ...data.internalLinks.map((link: any, idx: any) => ({
@@ -143,6 +158,7 @@ const ForceDirectedGraph = ({ data, onExpand }: any) => {
           id: n.parent.id,
           label: n.parent.data,
           group: 'parent',
+          comments: n.parent.comments,
         })),
       ...data.internalLinks.flatMap((link: any) =>
         link.penPals
@@ -160,6 +176,7 @@ const ForceDirectedGraph = ({ data, onExpand }: any) => {
             id: penPal.parent.id,
             label: penPal.parent.data,
             group: 'parent',
+            comments: penPal.parent.comments,
           })),
       ),
     ];
@@ -289,7 +306,15 @@ const ForceDirectedGraph = ({ data, onExpand }: any) => {
         return 'gray';
       })
       .on('click', (_, d) =>
-        openModal(d.label, d.id, d.image, d.title, d.group),
+        openModal(
+          d.label,
+          d.id,
+          d.image,
+          d.title,
+          d.author,
+          d.group,
+          d.comments,
+        ),
       )
       .call(drag(simulation) as any);
 
@@ -352,6 +377,75 @@ const ForceDirectedGraph = ({ data, onExpand }: any) => {
             <p>{modalContent.content}</p>
           )}
           <br />
+          {modalContent.group !== 'comment' &&
+            modalContent.comments &&
+            modalContent.comments.map((comment: any) => (
+              <div key={comment.id}>
+                <div
+                  key={comment.id}
+                  className="mx-2 mb-4 flex items-center justify-between"
+                >
+                  <div className="grow">
+                    <div className="block text-gray-900 no-underline">
+                      <div className="relative">
+                        <span className="font-normal">{comment.data}</span>
+                      </div>
+                    </div>
+                    <div className="text-sm text-gray-500">
+                      Created: {new Date(comment.createdAt).toLocaleString()}
+                      {comment.createdAt !== comment.updatedAt && (
+                        <>
+                          {' '}
+                          | Last Updated:{' '}
+                          {new Date(comment.updatedAt).toLocaleString()}{' '}
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </div>
+                <hr className="my-4" />
+              </div>
+            ))}
+
+          {modalContent.group !== 'comment' && (
+            <div>
+              <input
+                type="text"
+                className="w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-gray-900 focus:border-blue-500 focus:ring-blue-500"
+                placeholder="Add a comment..."
+                id={`alias-input-${modalContent.id}`}
+              />
+              <button
+                type="button"
+                onClick={() => {
+                  const aliasInput = document.getElementById(
+                    `alias-input-${modalContent.id}`,
+                  );
+                  if (!aliasInput) return;
+                  // Cast to HTMLInputElement to access value property
+                  const alias = (aliasInput as HTMLInputElement).value;
+                  handleAddComment(alias, modalContent);
+                  // clear input field
+                  (aliasInput as HTMLInputElement).value = '';
+                  // add a temporary comment to modal to show users
+                  if (!modalContent.comments) {
+                    modalContent.comments = [];
+                  }
+                  modalContent.comments.push({
+                    id: `temp-${Math.random() * 1000} - ${new Date().toISOString()}`,
+                    data: alias,
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString(),
+                  });
+                  setModalContent({ ...modalContent });
+                }}
+                className="mb-2 me-2 mt-4 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4 focus:ring-gray-300"
+              >
+                Add Comment
+              </button>
+            </div>
+          )}
+
           <p className="text-sm text-gray-500">{modalContent.title}</p>
           <br />
           <Link href={`/dashboard/entry/${modalContent.id}`} className="mt-4">
@@ -362,6 +456,7 @@ const ForceDirectedGraph = ({ data, onExpand }: any) => {
           <button
             onClick={() => {
               onExpand(modalContent.id);
+              closeModal();
             }}
             type="button"
           >

@@ -21,6 +21,7 @@ import { Tweet } from 'react-tweet';
 import { v4 as uuidv4 } from 'uuid';
 
 import {
+  addEntry,
   // createAmalgam,
   deleteEntry as apiDeleteEntry,
   fetchByID,
@@ -995,7 +996,7 @@ const EntryPage = () => {
       },
       body: JSON.stringify({
         query,
-        matchCount: 6,
+        matchCount: 4,
       }),
     });
     const res = await response.json();
@@ -1014,7 +1015,30 @@ const EntryPage = () => {
             JSON.parse(neighbor.metadata).parent_id,
           );
           neighbor.parent = parent;
+
+          // if neighbor has alias_ids, fetch them and add them to the aliases array
+          if (parent.metadata.alias_ids) {
+            const commentIDs = parent.metadata.alias_ids;
+            // fetch each comment by id and add it to the comments array
+            neighbor.parent.comments = [];
+            for await (const commentID of commentIDs) {
+              const comment = await fetchByID(commentID);
+              neighbor.parent.comments.push(comment);
+            }
+          }
         }
+
+        // if neighbor has alias_ids, fetch them and add them to the aliases array
+        if (JSON.parse(neighbor.metadata).alias_ids) {
+          const commentIDs = JSON.parse(neighbor.metadata).alias_ids;
+          // fetch each comment by id and add it to the comments array
+          neighbor.comments = [];
+          for await (const commentID of commentIDs) {
+            const comment = await fetchByID(commentID);
+            neighbor.comments.push(comment);
+          }
+        }
+
         // if metadata.author includes imagedelivery.net, add it to the thumbnails array
         if (JSON.parse(neighbor.metadata).author) {
           if (
@@ -1022,6 +1046,7 @@ const EntryPage = () => {
           ) {
             neighbor.image = JSON.parse(neighbor.metadata).author;
           }
+          neighbor.author = JSON.parse(neighbor.metadata).author;
         }
         if (JSON.parse(neighbor.metadata).title) {
           neighbor.title = JSON.parse(neighbor.metadata).title;
@@ -1040,7 +1065,7 @@ const EntryPage = () => {
       },
       body: JSON.stringify({
         query,
-        matchCount: 6,
+        matchCount: 4,
       }),
     });
     const res = await response.json();
@@ -1060,13 +1085,37 @@ const EntryPage = () => {
           );
           const parent = await fetchByID(JSON.parse(penPal.metadata).parent_id);
           penPal.parent = parent;
+
+          // if neighbor has alias_ids, fetch them and add them to the aliases array
+          if (parent.metadata.alias_ids) {
+            const commentIDs = parent.metadata.alias_ids;
+            // fetch each comment by id and add it to the comments array
+            penPal.parent.comments = [];
+            for await (const commentID of commentIDs) {
+              const comment = await fetchByID(commentID);
+              penPal.parent.comments.push(comment);
+            }
+          }
         }
+
+        // if neighbor has alias_ids, fetch them and add them to the aliases array
+        if (JSON.parse(penPal.metadata).alias_ids) {
+          const commentIDs = JSON.parse(penPal.metadata).alias_ids;
+          // fetch each comment by id and add it to the comments array
+          penPal.comments = [];
+          for await (const commentID of commentIDs) {
+            const comment = await fetchByID(commentID);
+            penPal.comments.push(comment);
+          }
+        }
+
         if (JSON.parse(penPal.metadata).author) {
           if (
             JSON.parse(penPal.metadata).author.includes('imagedelivery.net')
           ) {
             penPal.image = JSON.parse(penPal.metadata).author;
           }
+          penPal.author = JSON.parse(penPal.metadata).author;
         }
         if (JSON.parse(penPal.metadata).title) {
           penPal.title = JSON.parse(penPal.metadata).title;
@@ -1086,7 +1135,7 @@ const EntryPage = () => {
       },
       body: JSON.stringify({
         query,
-        matchCount: 6,
+        matchCount: 4,
       }),
     });
     const res = await response.json();
@@ -1119,6 +1168,7 @@ const EntryPage = () => {
           ) {
             internalLink.image = JSON.parse(internalLink.metadata).author;
           }
+          internalLink.author = JSON.parse(internalLink.metadata).author;
         }
         if (JSON.parse(internalLink.metadata).title) {
           internalLink.title = JSON.parse(internalLink.metadata).title;
@@ -1128,6 +1178,39 @@ const EntryPage = () => {
     }
 
     return internalLinks;
+  };
+
+  // add a comment to the specified parent and update it
+  const handleAddCommentGraph = async (comment: string, parent: any) => {
+    // add the comment to the parent's aliasData
+
+    console.log(`[handleAdd] ${comment} ${JSON.stringify(parent)}`);
+
+    const commentRes = await addEntry(comment, {
+      author: parent.author,
+      title: parent.title,
+      parent_id: parent.id,
+    });
+
+    const addedComment = commentRes.respData;
+
+    // update parent aliasIds and aliasData
+    const parentRes = await fetchByID(parent.id);
+
+    // append to parentRes metadata alias ids
+    let parentMetadata = parentRes.metadata;
+    try {
+      parentMetadata = JSON.parse(parentRes.metadata);
+    } catch (err) {
+      console.error('Error parsing parent metadata:', err);
+    }
+    if (parentMetadata.alias_ids) {
+      parentMetadata.alias_ids = [...parentMetadata.alias_ids, addedComment.id];
+    } else {
+      parentMetadata.alias_ids = [addedComment.id];
+    }
+
+    await apiUpdateEntry(parent.id, parent.content, parentMetadata);
   };
 
   const [fData, setFData] = useState<any>({
@@ -1418,7 +1501,11 @@ const EntryPage = () => {
           </div>
 
           {fData ? (
-            <ForceDirectedGraph data={fData} onExpand={handleExpand} />
+            <ForceDirectedGraph
+              data={fData}
+              onExpand={handleExpand}
+              onAddComment={handleAddCommentGraph}
+            />
           ) : null}
 
           <hr className="my-4" />
@@ -1612,13 +1699,16 @@ again:
                   'YCB'
                 )}
               </div>
-              {alias && alias.aliasMetadata && alias.aliasMetadata.author && (
-                // show image if author is an image
-                <img
-                  src={alias.aliasMetadata.author}
-                  alt="ycb-companion-image"
-                />
-              )}
+              {alias &&
+                alias.aliasMetadata &&
+                alias.aliasMetadata.author &&
+                alias.aliasMetadata.title === 'Image' && (
+                  // show image if author is an image
+                  <img
+                    src={alias.aliasMetadata.author}
+                    alt="ycb-companion-image"
+                  />
+                )}
               <p className="text-black">
                 {processCustomMarkdown(alias.aliasData)}
               </p>
