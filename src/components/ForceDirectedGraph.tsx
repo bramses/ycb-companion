@@ -1,10 +1,16 @@
 // components/ForceDirectedGraph.js
 /* eslint-disable no-param-reassign */
 
+import 'react-lite-youtube-embed/dist/LiteYouTubeEmbed.css';
+
 import * as d3 from 'd3';
 import Link from 'next/link';
 import React, { useEffect, useRef, useState } from 'react';
+import LiteYouTubeEmbed from 'react-lite-youtube-embed';
 import Modal from 'react-modal';
+import { InstagramEmbed } from 'react-social-media-embed';
+import { Spotify } from 'react-spotify-embed';
+import { Tweet } from 'react-tweet';
 
 const ForceDirectedGraph = ({ data, onExpand, onAddComment }: any) => {
   const svgRef = useRef<SVGSVGElement | null>(null);
@@ -17,6 +23,7 @@ const ForceDirectedGraph = ({ data, onExpand, onAddComment }: any) => {
     id: '',
     image: '',
     title: '',
+    author: '',
     group: '',
     comments: [],
   });
@@ -40,6 +47,22 @@ const ForceDirectedGraph = ({ data, onExpand, onAddComment }: any) => {
   const handleAddComment = async (comment: string, parent: any) => {
     // send data to parent
     onAddComment(comment, parent);
+  };
+
+  const getYTId = (url: string): string => {
+    if (!url) return '';
+    if (url.includes('t=')) {
+      return url.split('t=')[1]?.split('s')[0]!;
+    }
+    return url.split('v=')[1]?.split('&')[0]!;
+  };
+
+  const getTwitterId = (url: string): string => {
+    if (!url) return '';
+    if (url.includes('twitter.com') || /^https:\/\/(www\.)?x\.com/.test(url)) {
+      return url.split('/').pop()!;
+    }
+    return '';
   };
 
   useEffect(() => {
@@ -89,6 +112,7 @@ const ForceDirectedGraph = ({ data, onExpand, onAddComment }: any) => {
         similarity: n.similarity,
         image: n.image,
         title: n.title,
+        author: n.author,
         comments: n.comments,
       })),
       // Add internal links as nodes with 'internalLink' group
@@ -98,6 +122,7 @@ const ForceDirectedGraph = ({ data, onExpand, onAddComment }: any) => {
         group: 'internalLink',
         image: link.image,
         title: link.title,
+        author: link.author,
       })),
       ...data.internalLinks.flatMap((link: any) =>
         link.penPals.map((penPal: any) => ({
@@ -107,6 +132,7 @@ const ForceDirectedGraph = ({ data, onExpand, onAddComment }: any) => {
           similarity: penPal.similarity,
           image: penPal.image,
           title: penPal.title,
+          author: penPal.author,
         })),
       ),
       // Add comments
@@ -116,6 +142,7 @@ const ForceDirectedGraph = ({ data, onExpand, onAddComment }: any) => {
         group: 'comment',
         image: comment.image,
         title: comment.title,
+        author: comment.author,
       })),
       ...data.comments.flatMap((comment: any) =>
         comment.penPals.map((penPal: any) => ({
@@ -125,6 +152,7 @@ const ForceDirectedGraph = ({ data, onExpand, onAddComment }: any) => {
           similarity: penPal.similarity,
           image: penPal.image,
           title: penPal.title,
+          author: penPal.author,
         })),
       ),
       // add expansion nodes i need a nested array of expansions
@@ -148,6 +176,7 @@ const ForceDirectedGraph = ({ data, onExpand, onAddComment }: any) => {
           group: 'expansionChild',
           image: child.image,
           title: child.title,
+          author: child.author,
         })),
       ]),
 
@@ -367,15 +396,37 @@ const ForceDirectedGraph = ({ data, onExpand, onAddComment }: any) => {
         ariaHideApp={false}
       >
         <div className="flex flex-col">
-          {modalContent.image ? (
+          {modalContent.image && (
             <img
               src={modalContent.image}
               alt="thumbnail"
               style={{ width: '80%' }}
             />
-          ) : (
-            <p>{modalContent.content}</p>
           )}
+          {modalContent.author &&
+            modalContent.author.includes('youtube.com') && (
+              <LiteYouTubeEmbed
+                id={getYTId(modalContent.author)}
+                // params={`start=${youtubeStart}`}
+                title="YouTube video"
+              />
+            )}
+          {modalContent.author &&
+            (modalContent.author.includes('twitter.com') ||
+              /^https:\/\/(www\.)?x\.com/.test(modalContent.author)) && (
+              <Tweet id={getTwitterId(modalContent.author)} />
+            )}
+          {modalContent.author &&
+            modalContent.author.includes('instagram.com') && (
+              <InstagramEmbed url={modalContent.author} />
+            )}
+          {modalContent.author &&
+            modalContent.author.includes('open.spotify.com') && (
+              <Spotify link={modalContent.author} wide />
+            )}
+
+          <p>{modalContent.content}</p>
+
           <br />
           {modalContent.group !== 'comment' &&
             modalContent.comments &&
