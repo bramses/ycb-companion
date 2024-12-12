@@ -243,7 +243,7 @@ const SimpleDashboard = () => {
   useEffect(() => {
     const fetchEntry = async () => {
       // fetch random entry
-      await handleRandom();
+      handleRandom();
     };
     fetchEntry();
   }, []);

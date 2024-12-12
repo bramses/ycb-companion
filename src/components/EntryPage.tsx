@@ -37,7 +37,7 @@ import { TransactionManager } from '../helpers/transactionManager';
 import Chat from './Chat';
 import EditModal from './EditModal';
 import ForceDirectedGraph from './ForceDirectedGraph';
-import LinksModal from './LinksModal';
+// import LinksModal from './LinksModal';
 import Loading from './Loading';
 import SearchModalBeta from './SearchModalBeta';
 import UrlSVG from './UrlSVG';
@@ -83,7 +83,7 @@ const EntryPage = () => {
   // todo: implement image upload
   // const [isImageUploading, setIsImageUploading] = useState(false);
   // const apiKey = process.env.NEXT_PUBLIC_API_KEY_CF_IMG;
-  const [isLinkModalOpen, setIsLinkModalOpen] = useState(false);
+  // const [isLinkModalOpen, setIsLinkModalOpen] = useState(false);
   // const [relatedText] = useState('Related Entries');
 
   const [searchBetaModalQuery, setSearchBetaModalQuery] = useState('');
@@ -1754,7 +1754,7 @@ again:
       {showAliasError && (
         <div className="text-red-500">Error adding alias. Try again.</div>
       )}
-      <h2 className="my-4 text-4xl font-extrabold">Add Links</h2>
+      {/* <h2 className="my-4 text-4xl font-extrabold">Add Links</h2>
       <button
         type="button"
         className="my-4 w-full rounded-lg bg-blue-700 px-5 py-2.5 text-sm font-medium text-white hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300"
@@ -1801,7 +1801,7 @@ again:
               ))}
             </div>
           </>
-        )}
+        )} */}
       {/* <h2 className="my-4 text-4xl font-extrabold">{relatedText}</h2>
       {searchResults.map((result) => (
         <div key={result.id}>
