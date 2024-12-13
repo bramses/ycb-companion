@@ -1537,6 +1537,7 @@ const EntryPage = () => {
 
           <button
             onClick={() => exportGraph()}
+            type="button"
             className="my-2 me-2 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4"
           >
             Export Graph as JSON
