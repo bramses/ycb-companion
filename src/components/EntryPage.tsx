@@ -26,7 +26,7 @@ import {
   deleteEntry as apiDeleteEntry,
   fetchByID,
   // fetchSearchEntries,
-  fetchSearchEntriesHelper,
+  // fetchSearchEntriesHelper,
   formatDate,
   // splitIntoWords,
   updateEntry as apiUpdateEntry,
