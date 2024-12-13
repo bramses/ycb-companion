@@ -223,10 +223,10 @@ const EntryPage = () => {
   //   return parsedEntries;
   // };
 
-  const handleSearchLinksModal = async (entryData: string) => {
-    const parsedEntries = await fetchSearchEntriesHelper(entryData);
-    return parsedEntries;
-  };
+  // const handleSearchLinksModal = async (entryData: string) => {
+  //   const parsedEntries = await fetchSearchEntriesHelper(entryData);
+  //   return parsedEntries;
+  // };
 
   // const handleSearch = async (entryData: string, _: string) => {
   //   const parsedEntries = await handleSearchHelper(entryData);
