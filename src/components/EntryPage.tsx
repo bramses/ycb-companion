@@ -80,6 +80,8 @@ const EntryPage = () => {
   const [modalStates, setModalStates] = useState<{ [key: string]: boolean }>(
     {},
   );
+  const [isGraphLoading, setIsGraphLoading] = useState(false);
+
   // todo: implement image upload
   // const [isImageUploading, setIsImageUploading] = useState(false);
   // const apiKey = process.env.NEXT_PUBLIC_API_KEY_CF_IMG;
@@ -606,6 +608,19 @@ const EntryPage = () => {
   //     { tempAliasId, aliasInput: input, aliasImageUrl: imageUrl },
   //   ]);
   // };
+
+  const exportGraph = () => {
+    const graphData = JSON.stringify(fData);
+    const element = document.createElement('a');
+    element.setAttribute(
+      'href',
+      `data:text/json;charset=utf-8,${encodeURIComponent(graphData)}`,
+    );
+    element.setAttribute('download', 'graph.json');
+    element.style.display = 'none';
+    document.body.appendChild(element);
+    element.click();
+  }
 
   const handleSaveComments = async () => {
     if (!transactionManager || !data) return;
@@ -1347,6 +1362,8 @@ const EntryPage = () => {
   };
 
   const generateFData = async (entry: any, comments: any[] = []) => {
+
+    setIsGraphLoading(true);
     const commentIDs = comments.map((comment: any) => comment.aliasId);
 
     // Fetch neighbors and update state incrementally
@@ -1396,6 +1413,8 @@ const EntryPage = () => {
         ],
       }));
     }
+
+    setIsGraphLoading(false);
   };
 
   useEffect(() => {
@@ -1501,12 +1520,27 @@ const EntryPage = () => {
           </div>
 
           {fData ? (
-            <ForceDirectedGraph
-              data={fData}
-              onExpand={handleExpand}
-              onAddComment={handleAddCommentGraph}
-            />
+            <div className="relative">
+            <div className="relative">
+              <ForceDirectedGraph
+                data={fData}
+                onExpand={handleExpand}
+                onAddComment={handleAddCommentGraph}
+              />
+              {isGraphLoading && (
+                <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-75">
+                  <span className="text-lg font-bold">Loading...</span>
+                </div>
+              )}
+            </div>
+          </div>
           ) : null}
+         
+          <button 
+          onClick={() => exportGraph()}
+          className="my-2 me-2 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4">
+            Export Graph as JSON
+          </button>
 
           <hr className="my-4" />
           <h2 className="my-4 text-4xl font-extrabold">Chat (experimental)</h2>
