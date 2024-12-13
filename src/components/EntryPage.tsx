@@ -609,19 +609,6 @@ const EntryPage = () => {
   //   ]);
   // };
 
-  const exportGraph = () => {
-    const graphData = JSON.stringify(fData);
-    const element = document.createElement('a');
-    element.setAttribute(
-      'href',
-      `data:text/json;charset=utf-8,${encodeURIComponent(graphData)}`,
-    );
-    element.setAttribute('download', 'graph.json');
-    element.style.display = 'none';
-    document.body.appendChild(element);
-    element.click();
-  }
-
   const handleSaveComments = async () => {
     if (!transactionManager || !data) return;
 
@@ -1362,7 +1349,6 @@ const EntryPage = () => {
   };
 
   const generateFData = async (entry: any, comments: any[] = []) => {
-
     setIsGraphLoading(true);
     const commentIDs = comments.map((comment: any) => comment.aliasId);
 
@@ -1415,6 +1401,19 @@ const EntryPage = () => {
     }
 
     setIsGraphLoading(false);
+  };
+
+  const exportGraph = () => {
+    const graphData = JSON.stringify(fData);
+    const element = document.createElement('a');
+    element.setAttribute(
+      'href',
+      `data:text/json;charset=utf-8,${encodeURIComponent(graphData)}`,
+    );
+    element.setAttribute('download', 'graph.json');
+    element.style.display = 'none';
+    document.body.appendChild(element);
+    element.click();
   };
 
   useEffect(() => {
@@ -1521,24 +1520,25 @@ const EntryPage = () => {
 
           {fData ? (
             <div className="relative">
-            <div className="relative">
-              <ForceDirectedGraph
-                data={fData}
-                onExpand={handleExpand}
-                onAddComment={handleAddCommentGraph}
-              />
-              {isGraphLoading && (
-                <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-75">
-                  <span className="text-lg font-bold">Loading...</span>
-                </div>
-              )}
+              <div className="relative">
+                <ForceDirectedGraph
+                  data={fData}
+                  onExpand={handleExpand}
+                  onAddComment={handleAddCommentGraph}
+                />
+                {isGraphLoading && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-75">
+                    <span className="text-lg font-bold">Loading...</span>
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
           ) : null}
-         
-          <button 
-          onClick={() => exportGraph()}
-          className="my-2 me-2 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4">
+
+          <button
+            onClick={() => exportGraph()}
+            className="my-2 me-2 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4"
+          >
             Export Graph as JSON
           </button>
 
