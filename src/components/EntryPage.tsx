@@ -91,7 +91,7 @@ const EntryPage = () => {
 
   const [transactionManager, setTransactionManager] =
     useState<TransactionManager | null>(null);
-  const [tempIds, setTempIds] = useState<string[]>([]);
+  const [tempIds] = useState<string[]>([]);
   const [tempCommentIDs, setTempCommentIDs] = useState<any[]>([]);
   const [cachedFData, setCachedFData] = useState<any>(null);
   const [isInDraftState, setIsInDraftState] = useState(false);
@@ -800,59 +800,59 @@ const EntryPage = () => {
     }
   };
 
-  // Handle Add Link
-  const handleAddLink = (name: string, url: string) => {
-    if (!transactionManager || !data) return;
+  // // Handle Add Link
+  // const handleAddLink = (name: string, url: string) => {
+  //   if (!transactionManager || !data) return;
 
-    // Update the draft state
-    const draftState = transactionManager.getDraftState();
-    const newLink = { name, url };
-    draftState.metadata.links = [...(draftState.metadata.links || []), newLink];
+  //   // Update the draft state
+  //   const draftState = transactionManager.getDraftState();
+  //   const newLink = { name, url };
+  //   draftState.metadata.links = [...(draftState.metadata.links || []), newLink];
 
-    // Update UI immediately
-    setIsInDraftState(true);
-    setData({ ...draftState });
+  //   // Update UI immediately
+  //   setIsInDraftState(true);
+  //   setData({ ...draftState });
 
-    const addLinkTxName = `addLinkTx-${uuidv4()}`;
+  //   const addLinkTxName = `addLinkTx-${uuidv4()}`;
 
-    // Add transaction to update the entry
-    const addLinkTx: Transaction = async () => {
-      await apiUpdateEntry(data.id, data.data, draftState.metadata);
-    };
+  //   // Add transaction to update the entry
+  //   const addLinkTx: Transaction = async () => {
+  //     await apiUpdateEntry(data.id, data.data, draftState.metadata);
+  //   };
 
-    // add the new link to the tempIds array
-    setTempIds((prev) => [...prev, newLink.name]);
+  //   // add the new link to the tempIds array
+  //   setTempIds((prev) => [...prev, newLink.name]);
 
-    transactionManager.addTransaction(addLinkTx, {
-      name: addLinkTxName,
-    });
-  };
+  //   transactionManager.addTransaction(addLinkTx, {
+  //     name: addLinkTxName,
+  //   });
+  // };
 
-  // Handle Delete Link
-  const handleDeleteLink = (index: number) => {
-    if (!transactionManager || !data) return;
+  // // Handle Delete Link
+  // const handleDeleteLink = (index: number) => {
+  //   if (!transactionManager || !data) return;
 
-    // Update the draft state
-    const draftState = transactionManager.getDraftState();
-    if (draftState.metadata.links && draftState.metadata.links[index]) {
-      draftState.metadata.links.splice(index, 1);
-    }
+  //   // Update the draft state
+  //   const draftState = transactionManager.getDraftState();
+  //   if (draftState.metadata.links && draftState.metadata.links[index]) {
+  //     draftState.metadata.links.splice(index, 1);
+  //   }
 
-    // Update UI immediately
-    setIsInDraftState(true);
-    setData({ ...draftState });
+  //   // Update UI immediately
+  //   setIsInDraftState(true);
+  //   setData({ ...draftState });
 
-    // Add transaction to update the entry
-    const deleteLinkTx: Transaction = async () => {
-      await apiUpdateEntry(data.id, data.data, draftState.metadata);
-    };
+  //   // Add transaction to update the entry
+  //   const deleteLinkTx: Transaction = async () => {
+  //     await apiUpdateEntry(data.id, data.data, draftState.metadata);
+  //   };
 
-    // add the new link to the tempIds array
-    const tempDeleteLinkId = `temp-delete-link-${uuidv4()}`;
-    setTempIds((prev) => [...prev, tempDeleteLinkId]);
+  //   // add the new link to the tempIds array
+  //   const tempDeleteLinkId = `temp-delete-link-${uuidv4()}`;
+  //   setTempIds((prev) => [...prev, tempDeleteLinkId]);
 
-    transactionManager.addTransaction(deleteLinkTx);
-  };
+  //   transactionManager.addTransaction(deleteLinkTx);
+  // };
 
   // Handle Save All Transactions
   const handleSaveAll = async () => {
@@ -1526,8 +1526,7 @@ again:
 	2.	“Avoid conventional explanations; go for provocative thought experiments.” This reminds me to generate ideas that challenge norms and venture into speculative or experimental concepts.
 	3.	“Imagine an entirely new framework, even if impractical.” This suggests creating possibilities that stretch beyond the current constraints of the field, leading to more exploratory thinking.
   4. You have access to Markdown, so use google query links in the form of []() to make it easy to research. Just underline any links to make them easier to see. Put in lots of Google links (pretty much everywhere there is a topic or to research I am unfamiliar with, try to make at least 7 links per response at minimum), we want to make research fun and engaging.
-  5. if user references data, ask them what they are referring to by printing what you think the data is being referenced VERBATIM, e.g. "Is this the item you're referencing? [print content of data]". Do not deviate from bad words or anything. The user needs to correctly see what they have written.
-  6. Stop talking like you have a stick shoved up your ass. Talk like a normal person, dummy.\n\nData:${fData ? JSON.stringify(fData) : ''}`,
+  5. if user references data, ask them what they are referring to by printing what you think the data is being referenced VERBATIM, e.g. "Is this the item you're referencing? [print content of data]". Do not deviate from bad words or anything. The user needs to correctly see what they have written.\n\nData:${fData ? JSON.stringify(fData) : ''}`,
               ]}
             />
           )}
