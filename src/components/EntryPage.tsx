@@ -1348,57 +1348,106 @@ const EntryPage = () => {
     }
   };
 
+  // const generateFData = async (entry: any, comments: any[] = []) => {
+  //   setIsGraphLoading(true);
+  //   const commentIDs = comments.map((comment: any) => comment.aliasId);
+
+  //   // Fetch neighbors and update state incrementally
+  //   const neighbors = await searchNeighbors(entry.data, [
+  //     entry.id,
+  //     ...commentIDs,
+  //   ]);
+  //   setFData((prevData: any) => ({
+  //     ...prevData,
+  //     neighbors,
+  //   }));
+
+  //   const neighborIDs = neighbors.map((neighbor: any) => neighbor.id);
+
+  //   // Process comments and update state incrementally
+  //   for await (const comment of comments) {
+  //     const penPals = await searchPenPals(comment.aliasData, [
+  //       ...neighborIDs,
+  //       entry.id,
+  //       ...commentIDs,
+  //     ]);
+  //     setFData((prevData: any) => ({
+  //       ...prevData,
+  //       comments: [
+  //         ...(prevData.comments || []),
+  //         { comment: comment.aliasData, penPals },
+  //       ],
+  //     }));
+  //   }
+
+  //   // Extract and process internal links, updating state incrementally
+  //   const dataLinks = entry.data.match(/\[\[(.*?)\]\]/g) || [];
+  //   for await (const link of dataLinks) {
+  //     const linkData = link.replace('[[', '').replace(']]', '');
+  //     const linkParts = linkData.split('|');
+  //     const internalLink = linkParts.length === 2 ? linkParts[0] : linkData;
+  //     const penPals = await searchInternalLinks(internalLink, [
+  //       ...neighborIDs,
+  //       entry.id,
+  //       ...commentIDs,
+  //     ]);
+  //     setFData((prevData: any) => ({
+  //       ...prevData,
+  //       internalLinks: [
+  //         ...(prevData.internalLinks || []),
+  //         { internalLink, penPals },
+  //       ],
+  //     }));
+  //   }
+
+  //   setIsGraphLoading(false);
+  // };
+
   const generateFData = async (entry: any, comments: any[] = []) => {
     setIsGraphLoading(true);
+
     const commentIDs = comments.map((comment: any) => comment.aliasId);
 
-    // Fetch neighbors and update state incrementally
-    const neighbors = await searchNeighbors(entry.data, [
+    // Create a promise for neighbors
+    const neighborsPromise = searchNeighbors(entry.data, [
       entry.id,
       ...commentIDs,
     ]);
-    setFData((prevData: any) => ({
-      ...prevData,
-      neighbors,
-    }));
 
-    const neighborIDs = neighbors.map((neighbor: any) => neighbor.id);
-
-    // Process comments and update state incrementally
-    for await (const comment of comments) {
+    const commentsPromises = comments.map(async (comment: any) => {
       const penPals = await searchPenPals(comment.aliasData, [
-        ...neighborIDs,
         entry.id,
         ...commentIDs,
       ]);
-      setFData((prevData: any) => ({
-        ...prevData,
-        comments: [
-          ...(prevData.comments || []),
-          { comment: comment.aliasData, penPals },
-        ],
-      }));
-    }
+      return { comment: comment.aliasData, penPals };
+    });
 
-    // Extract and process internal links, updating state incrementally
     const dataLinks = entry.data.match(/\[\[(.*?)\]\]/g) || [];
-    for await (const link of dataLinks) {
+    const internalLinksPromises = dataLinks.map(async (link: any) => {
       const linkData = link.replace('[[', '').replace(']]', '');
       const linkParts = linkData.split('|');
       const internalLink = linkParts.length === 2 ? linkParts[0] : linkData;
       const penPals = await searchInternalLinks(internalLink, [
-        ...neighborIDs,
         entry.id,
         ...commentIDs,
       ]);
-      setFData((prevData: any) => ({
-        ...prevData,
-        internalLinks: [
-          ...(prevData.internalLinks || []),
-          { internalLink, penPals },
-        ],
-      }));
-    }
+      return { internalLink, penPals };
+    });
+
+    // Await all promises together
+    const [neighbors, processedComments, processedInternalLinks] =
+      await Promise.all([
+        neighborsPromise,
+        Promise.all(commentsPromises),
+        Promise.all(internalLinksPromises),
+      ]);
+
+    setFData((prevData: any) => ({
+      ...prevData,
+      neighbors,
+      comments: processedComments,
+      internalLinks: processedInternalLinks,
+    }));
 
     setIsGraphLoading(false);
   };
