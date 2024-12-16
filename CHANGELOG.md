@@ -1,3 +1,10 @@
+# [1.50.0](https://github.com/bramses/ycb-companion/compare/v1.49.0...v1.50.0) (2024-12-16)
+
+
+### Features
+
+* Add Flow Sessions page and API for managing past flow states in the dashboard, enhancing user navigation and data access ([1618d3e](https://github.com/bramses/ycb-companion/commit/1618d3eac8068ad4d58079bf3f29ad9b44d964f4))
+
 # [1.49.0](https://github.com/bramses/ycb-companion/compare/v1.48.0...v1.49.0) (2024-11-15)
 
 
