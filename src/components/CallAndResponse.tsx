@@ -46,14 +46,17 @@ const CallAndResponse: React.FC<Props> = ({
       const data = text;
       const response = await addEntry(data, metadata);
 
-      setEntries([...entries, response]);
-      updateAllEntries(response);
+      setEntries([...entries, response.respData]);
+      updateAllEntries(response.respData);
       if (!instanceAdded) {
         autoAddInstance();
         setInstanceAdded(true);
       }
-      return response;
+      console.log('response:', response);
+      console.log('response.respData:', response.respData);
+      return response.respData;
     }
+    console.log('focused:', focused);
     let inputMetadata = focused.metadata;
     try {
       inputMetadata =
@@ -64,7 +67,8 @@ const CallAndResponse: React.FC<Props> = ({
       // no-op
     }
 
-    if (inputMetadata.parent_id) {
+    console.log('inputMetadata:', inputMetadata);
+    if (inputMetadata && 'parent_id' in inputMetadata) {
       const parentId = inputMetadata.parent_id;
       (metadata as any).parent_id = parentId;
     } else {
@@ -74,10 +78,13 @@ const CallAndResponse: React.FC<Props> = ({
     const data = text;
     // Add to YCB
     const response = await addEntry(data, metadata);
-    const childId = response.id;
+    const childId = response.respData.id;
+
+    console.log('childid:', childId);
 
     // Update the parent entry
     const parentId = (metadata as any).parent_id;
+    console.log('parentId:', parentId);
     const parentEntry = await fetchByID(parentId);
     let parentEntryMetadata = parentEntry.metadata;
     try {
@@ -103,12 +110,14 @@ const CallAndResponse: React.FC<Props> = ({
       updatedParentEntry.metadata,
     );
 
-    setEntries([...entries, response2]);
-    updateAllEntries(response2);
+    setEntries([...entries, response2.respData]);
+    updateAllEntries(response2.respData);
     if (!instanceAdded) {
       autoAddInstance();
       setInstanceAdded(true);
     }
+
+    return response2.respData;
   };
 
   const handleSubmit = async () => {
@@ -127,7 +136,7 @@ const CallAndResponse: React.FC<Props> = ({
     const { data } = respData;
 
     // For each result, if metadata.parent_id exists, fetch the parent entry
-    for (const result of data) {
+    const fetchParentEntries = data.map(async (result: any) => {
       let metadata;
       try {
         metadata =
@@ -139,19 +148,30 @@ const CallAndResponse: React.FC<Props> = ({
       }
       if (metadata && metadata.parent_id) {
         const parentResult = await fetchByID(metadata.parent_id);
+        return { id: result.id, parentResult };
+      }
+      return null;
+    });
+
+    const results = await Promise.allSettled(fetchParentEntries);
+
+    results.forEach((res) => {
+      if (res.status === 'fulfilled' && res.value) {
+        const { id, parentResult } = res.value;
         setParentDisplay((prev) => ({
           ...prev,
-          [result.id]: parentResult,
+          [id]: parentResult,
         }));
       }
-    }
+    });
 
     if (allEntries.length === 0) {
       const responseEntry = await handleAdd(null);
+      console.log('responseEntry:', responseEntry);
       console.log('sessionStarter:', responseEntry);
     } else {
       const sessionStarter = allEntries[0];
-      await handleAdd(sessionStarter);
+      await handleAdd(sessionStarter!);
     }
 
     setSearchResults(data);
@@ -236,7 +256,7 @@ const CallAndResponse: React.FC<Props> = ({
   return (
     <div className="call-and-response">
       <textarea
-        className="full-width text-box"
+        className="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500"
         value={text}
         onChange={(e) => setText(e.target.value)}
         placeholder="Type your thoughts here"
@@ -255,8 +275,8 @@ const CallAndResponse: React.FC<Props> = ({
       )}
       {isDropdownOpen && allEntries.length > 0 && submitted && (
         <div>
-          {allEntries.map((entry, index) => (
-            <div key={index}>
+          {allEntries.map((entry) => (
+            <div key={entry.id}>
               {entry.data}
               {entry.metadata.title === 'Image' && (
                 <img src={entry.metadata.author} alt="Image" />
@@ -284,8 +304,8 @@ const CallAndResponse: React.FC<Props> = ({
 
       {matches.length > 0 && submitted && (
         <div>
-          {matches.map((match, index) => (
-            <div key={index}>
+          {matches.map((match: any) => (
+            <div key={match.id}>
               <div>
                 {match.data}
                 <br />
@@ -293,9 +313,9 @@ const CallAndResponse: React.FC<Props> = ({
                   <img src={match.metadata.author} alt="Image" />
                 )}
                 <br />
-                {parentDisplay[match.id] && (
+                {parentDisplay && parentDisplay[match.id] && (
                   <p>
-                    <em>{parentDisplay[match.id].data}</em>
+                    <em>{parentDisplay[match.id]!.data}</em>
                   </p>
                 )}
               </div>
