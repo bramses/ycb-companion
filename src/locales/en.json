@@ -67,6 +67,7 @@
     "dashboard_link": "Dashboard",
     "user_profile_link": "Manage your account",
     "starred_entries_link": "Starred Entries",
+    "flow_sessions_link": "Past Flow States",
     "inbox_link": "Inbox",
     "garden_link": "Garden",
     "grid_link": "Grid",

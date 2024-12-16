@@ -5,15 +5,15 @@ import { useEffect, useState } from 'react';
 
 import Loading from '@/components/Loading';
 
-const Inbox = () => {
+const FlowSessions = () => {
   const [page, setPage] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [entries, setEntries] = useState<any[]>([]);
 
-  const fetchInboxEntries = async () => {
+  const fetchFlowSessions = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch('/api/inbox', {
+      const response = await fetch('/api/flowSessions', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -32,11 +32,11 @@ const Inbox = () => {
 
   const handlePageChange = (newPage: number) => {
     setPage(newPage);
-    fetchInboxEntries();
+    fetchFlowSessions();
   };
 
   useEffect(() => {
-    fetchInboxEntries();
+    fetchFlowSessions();
   }, [page]);
 
   useEffect(() => {
@@ -94,4 +94,4 @@ const Inbox = () => {
   );
 };
 
-export default Inbox;
+export default FlowSessions;

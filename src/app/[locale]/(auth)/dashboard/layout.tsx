@@ -125,6 +125,14 @@ export default function DashboardLayout(props: { children: React.ReactNode }) {
               {t('starred_entries_link')}
             </Link>
           </li>
+          <li>
+            <Link
+              href="/dashboard/flow-sessions/"
+              className="border-none text-gray-700 hover:text-gray-900"
+            >
+              {t('flow_sessions_link')}
+            </Link>
+          </li>
           <li className="border-none text-gray-700 hover:text-gray-900">
             <Link href="/dashboard/inbox/" className="border-none">
               {t('inbox_link')}
