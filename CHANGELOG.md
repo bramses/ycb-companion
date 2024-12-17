@@ -1,3 +1,10 @@
+# [1.51.0](https://github.com/bramses/ycb-companion/compare/v1.50.0...v1.51.0) (2024-12-17)
+
+
+### Features
+
+* Add Flow link to DashboardLayout and integrate loading states in CallAndResponse for better user experience ([aa938d7](https://github.com/bramses/ycb-companion/commit/aa938d7f1d6fb591e373f8f7be2f267140688c34))
+
 # [1.50.0](https://github.com/bramses/ycb-companion/compare/v1.49.0...v1.50.0) (2024-12-16)
 
 
