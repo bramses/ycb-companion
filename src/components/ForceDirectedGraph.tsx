@@ -7,11 +7,11 @@ import * as d3 from 'd3';
 import Link from 'next/link';
 import React, { useEffect, useRef, useState } from 'react';
 import LiteYouTubeEmbed from 'react-lite-youtube-embed';
+import ReactMarkdown from 'react-markdown';
 import Modal from 'react-modal';
 import { InstagramEmbed } from 'react-social-media-embed';
 import { Spotify } from 'react-spotify-embed';
 import { Tweet } from 'react-tweet';
-import ReactMarkdown from 'react-markdown';
 
 const ForceDirectedGraph = ({ data, onExpand, onAddComment }: any) => {
   const svgRef = useRef<SVGSVGElement | null>(null);
