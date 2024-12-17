@@ -65,6 +65,7 @@
   },
   "DashboardLayout": {
     "dashboard_link": "Dashboard",
+    "flow_link": "Flow",
     "user_profile_link": "Manage your account",
     "starred_entries_link": "Starred Entries",
     "inbox_link": "Inbox",

@@ -3,6 +3,7 @@
 // import './CallAndResponse.css';
 
 import React, { useEffect, useState } from 'react';
+import ReactMarkdown from 'react-markdown';
 
 import { addEntry, fetchByID, updateEntry } from '@/helpers/functions';
 
@@ -178,58 +179,6 @@ const CallAndResponse: React.FC<Props> = ({
     setSubmitted(true);
   };
 
-  // const fetchById = async (id: string) => {
-  //   const response = await fetch('/api/fetch', {
-  //     method: 'POST',
-  //     headers: {
-  //       'Content-Type': 'application/json',
-  //     },
-  //     body: JSON.stringify({
-  //       id,
-  //     }),
-  //   });
-
-  //   const data = await response.json();
-  //   return data;
-  // };
-
-  // const addToYCB = async (inputData: string, inputMetadata: any) => {
-  //   const response = await fetch('/api/add', {
-  //     method: 'POST',
-  //     headers: {
-  //       'Content-Type': 'application/json',
-  //     },
-  //     body: JSON.stringify({
-  //       data: inputData,
-  //       metadata: inputMetadata,
-  //     }),
-  //   });
-
-  //   const data = await response.json();
-  //   return data;
-  // };
-
-  // const updateById = async (
-  //   id: string,
-  //   inputData: string,
-  //   inputMetadata: any,
-  // ) => {
-  //   const response = await fetch('/api/update', {
-  //     method: 'POST',
-  //     headers: {
-  //       'Content-Type': 'application/json',
-  //     },
-  //     body: JSON.stringify({
-  //       id,
-  //       data: inputData,
-  //       metadata: inputMetadata,
-  //     }),
-  //   });
-
-  //   const data = await response.json();
-  //   return data;
-  // };
-
   useEffect(() => {
     const updateMatches = () => {
       const uniqueMatches = Array.from(
@@ -253,17 +202,50 @@ const CallAndResponse: React.FC<Props> = ({
     return date.toLocaleString('en-US', options);
   }
 
+  const [loadingStates, setLoadingStates] = useState<{
+    [key: string]: boolean;
+  }>({});
+
+  const [addedStates, setAddedStates] = useState<{
+    [key: string]: boolean;
+  }>({});
+
+  const handleAddWithLoading = async (entry: Entry) => {
+    setLoadingStates((prev) => ({ ...prev, [entry.id]: true }));
+    await handleAdd(entry);
+    setLoadingStates((prev) => ({ ...prev, [entry.id]: false }));
+    setAddedStates((prev) => ({ ...prev, [entry.id]: true }));
+  };
+
+  const getButtonText = (loading: boolean, added: boolean) => {
+    if (loading) return 'Loading...';
+    if (added) return 'Added';
+    return 'Add as Comment';
+  };
+  const [setSubmitting, setSetSubmitting] = useState(false);
+  
+
   return (
     <div className="call-and-response">
       <textarea
-        className="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500"
+        className="m-2 block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500"
         value={text}
         onChange={(e) => setText(e.target.value)}
         placeholder="Type your thoughts here"
         rows={5}
       />
-      <button onClick={handleSubmit} className="submit-button" type="button">
-        Submit
+      <button
+        onClick={async () => {
+          setSetSubmitting(true);
+          await handleSubmit();
+          setSetSubmitting(false);
+          
+        }}
+        className={`m-2 me-2 rounded-lg bg-blue-700 px-5 py-2.5 text-sm font-medium text-white hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 ${setSubmitting ? 'cursor-not-allowed' : ''}`}
+        disabled={setSubmitting}
+        type="button"
+      >
+        {setSubmitting ? 'Submitting...' : 'Submit'}
       </button>
       {allEntries.length > 0 && submitted && (
         <button
@@ -276,12 +258,28 @@ const CallAndResponse: React.FC<Props> = ({
       {isDropdownOpen && allEntries.length > 0 && submitted && (
         <div>
           {allEntries.map((entry) => (
-            <div key={entry.id}>
-              {entry.data}
+            <div
+              key={entry.id}
+              className="m-4 block w-full overflow-x-auto rounded-lg border border-gray-200 bg-white p-6 shadow hover:bg-gray-100"
+            >
+              <ReactMarkdown>{entry.data}</ReactMarkdown>
               {entry.metadata.title === 'Image' && (
                 <img src={entry.metadata.author} alt="Image" />
               )}
-              <div>
+              <div className="inline-flex rounded-md shadow-sm" role="group">
+                <button
+                  type="button"
+                  onClick={async () => {
+                    await handleAddWithLoading(entry);
+                  }}
+                  disabled={loadingStates[entry.id]}
+                  className="rounded-s-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-900 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:text-blue-700 focus:ring-2 focus:ring-blue-700"
+                >
+                  {getButtonText(
+                    loadingStates[entry.id]!,
+                    addedStates[entry.id]!,
+                  )}
+                </button>
                 <button
                   type="button"
                   onClick={() =>
@@ -290,15 +288,15 @@ const CallAndResponse: React.FC<Props> = ({
                       '_blank',
                     )
                   }
+                  disabled={loadingStates[entry.id] || addedStates[entry.id]}
+                  className={`rounded-s-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-900 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:text-blue-700 focus:ring-2 ${loadingStates[entry.id] || addedStates[entry.id] ? 'cursor-not-allowed' : ''}`}
                 >
                   Open in Companion
-                </button>
-                <button type="button" onClick={() => handleAdd(entry)}>
-                  Add as Comment
                 </button>
               </div>
             </div>
           ))}
+          <hr className="mx-auto my-4 h-1 w-48 rounded border-0 bg-gray-100 dark:bg-gray-700 md:my-10" />
         </div>
       )}
 
@@ -306,8 +304,8 @@ const CallAndResponse: React.FC<Props> = ({
         <div>
           {matches.map((match: any) => (
             <div key={match.id}>
-              <div>
-                {match.data}
+              <div className="m-4 block w-full overflow-x-auto rounded-lg border border-gray-200 bg-white p-6 shadow hover:bg-gray-100">
+                <ReactMarkdown>{match.data}</ReactMarkdown>
                 <br />
                 {match.metadata && match.metadata.title === 'Image' && (
                   <img src={match.metadata.author} alt="Image" />
@@ -318,26 +316,33 @@ const CallAndResponse: React.FC<Props> = ({
                     <em>{parentDisplay[match.id]!.data}</em>
                   </p>
                 )}
-              </div>
-              <div>
-                <div>
-                  <button type="button">&#x22EE;</button>
-                  <div>
-                    <button
-                      onClick={() =>
-                        window.open(
-                          `https://ycb-companion.onrender.com/dashboard/entry/${match.id}`,
-                          '_blank',
-                        )
-                      }
-                      type="button"
-                    >
-                      Open in Companion
-                    </button>
-                    <button type="button" onClick={() => handleAdd(match)}>
-                      Add as Comment
-                    </button>
-                  </div>
+
+                <div className="inline-flex rounded-md shadow-sm" role="group">
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      await handleAddWithLoading(match);
+                    }}
+                    disabled={loadingStates[match.id] || addedStates[match.id]}
+                    className={`rounded-s-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-900 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:text-blue-700 focus:ring-2 ${loadingStates[match.id] || addedStates[match.id] ? 'cursor-not-allowed' : ''}`}
+                  >
+                    {getButtonText(
+                      loadingStates[match.id]!,
+                      addedStates[match.id]!,
+                    )}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      window.open(
+                        `https://ycb-companion.onrender.com/dashboard/entry/${match.id}`,
+                        '_blank',
+                      )
+                    }
+                    className="rounded-e-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-900 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:text-blue-700 focus:ring-2 focus:ring-blue-700"
+                  >
+                    Open in Companion
+                  </button>
                 </div>
               </div>
             </div>

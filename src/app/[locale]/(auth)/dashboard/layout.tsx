@@ -117,6 +117,11 @@ export default function DashboardLayout(props: { children: React.ReactNode }) {
               {t('dashboard_link')}
             </Link>
           </li>
+          <li className="border-none text-gray-700 hover:text-gray-900">
+            <Link href="/dashboard/flow/" className="border-none">
+              {t('flow_link')}
+            </Link>
+          </li>
           <li>
             <Link
               href="/dashboard/starred-entries/"
