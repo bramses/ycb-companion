@@ -1,3 +1,6 @@
+/* eslint-disable @next/next/no-img-element */
+/* eslint-disable jsx-a11y/img-redundant-alt */
+
 'use client';
 
 // import './CallAndResponse.css';
@@ -223,10 +226,9 @@ const CallAndResponse: React.FC<Props> = ({
     return 'Add as Comment';
   };
   const [setSubmitting, setSetSubmitting] = useState(false);
-  
 
   return (
-    <div className="call-and-response">
+    <div>
       <textarea
         className="m-2 block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500"
         value={text}
@@ -239,7 +241,6 @@ const CallAndResponse: React.FC<Props> = ({
           setSetSubmitting(true);
           await handleSubmit();
           setSetSubmitting(false);
-          
         }}
         className={`m-2 me-2 rounded-lg bg-blue-700 px-5 py-2.5 text-sm font-medium text-white hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 ${setSubmitting ? 'cursor-not-allowed' : ''}`}
         disabled={setSubmitting}
