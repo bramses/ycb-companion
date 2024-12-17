@@ -189,18 +189,18 @@ const CallAndResponse: React.FC<Props> = ({
     updateMatches();
   }, [searchResults]);
 
-  function formatTimestamp(timestamp: string) {
-    const date = new Date(timestamp);
-    const options: Intl.DateTimeFormatOptions = {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: 'numeric',
-      minute: 'numeric',
-      hour12: true,
-    };
-    return date.toLocaleString('en-US', options);
-  }
+  // function formatTimestamp(timestamp: string) {
+  //   const date = new Date(timestamp);
+  //   const options: Intl.DateTimeFormatOptions = {
+  //     year: 'numeric',
+  //     month: 'long',
+  //     day: 'numeric',
+  //     hour: 'numeric',
+  //     minute: 'numeric',
+  //     hour12: true,
+  //   };
+  //   return date.toLocaleString('en-US', options);
+  // }
 
   const [loadingStates, setLoadingStates] = useState<{
     [key: string]: boolean;

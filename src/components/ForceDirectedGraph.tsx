@@ -11,6 +11,7 @@ import Modal from 'react-modal';
 import { InstagramEmbed } from 'react-social-media-embed';
 import { Spotify } from 'react-spotify-embed';
 import { Tweet } from 'react-tweet';
+import ReactMarkdown from 'react-markdown';
 
 const ForceDirectedGraph = ({ data, onExpand, onAddComment }: any) => {
   const svgRef = useRef<SVGSVGElement | null>(null);
@@ -425,7 +426,7 @@ const ForceDirectedGraph = ({ data, onExpand, onAddComment }: any) => {
               <Spotify link={modalContent.author} wide />
             )}
 
-          <p>{modalContent.content}</p>
+          <ReactMarkdown>{modalContent.content}</ReactMarkdown>
 
           <br />
           {modalContent.group !== 'comment' &&
