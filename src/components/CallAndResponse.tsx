@@ -232,6 +232,7 @@ const CallAndResponse: React.FC<Props> = ({
       <textarea
         className="m-2 block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500"
         value={text}
+        style={{ fontSize: '17px' }}
         onChange={(e) => setText(e.target.value)}
         placeholder="Type your thoughts here"
         rows={5}
