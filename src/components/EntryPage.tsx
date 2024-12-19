@@ -40,6 +40,7 @@ import ForceDirectedGraph from './ForceDirectedGraph';
 // import LinksModal from './LinksModal';
 import Loading from './Loading';
 import SearchModalBeta from './SearchModalBeta';
+import ShareModal from './ShareModal';
 import UrlSVG from './UrlSVG';
 
 const EntryPage = () => {
@@ -81,6 +82,7 @@ const EntryPage = () => {
     {},
   );
   const [isGraphLoading, setIsGraphLoading] = useState(false);
+  const [openShareModal, setOpenShareModal] = useState(false);
 
   // todo: implement image upload
   // const [isImageUploading, setIsImageUploading] = useState(false);
@@ -1453,16 +1455,17 @@ const EntryPage = () => {
   };
 
   const exportGraph = () => {
-    const graphData = JSON.stringify(fData);
-    const element = document.createElement('a');
-    element.setAttribute(
-      'href',
-      `data:text/json;charset=utf-8,${encodeURIComponent(graphData)}`,
-    );
-    element.setAttribute('download', 'graph.json');
-    element.style.display = 'none';
-    document.body.appendChild(element);
-    element.click();
+    // load a ShareModal component
+    // const graphData = JSON.stringify(fData);
+    // const element = document.createElement('a');
+    // element.setAttribute(
+    //   'href',
+    //   `data:text/json;charset=utf-8,${encodeURIComponent(graphData)}`,
+    // );
+    // element.setAttribute('download', 'graph.json');
+    // element.style.display = 'none';
+    // document.body.appendChild(element);
+    // element.click();
   };
 
   useEffect(() => {
@@ -1585,12 +1588,20 @@ const EntryPage = () => {
           ) : null}
 
           <button
-            onClick={() => exportGraph()}
+            onClick={() => setOpenShareModal(true)}
             type="button"
             className="my-2 me-2 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4"
           >
-            Export Graph as JSON
+            Share Graph
           </button>
+          {openShareModal && (
+            <ShareModal
+              originalData={fData}
+              isOpen={openShareModal}
+              entryId={data.id}
+              closeModalFn={() => setOpenShareModal(false)}
+            />
+          )}
 
           <hr className="my-4" />
           <h2 className="my-4 text-4xl font-extrabold">Chat (experimental)</h2>
