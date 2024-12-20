@@ -172,6 +172,67 @@ function RecursiveNode({ node, checkedNodes, setCheckedNodes }: any) {
   );
 }
 
+const replaceImagesWithBase64 = async (json: any) => {
+  const modifiedJsonWithImages = JSON.parse(JSON.stringify(json));
+
+  const convertImageDataToBase64 = async (data: any) => {
+    if (data.image) {
+      const imageUrl = data.image;
+      const imageResponse = await fetch(imageUrl);
+      const imageBlob = await imageResponse.blob();
+      // Convert Blob to Base64
+      const reader = new FileReader();
+      return new Promise((resolve, reject) => {
+        reader.onloadend = () => {
+          resolve({ ...data, image: reader.result });
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(imageBlob);
+      });
+      // return { ...data, image: imageBlob }; // Keep the image as a Blob
+    }
+    return data;
+  };
+
+  // Process comments
+  if (Array.isArray(modifiedJsonWithImages.comments)) {
+    modifiedJsonWithImages.comments = await Promise.all(
+      modifiedJsonWithImages.comments.map(convertImageDataToBase64),
+    );
+  }
+
+  // Process neighbors
+  if (Array.isArray(modifiedJsonWithImages.neighbors)) {
+    modifiedJsonWithImages.neighbors = await Promise.all(
+      modifiedJsonWithImages.neighbors.map(convertImageDataToBase64),
+    );
+  }
+
+  // Process internalLinks
+  if (Array.isArray(modifiedJsonWithImages.internalLinks)) {
+    modifiedJsonWithImages.internalLinks = await Promise.all(
+      modifiedJsonWithImages.internalLinks.map(convertImageDataToBase64),
+    );
+  }
+
+  // Process expansion
+  if (Array.isArray(modifiedJsonWithImages.expansion)) {
+    modifiedJsonWithImages.expansion = await Promise.all(
+      modifiedJsonWithImages.expansion.map(async (expansionNode: any) => {
+        if (Array.isArray(expansionNode.children)) {
+          expansionNode.children = await Promise.all(
+            expansionNode.children.map(convertImageDataToBase64),
+          );
+        }
+        return expansionNode;
+      }),
+    );
+  }
+
+  console.log('modifiedJsonWithImages:', modifiedJsonWithImages);
+  return modifiedJsonWithImages;
+};
+
 export default function Share({
   isOpen,
   closeModalFn,
@@ -284,7 +345,7 @@ export default function Share({
     return filterNode(originalData);
   };
 
-  const handleDownload = () => {
+  const handleDownload = async () => {
     // const modifiedJson = getFilteredJson();
     // const blob = new Blob([JSON.stringify(modifiedJson, null, 2)], {
     //   type: 'application/json',
@@ -298,11 +359,14 @@ export default function Share({
     // post to https://share-ycbs.onrender.com/api/add with body { userid, entryid, json, username }
     // where userid is the user's id, entryid is the entry's id, json is the modified json, and username is the user's username from clerk
     const modifiedJson = getFilteredJson();
+
+    // replace any images in json with b64 strings
+    const modifiedJsonWithImages = await replaceImagesWithBase64(modifiedJson);
+
     const body = {
-      json: modifiedJson,
-      username: firstLastName.firstName,
+      json: modifiedJsonWithImages,
+      username: firstLastName.firstName.toLowerCase(), // todo: change to username on rollover from clerk to self hosted auth
       entryid: entryId,
-      userid: '1',
     };
 
     fetch('http://localhost:3001/api/add', {
