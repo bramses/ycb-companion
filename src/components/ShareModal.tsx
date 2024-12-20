@@ -264,7 +264,7 @@ export default function Share({
   // a btn that checks url http://localhost:3001/p/{entryid} and if not a 404 does not show the button
   useEffect(() => {
     if (entryId) {
-      fetch(`http://localhost:3001/p/${entryId}`)
+      fetch(`http://localhost:3001/api/ping?entryid=${entryId}`)
         .then((response) => {
           if (!response.ok) {
             // If the response is not OK (e.g., 404, 500), hide the button

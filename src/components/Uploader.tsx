@@ -86,6 +86,31 @@ const Uploader = () => {
     }
   };
 
+  const uploadFromShareYCB = async (id: string) => {
+    const response = await fetch(
+      `http://localhost:3001/api/get-upload?id=${id}`,
+    );
+    const respData = await response.json();
+    if (respData.error) {
+      throw new Error(respData.error);
+    }
+    const { data } = respData;
+    // add data using /api/add
+    const addresponse = await fetch('/api/add', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        data: data.json.data,
+        metadata: JSON.parse(data.json.metadata),
+      }),
+    });
+    const addrData = await addresponse.json();
+    console.log('addrData:', addrData);
+    return response;
+  };
+
   const uploadAudio = async () => {
     const fileInput = document.getElementById('file-input-audio');
     if (!fileInput) return;
@@ -264,10 +289,28 @@ const Uploader = () => {
       <button
         type="button"
         onClick={uploadAudio}
-        className="mt-2 block rounded-lg bg-blue-700 px-5 py-2.5 text-sm font-medium text-white hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+        className="mt-2 block rounded-lg bg-blue-700 px-5 py-2.5 text-sm font-medium text-white hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300"
       >
         Upload Audio -- not a worker like image, leave modal open while
         loading!!
+      </button>
+      <div className="inline-flex w-full items-center justify-center">
+        <hr className="my-8 h-px w-64 border-0 bg-gray-200 dark:bg-gray-700" />
+        <span className="absolute left-1/2 -translate-x-1/2 bg-white px-3 font-medium text-gray-900 dark:bg-gray-900 dark:text-white">
+          or
+        </span>
+      </div>
+      <button
+        type="button"
+        className="mt-2 block rounded-lg bg-blue-700 px-5 py-2.5 text-sm font-medium text-white hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300"
+        onClick={() => {
+          const url = prompt('Enter the URL of the entry you want to upload');
+          if (url) {
+            uploadFromShareYCB(url);
+          }
+        }}
+      >
+        Upload from Share yCb
       </button>
       {loading && <p>Loading...</p>}
     </div>
