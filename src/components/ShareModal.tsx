@@ -1,6 +1,7 @@
 'use client';
 
 import { useUser } from '@clerk/nextjs';
+import Link from 'next/link';
 import React, { useEffect, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import Modal from 'react-modal';
@@ -241,6 +242,7 @@ export default function Share({
 }: any) {
   const [checkedNodes, setCheckedNodes] = useState({});
   const [modalOpen, setModalOpen] = useState(true);
+  const [showShareButton, setShowShareButton] = useState(true);
 
   const { user, isLoaded } = useUser();
   const [firstLastName, setFirstLastName] = useState({
@@ -258,6 +260,26 @@ export default function Share({
       });
     }
   }, [isLoaded, user]);
+
+  // a btn that checks url http://localhost:3001/p/{entryid} and if not a 404 does not show the button
+  useEffect(() => {
+    if (entryId) {
+      fetch(`http://localhost:3001/p/${entryId}`)
+        .then((response) => {
+          if (!response.ok) {
+            // If the response is not OK (e.g., 404, 500), hide the button
+            setShowShareButton(false);
+          } else {
+            // If the response is OK (e.g., 200), show the button
+            setShowShareButton(true);
+          }
+        })
+        .catch((error) => {
+          console.error('Error fetching entry:', error);
+          setShowShareButton(false);
+        });
+    }
+  }, [entryId]);
 
   // generate unique ids for nodes that don't have one
   let tempIdCounter = 0;
@@ -412,6 +434,12 @@ export default function Share({
         <button type="button" onClick={handleDownload}>
           download modified json
         </button>
+        {showShareButton && (
+          <Link target="_blank" href={`http://localhost:3001/p/${entryId}`}>
+            share
+          </Link>
+        )}
+
         <button
           type="button"
           onClick={() => setModalOpen(false)}
