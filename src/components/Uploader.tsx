@@ -2,35 +2,37 @@
 
 'use client';
 
-import { useUser } from '@clerk/nextjs';
-import { useEffect, useState } from 'react';
+// import { useUser } from '@clerk/nextjs';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 
-const Uploader = () => {
-  const { user, isLoaded } = useUser();
+const Uploader = ({ closeModal }: { closeModal: () => void }) => {
+  // const { user, isLoaded } = useUser();
+  const router = useRouter();
   const [textAreaValue, setTextAreaValue] = useState('');
   const [title, setTitle] = useState('');
   const [author, setAuthor] = useState(
     'https://ycb-companion.onrender.com/dashboard',
   );
-  const [firstLastName, setFirstLastName] = useState({
-    firstName: '',
-    lastName: '',
-  });
+  // const [firstLastName, setFirstLastName] = useState({
+  //   firstName: '',
+  //   lastName: '',
+  // });
 
   const apiKey = process.env.NEXT_PUBLIC_API_KEY_CF_IMG;
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    if (!isLoaded) return;
-    // set first name as title
-    if (user?.firstName && user?.lastName) {
-      setTitle(`${user.firstName} ${user.lastName}`);
-      setFirstLastName({
-        firstName: user.firstName,
-        lastName: user.lastName,
-      });
-    }
-  }, [isLoaded, user]);
+  // useEffect(() => {
+  //   if (!isLoaded) return;
+  //   // set first name as title
+  //   if (user?.firstName && user?.lastName) {
+  //     setTitle(`${user.firstName} ${user.lastName}`);
+  //     setFirstLastName({
+  //       firstName: user.firstName,
+  //       lastName: user.lastName,
+  //     });
+  //   }
+  // }, [isLoaded, user]);
 
   const add = async (
     data: string,
@@ -67,23 +69,50 @@ const Uploader = () => {
     });
     const responseData = await response.json();
 
-    console.log('Response:', responseData);
+    return responseData;
 
-    // clear input fields
-    setTextAreaValue('');
+    // console.log('Response:', responseData);
 
-    if (firstLastName.firstName && firstLastName.lastName) {
-      setTitle(`${firstLastName.firstName} ${firstLastName.lastName}`);
-    } else {
-      setTitle('');
+    // // clear input fields
+    // setTextAreaValue('');
+
+    // if (firstLastName.firstName && firstLastName.lastName) {
+    //   setTitle(`${firstLastName.firstName} ${firstLastName.lastName}`);
+    // } else {
+    //   setTitle('');
+    // }
+    // setAuthor('https://ycb-companion.onrender.com/dashboard');
+    // setLoading(false);
+    // // refocus on text area
+    // const modalMessage = document.getElementById('modal-message');
+    // if (modalMessage) {
+    //   modalMessage.focus();
+    // }
+  };
+
+  const uploadFromShareYCB = async (id: string) => {
+    const response = await fetch(
+      `https://share-ycbs.onrender.com/api/get-upload?id=${id}`,
+    );
+    const respData = await response.json();
+    if (respData.error) {
+      throw new Error(respData.error);
     }
-    setAuthor('https://ycb-companion.onrender.com/dashboard');
-    setLoading(false);
-    // refocus on text area
-    const modalMessage = document.getElementById('modal-message');
-    if (modalMessage) {
-      modalMessage.focus();
-    }
+    const { data } = respData;
+    // add data using /api/add
+    const addresponse = await fetch('/api/add', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        data: data.json.data,
+        metadata: JSON.parse(data.json.metadata),
+      }),
+    });
+    const addrData = await addresponse.json();
+    console.log('addrData:', addrData);
+    return addrData;
   };
 
   const uploadAudio = async () => {
@@ -162,14 +191,19 @@ const Uploader = () => {
         const worker = new Worker('/imageWorker.js');
         worker.postMessage({ file: arrayBuffer, apiKey });
 
-        worker.onmessage = (e) => {
+        worker.onmessage = async (e) => {
           const { success, data, error } = e.data;
           if (success) {
             console.log('Image description:', data);
-            add(data.data, {
+            const responseEntry = await add(data.data, {
               author: data.metadata.imageUrl,
               title: 'Image',
             });
+            console.log('responseEntry:', responseEntry);
+            if (responseEntry.respData) {
+              router.push(`/dashboard/entry/${responseEntry.respData.id}`);
+              closeModal();
+            }
           } else {
             console.error('Error:', error);
           }
@@ -220,9 +254,14 @@ const Uploader = () => {
         className="mt-2 block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder:text-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
         placeholder={author}
         onChange={(e) => setAuthor(e.target.value)}
-        onKeyDown={(e) => {
+        onKeyDown={async (e) => {
           if (e.key === 'Enter' && e.metaKey) {
-            add(textAreaValue, { author, title });
+            const responseEntry = await add(textAreaValue, { author, title });
+            console.log('responseEntry:', responseEntry);
+            if (responseEntry.respData) {
+              router.push(`/dashboard/entry/${responseEntry.respData.id}`);
+              closeModal();
+            }
           }
         }}
         value={author}
@@ -230,7 +269,14 @@ const Uploader = () => {
       <button
         type="button"
         className="mt-2 block w-full rounded-lg bg-blue-700 px-5 py-2.5 text-sm font-medium text-white hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
-        onClick={() => add(textAreaValue, { author, title })}
+        onClick={async () => {
+          const responseEntry = await add(textAreaValue, { author, title });
+          console.log('responseEntry:', responseEntry);
+          if (responseEntry.respData) {
+            router.push(`/dashboard/entry/${responseEntry.respData.id}`);
+            closeModal();
+          }
+        }}
       >
         Add Entry (or press cmd/ctrl + enter)
       </button>
@@ -264,10 +310,35 @@ const Uploader = () => {
       <button
         type="button"
         onClick={uploadAudio}
-        className="mt-2 block rounded-lg bg-blue-700 px-5 py-2.5 text-sm font-medium text-white hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+        className="mt-2 block rounded-lg bg-blue-700 px-5 py-2.5 text-sm font-medium text-white hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300"
       >
         Upload Audio -- not a worker like image, leave modal open while
         loading!!
+      </button>
+      <div className="inline-flex w-full items-center justify-center">
+        <hr className="my-8 h-px w-64 border-0 bg-gray-200 dark:bg-gray-700" />
+        <span className="absolute left-1/2 -translate-x-1/2 bg-white px-3 font-medium text-gray-900 dark:bg-gray-900 dark:text-white">
+          or
+        </span>
+      </div>
+      <button
+        type="button"
+        className="mt-2 block rounded-lg bg-blue-700 px-5 py-2.5 text-sm font-medium text-white hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300"
+        onClick={async () => {
+          const url = prompt('Enter the URL of the entry you want to upload');
+          if (url) {
+            setLoading(true);
+            const responseEntry = await uploadFromShareYCB(url);
+            console.log('responseEntry:', responseEntry);
+            if (responseEntry.respData) {
+              router.push(`/dashboard/entry/${responseEntry.respData.id}`);
+              closeModal();
+            }
+            setLoading(false);
+          }
+        }}
+      >
+        Upload from Share yCb
       </button>
       {loading && <p>Loading...</p>}
     </div>
