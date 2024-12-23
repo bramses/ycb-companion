@@ -74,6 +74,7 @@ const EntryPage = () => {
     lastName: '',
   });
   const [showDeleteError] = useState(false);
+  const [tempComments, setTempComments] = useState<any[]>([]);
   // const [uniqueRelationships, setUniqueRelationships] = useState<any>(
   //   new Set(),
   // );
@@ -503,76 +504,76 @@ const EntryPage = () => {
   };
 
   // Handle Add Comment
-  const handleAddComment = (aliasInput: string) => {
-    if (!transactionManager || !data) return;
-    console.log('alias:', aliasInput);
+  // const handleAddComment = (aliasInput: string) => {
+  //   if (!transactionManager || !data) return;
+  //   console.log('alias:', aliasInput);
 
-    // Assign a temporary ID
-    const tempAliasId = `temp-${uuidv4()}`;
+  //   // Assign a temporary ID
+  //   const tempAliasId = `temp-${uuidv4()}`;
 
-    // Update the draft state
-    const draftState = transactionManager.getDraftState();
-    const newAliasData = {
-      aliasId: tempAliasId,
-      aliasData: aliasInput,
-      aliasCreatedAt: new Date().toISOString(),
-      aliasUpdatedAt: new Date().toISOString(),
-      aliasMetadata: {
-        title: data.metadata.title,
-        author: data.metadata.author,
-        parent_id: data.id,
-      },
-    };
-    draftState.metadata.aliasData = [
-      newAliasData,
-      ...(draftState.metadata.aliasData || []),
-    ];
-    draftState.metadata.alias_ids = [...(draftState.metadata.alias_ids || [])];
+  //   // Update the draft state
+  //   const draftState = transactionManager.getDraftState();
+  //   const newAliasData = {
+  //     aliasId: tempAliasId,
+  //     aliasData: aliasInput,
+  //     aliasCreatedAt: new Date().toISOString(),
+  //     aliasUpdatedAt: new Date().toISOString(),
+  //     aliasMetadata: {
+  //       title: data.metadata.title,
+  //       author: data.metadata.author,
+  //       parent_id: data.id,
+  //     },
+  //   };
+  //   draftState.metadata.aliasData = [
+  //     newAliasData,
+  //     ...(draftState.metadata.aliasData || []),
+  //   ];
+  //   draftState.metadata.alias_ids = [...(draftState.metadata.alias_ids || [])];
 
-    // Update UI immediately
-    setIsInDraftState(true);
-    setData({ ...draftState });
+  //   // Update UI immediately
+  //   setIsInDraftState(true);
+  //   setData({ ...draftState });
 
-    // Transaction to create the alias entry
-    // const createAliasTx = createEntryTransaction(tempAliasId, alias, {
-    //   parent_id: data.id,
-    //   title: data.metadata.title,
-    //   author: data.metadata.author,
-    // });
+  //   // Transaction to create the alias entry
+  //   // const createAliasTx = createEntryTransaction(tempAliasId, alias, {
+  //   //   parent_id: data.id,
+  //   //   title: data.metadata.title,
+  //   //   author: data.metadata.author,
+  //   // });
 
-    // const updateParentTx: Transaction = async (
-    //   context: any,
-    // ) => {
-    //   const actualAliasId = context.idMapping.get(tempAliasId);
-    //   if (!actualAliasId) {
-    //     throw new Error(`Failed to resolve ID for temporary ID ${tempAliasId}`);
-    //   }
-    //   // remove the temporary alias ID from the alias_ids array
-    //   const updatedAliasIds = [
-    //     actualAliasId,
-    //     ...(data.metadata.alias_ids.filter(
-    //       (id: string) => id !== tempAliasId,
-    //     ) || []),
-    //   ];
-    //   console.log('updatedAliasIds:', updatedAliasIds);
+  //   // const updateParentTx: Transaction = async (
+  //   //   context: any,
+  //   // ) => {
+  //   //   const actualAliasId = context.idMapping.get(tempAliasId);
+  //   //   if (!actualAliasId) {
+  //   //     throw new Error(`Failed to resolve ID for temporary ID ${tempAliasId}`);
+  //   //   }
+  //   //   // remove the temporary alias ID from the alias_ids array
+  //   //   const updatedAliasIds = [
+  //   //     actualAliasId,
+  //   //     ...(data.metadata.alias_ids.filter(
+  //   //       (id: string) => id !== tempAliasId,
+  //   //     ) || []),
+  //   //   ];
+  //   //   console.log('updatedAliasIds:', updatedAliasIds);
 
-    //   // remove aliasData from metadata
-    //   delete data.metadata.aliasData;
+  //   //   // remove aliasData from metadata
+  //   //   delete data.metadata.aliasData;
 
-    //   await apiUpdateEntry(data.id, data.data, {
-    //     ...data.metadata,
-    //     alias_ids: updatedAliasIds,
-    //   });
-    // };
+  //   //   await apiUpdateEntry(data.id, data.data, {
+  //   //     ...data.metadata,
+  //   //     alias_ids: updatedAliasIds,
+  //   //   });
+  //   // };
 
-    // Add transactions with dependencies
-    // transactionManager.addTransaction(createAliasTx, { tempId: tempAliasId });
-    // add the tempAliasId to the tempCommentIDs array
-    setTempCommentIDs((prev) => [...prev, { tempAliasId, aliasInput }]);
-    // transactionManager.addTransaction(updateParentTx, {
-    //   dependencies: [tempAliasId],
-    // });
-  };
+  //   // Add transactions with dependencies
+  //   // transactionManager.addTransaction(createAliasTx, { tempId: tempAliasId });
+  //   // add the tempAliasId to the tempCommentIDs array
+  //   setTempCommentIDs((prev) => [...prev, { tempAliasId, aliasInput }]);
+  //   // transactionManager.addTransaction(updateParentTx, {
+  //   //   dependencies: [tempAliasId],
+  //   // });
+  // };
 
   // todo: implement image upload
   // const handleImageUploadComment = async (input: any, imageUrl: any) => {
@@ -1000,7 +1001,7 @@ const EntryPage = () => {
       },
       body: JSON.stringify({
         query,
-        matchCount: 4,
+        matchCount: 6,
       }),
     });
     const res = await response.json();
@@ -1069,7 +1070,7 @@ const EntryPage = () => {
       },
       body: JSON.stringify({
         query,
-        matchCount: 4,
+        matchCount: 6,
       }),
     });
     const res = await response.json();
@@ -1139,7 +1140,7 @@ const EntryPage = () => {
       },
       body: JSON.stringify({
         query,
-        matchCount: 4,
+        matchCount: 6,
       }),
     });
     const res = await response.json();
@@ -1305,6 +1306,8 @@ const EntryPage = () => {
       (neighbor: any) => !existingNodeIds.includes(neighbor.id),
     );
 
+    // h
+
     // Update 'fData' with new neighbors
     setFData((prevData: any) => ({
       ...prevData,
@@ -1454,19 +1457,101 @@ const EntryPage = () => {
     setIsGraphLoading(false);
   };
 
-  const exportGraph = () => {
-    // load a ShareModal component
-    // const graphData = JSON.stringify(fData);
-    // const element = document.createElement('a');
-    // element.setAttribute(
-    //   'href',
-    //   `data:text/json;charset=utf-8,${encodeURIComponent(graphData)}`,
-    // );
-    // element.setAttribute('download', 'graph.json');
-    // element.style.display = 'none';
-    // document.body.appendChild(element);
-    // element.click();
+  const addCommentV2 = async (
+    aliasInput: string,
+    parent: { id: string; data: string; metadata: any },
+  ) => {
+    // moving away from transaction manager
+    // the goal is 1) add comment 2) update parent entry 3) extend the force directed graph with the new comment
+    // dont need to refresh the page
+
+    // add comment to data to visually show it
+
+    setTempComments((prev) => [
+      ...prev,
+      {
+        aliasId: `temp-${uuidv4()}`,
+        aliasData: aliasInput,
+        aliasCreatedAt: new Date().toISOString(),
+        aliasUpdatedAt: new Date().toISOString(),
+        aliasMetadata: {
+          title: parent.metadata.title,
+          author: parent.metadata.author,
+          parent_id: parent.id,
+        },
+      },
+    ]);
+
+    // set saving changes to true
+    setIsSaving(true);
+    const addedComment = await fetch(`/api/add`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        data: aliasInput,
+        metadata: {
+          title: parent.metadata.title,
+          author: parent.metadata.author,
+          parent_id: parent.id,
+        },
+      }),
+    });
+
+    const addedCommentRespData = await addedComment.json();
+    const addedCommentData = addedCommentRespData.respData;
+
+    // extend the force directed graph with the new comment
+    // get pen pals
+    const penPals = await searchPenPals(aliasInput, [
+      parent.id,
+      addedCommentData.id,
+    ]);
+    setFData((prevData: any) => ({
+      ...prevData,
+      comments: [
+        ...(prevData.comments || []),
+        { comment: aliasInput, penPals },
+      ],
+    }));
+
+    const parentRes = await fetchByID(parent.id);
+    console.log('parentRes:', parentRes);
+    let parentResMetadata = parentRes.metadata;
+    try {
+      parentResMetadata = JSON.parse(parentRes.metadata);
+    } catch (err) {
+      console.error('Error parsing parent metadata:', err);
+    }
+    if (parentResMetadata.alias_ids) {
+      parentResMetadata.alias_ids = [
+        ...parentResMetadata.alias_ids,
+        addedCommentData.id,
+      ];
+    } else {
+      parentResMetadata.alias_ids = [addedCommentData.id];
+    }
+
+    await apiUpdateEntry(parent.id, parent.data, {
+      ...parentResMetadata,
+    });
+    setIsSaving(false);
   };
+
+  // const exportGraph = () => {
+  //   // load a ShareModal component
+  //   // const graphData = JSON.stringify(fData);
+  //   // const element = document.createElement('a');
+  //   // element.setAttribute(
+  //   //   'href',
+  //   //   `data:text/json;charset=utf-8,${encodeURIComponent(graphData)}`,
+  //   // );
+  //   // element.setAttribute('download', 'graph.json');
+  //   // element.style.display = 'none';
+  //   // document.body.appendChild(element);
+  //   // element.click();
+  // };
 
   useEffect(() => {
     const asyncFn = async () => {
@@ -1568,6 +1653,31 @@ const EntryPage = () => {
             }}
           >
             {processCustomMarkdown(renderedData.data)}
+            <Link
+              href={renderedData.metadata.author}
+              className=" inline-flex items-center overflow-auto font-medium text-blue-600 hover:underline"
+              target="_blank"
+            >
+              {renderedData.metadata.title}
+              <UrlSVG />
+            </Link>
+            <br />
+            <br />
+            <a
+              href={`/dashboard/garden?date=${new Date(renderedData.createdAt)
+                .toLocaleDateString()
+                .split('/')
+                .map((d) => (d.length === 1 ? `0${d}` : d))
+                .join('-')}
+                `}
+              className="text-blue-600 hover:underline"
+            >
+              {new Intl.DateTimeFormat('en-US', {
+                month: 'long',
+                day: 'numeric',
+                year: 'numeric',
+              }).format(new Date(renderedData.createdAt))}
+            </a>
           </div>
 
           {fData ? (
@@ -1604,7 +1714,6 @@ const EntryPage = () => {
           )}
 
           <hr className="my-4" />
-          <h2 className="my-4 text-4xl font-extrabold">Chat (experimental)</h2>
           {fData && (
             <Chat
               seedMessages={[
@@ -1641,46 +1750,14 @@ again:
             closeModalFn={() => closeModal('searchModalBeta')}
             inputQuery={searchBetaModalQuery}
           />
-          <Link
-            href={renderedData.metadata.author}
-            className=" inline-flex items-center overflow-auto font-medium text-blue-600 hover:underline"
-            target="_blank"
-          >
-            {renderedData.metadata.title}
-            <UrlSVG />
-          </Link>
-          <button
+
+          {/* <button
             type="button"
             onClick={() => openModal('editModal')}
             className="my-2 me-2 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4"
           >
             Edit Entry
-          </button>
-          <button
-            type="button"
-            onClick={handleDeleteEntry}
-            className="my-2 me-2 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-red-600 hover:bg-red-800 hover:text-white focus:outline-none focus:ring-4"
-          >
-            Delete Entry
-          </button>
-          {showDeleteError && (
-            <div className="text-red-500">
-              Error deleting entry, delete comments first if you want to delete
-              the entry.
-            </div>
-          )}
-
-          <a
-            href={`/dashboard/garden?date=${new Date(renderedData.createdAt)
-              .toLocaleDateString()
-              .split('/')
-              .map((d) => (d.length === 1 ? `0${d}` : d))
-              .join('-')}
-                `}
-            className="text-blue-600 hover:underline"
-          >
-            {new Date(renderedData.createdAt).toLocaleDateString()}
-          </a>
+          </button> */}
         </div>
       ) : (
         'Loading...'
@@ -1694,8 +1771,6 @@ again:
           {isSaving ? 'Saving...' : 'Save All Changes'}
         </button>
       )}
-      {!isInDraftState && isSaving && <p>Saving changes...</p>}
-      <h2 className="my-4 text-4xl font-extrabold">Add Comment</h2>
       <div className="">
         <textarea
           rows={3}
@@ -1713,7 +1788,17 @@ again:
             if (!aliasInput) return;
             // Cast to HTMLInputElement to access value property
             const alias = (aliasInput as HTMLInputElement).value;
-            handleAddComment(alias);
+            // if empty alias, do not add
+            if (!alias || alias.trim() === '') {
+              console.log('empty alias');
+              return;
+            }
+            // handleAddComment(alias);
+            addCommentV2(alias, {
+              id: renderedData.id,
+              data: renderedData.data,
+              metadata: renderedData.metadata,
+            });
             // clear input field
             (aliasInput as HTMLInputElement).value = '';
           }}
@@ -1766,10 +1851,12 @@ again:
           {isImageUploading ? 'Uploading...' : 'Upload Image Comment'}
         </button> */}
       </div>
-      {renderedData.metadata.aliasData &&
+      {!isInDraftState && isSaving && <b>Saving changes...</b>}
+
+      {/* {renderedData.metadata.aliasData &&
         renderedData.metadata.aliasData.length > 0 && (
           <h2 className="my-4 text-4xl font-extrabold">Comments</h2>
-        )}
+        )} */}
       <div>
         {renderedData?.metadata?.aliasData?.map((alias: any) => (
           <div key={alias.aliasId} className="mb-4 flex flex-col items-start">
@@ -1824,30 +1911,125 @@ again:
               >
                 Search
               </button>
+              {alias.aliasId.includes('temp-') ? null : (
+                <>
+                  <button
+                    className="mr-4 justify-start text-blue-600 hover:underline"
+                    type="button"
+                    onClick={() => openModal(`alias-${alias.aliasId}`)}
+                    aria-label="edit"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    className="justify-start text-blue-600 hover:underline"
+                    type="button"
+                    onClick={() => handleDeleteComment(alias.aliasId)}
+                    aria-label="delete"
+                  >
+                    Delete Comment
+                  </button>
+                </>
+              )}
+            </div>
+            <hr className="mt-2 w-full" />
+          </div>
+        ))}
+        {tempComments.map((alias) => (
+          <div key={alias.aliasId} className="mb-4 flex flex-col items-start">
+            <EditModal
+              isOpen={modalStates[`alias-${alias.aliasId}`] || false}
+              closeModalFn={() => closeModal(`alias-${alias.aliasId}`)}
+              data={alias.aliasData}
+              id={alias.aliasId}
+              metadata={alias.aliasMetadata}
+              disabledKeys={['parent_id']}
+              onSave={(newData) => handleEditComment(alias.aliasId, newData)}
+            />
+            <div className="flex">
+              <div className="mr-2 flex size-6 shrink-0 items-center justify-center rounded-full bg-gray-300 text-xs font-bold text-white">
+                {firstLastName.firstName && firstLastName.lastName ? (
+                  <>
+                    {firstLastName.firstName[0]}
+                    {firstLastName.lastName[0]}
+                  </>
+                ) : (
+                  'YCB'
+                )}
+              </div>
+              {alias &&
+                alias.aliasMetadata &&
+                alias.aliasMetadata.author &&
+                alias.aliasMetadata.title === 'Image' && (
+                  // show image if author is an image
+                  <img
+                    src={alias.aliasMetadata.author}
+                    alt="ycb-companion-image"
+                  />
+                )}
+              <p className="text-black">
+                {processCustomMarkdown(alias.aliasData)}
+              </p>
+            </div>
+            <p className="text-sm text-gray-500">
+              Added to yCb: {alias.aliasCreatedAt}
+            </p>
+            <div className="flex">
               <button
                 className="mr-4 justify-start text-blue-600 hover:underline"
                 type="button"
-                onClick={() => openModal(`alias-${alias.aliasId}`)}
-                aria-label="edit"
+                onClick={() => {
+                  setModalStates((prev) => ({
+                    ...prev,
+                    searchModalBeta: true,
+                  }));
+                  setSearchBetaModalQuery(alias.aliasData);
+                }}
               >
-                Edit
+                Search
               </button>
-              <button
-                className="justify-start text-blue-600 hover:underline"
-                type="button"
-                onClick={() => handleDeleteComment(alias.aliasId)}
-                aria-label="delete"
-              >
-                Delete Comment
-              </button>
+              {alias.aliasId.includes('temp-') ? null : (
+                <>
+                  <button
+                    className="mr-4 justify-start text-blue-600 hover:underline"
+                    type="button"
+                    onClick={() => openModal(`alias-${alias.aliasId}`)}
+                    aria-label="edit"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    className="justify-start text-blue-600 hover:underline"
+                    type="button"
+                    onClick={() => handleDeleteComment(alias.aliasId)}
+                    aria-label="delete"
+                  >
+                    Delete Comment
+                  </button>
+                </>
+              )}
             </div>
             <hr className="mt-2 w-full" />
           </div>
         ))}
       </div>
       {showAliasError && (
-        <div className="text-red-500">Error adding alias. Try again.</div>
+        <div className="text-red-500">Error adding comment. Try again.</div>
       )}
+      <button
+        type="button"
+        onClick={handleDeleteEntry}
+        className="my-2 me-2 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-red-600 hover:bg-red-800 hover:text-white focus:outline-none focus:ring-4"
+      >
+        Delete Entry
+      </button>
+      {showDeleteError && (
+        <div className="text-red-500">
+          Error deleting entry, delete comments first if you want to delete the
+          entry.
+        </div>
+      )}
+
       {/* <h2 className="my-4 text-4xl font-extrabold">Add Links</h2>
       <button
         type="button"

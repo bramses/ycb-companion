@@ -2,17 +2,21 @@
 
 import { useUser } from '@clerk/nextjs';
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
-import { fetchByID, fetchRandomEntry } from '@/helpers/functions';
+import { fetchRandomEntry } from '@/helpers/functions';
 
-import ForceFromEntry from './ForceFromEntry';
+// import ForceFromEntry from "./ForceFromEntry";
+import HelpModal from './HelpModal';
 import SearchModalBeta from './SearchModalBeta';
+// import Uploader from "./Uploader";
+import UploaderModalWrapper from './UploaderModalWrapper';
 
 const SimpleDashboard = () => {
-  const [randomEntry, setRandomEntry] = useState<any>(null);
-  const [comments, setComments] = useState<any[]>([]);
+  const router = useRouter();
+  // const [randomEntry, setRandomEntry] = useState<any>(null);
+  // const [comments, setComments] = useState<any[]>([]);
 
   const [firstLastName, setFirstLastName] = useState({
     firstName: '',
@@ -21,83 +25,87 @@ const SimpleDashboard = () => {
   const [isSearchModalBetaOpen, setSearchModalBetaOpen] = useState(false);
   const [searchBetaModalQuery, setSearchBetaModalQuery] = useState('');
   const [logEntries, setLogEntries] = useState<any[]>([]);
-  const [isSaving, setIsSaving] = useState(false);
+  // const [isSaving, setIsSaving] = useState(false);
   const [timeMachine, setTimeMachine] = useState<any>('week');
   const [randomTimeMachineEntry, setRandomTimeMachineEntry] =
     useState<any>(null);
   const [timeMachineEntries, setTimeMachineEntries] = useState<any[]>([]);
+  const [isHelpModalOpen, setHelpModalOpen] = useState(false);
+  const [instructions, setInstructions] = useState<any[]>([]);
+  const [buttons, setButtons] = useState<any[]>([]);
+  const [isUploaderModalOpen, setUploaderModalOpen] = useState(false);
 
   // const [inboxEntries, setInboxEntries] = useState<any[]>([]);
   const { user, isLoaded } = useUser();
 
-  const handleRandom = async () => {
-    setRandomEntry(null);
-    setComments([]);
-    // fetch a random entry and open it
-    const entry = await fetchRandomEntry();
-    // const entry = await fetchByID('9548');
-    // if entry has a parent_id, fetch the parent entry
-    let { metadata } = entry;
-    try {
-      metadata = JSON.parse(entry.metadata);
-    } catch (err) {
-      console.error('Error parsing metadata:', err);
-    }
-    if (metadata.alias_ids) {
-      const commentsList = [];
-      const aliasEntries = await Promise.all(
-        metadata.alias_ids.map(async (aliasId: string) => {
-          const aliasEntry = await fetchByID(aliasId);
-          return aliasEntry;
-        }),
-      );
-      for (const aliasEntry of aliasEntries) {
-        commentsList.push({
-          aliasId: aliasEntry.id,
-          aliasData: aliasEntry.data,
-          aliasMetadata: aliasEntry.metadata,
-        });
-      }
-      setComments(commentsList);
-    }
-    if (metadata.parent_id) {
-      const parentEntry = await fetchByID(metadata.parent_id);
-      // make sure metadata is JSON parseable
-      try {
-        parentEntry.metadata = JSON.parse(parentEntry.metadata);
-      } catch (err) {
-        // pass
-      }
+  // const handleRandom = async () => {
+  //   setRandomEntry(null);
+  //   setComments([]);
+  //   // fetch a random entry and open it
+  //   const entry = await fetchRandomEntry();
+  //   // const entry = await fetchByID('9548');
+  //   // if entry has a parent_id, fetch the parent entry
+  //   let { metadata } = entry;
+  //   try {
+  //     metadata = JSON.parse(entry.metadata);
+  //   } catch (err) {
+  //     console.error('Error parsing metadata:', err);
+  //   }
+  //   if (metadata.alias_ids) {
+  //     const commentsList = [];
+  //     const aliasEntries = await Promise.all(
+  //       metadata.alias_ids.map(async (aliasId: string) => {
+  //         const aliasEntry = await fetchByID(aliasId);
+  //         return aliasEntry;
+  //       }),
+  //     );
+  //     for (const aliasEntry of aliasEntries) {
+  //       commentsList.push({
+  //         aliasId: aliasEntry.id,
+  //         aliasData: aliasEntry.data,
+  //         aliasMetadata: aliasEntry.metadata,
+  //       });
+  //     }
+  //     setComments(commentsList);
+  //   }
+  //   if (metadata.parent_id) {
+  //     const parentEntry = await fetchByID(metadata.parent_id);
+  //     // make sure metadata is JSON parseable
+  //     try {
+  //       parentEntry.metadata = JSON.parse(parentEntry.metadata);
+  //     } catch (err) {
+  //       // pass
+  //     }
 
-      if (parentEntry.metadata.alias_ids) {
-        const commentsList = [];
-        const aliasEntries = await Promise.all(
-          parentEntry.metadata.alias_ids.map(async (aliasId: string) => {
-            const aliasEntry = await fetchByID(aliasId);
-            return aliasEntry;
-          }),
-        );
-        for (const aliasEntry of aliasEntries) {
-          commentsList.push({
-            aliasId: aliasEntry.id,
-            aliasData: aliasEntry.data,
-            aliasMetadata: aliasEntry.metadata,
-          });
-        }
-        setComments(commentsList);
-      }
+  //     if (parentEntry.metadata.alias_ids) {
+  //       const commentsList = [];
+  //       const aliasEntries = await Promise.all(
+  //         parentEntry.metadata.alias_ids.map(async (aliasId: string) => {
+  //           const aliasEntry = await fetchByID(aliasId);
+  //           return aliasEntry;
+  //         }),
+  //       );
+  //       for (const aliasEntry of aliasEntries) {
+  //         commentsList.push({
+  //           aliasId: aliasEntry.id,
+  //           aliasData: aliasEntry.data,
+  //           aliasMetadata: aliasEntry.metadata,
+  //         });
+  //       }
+  //       setComments(commentsList);
+  //     }
 
-      setRandomEntry(parentEntry);
-      return parentEntry;
-    }
-    try {
-      entry.metadata = JSON.parse(entry.metadata);
-    } catch (err) {
-      // pass
-    }
-    setRandomEntry(entry);
-    return entry;
-  };
+  //     setRandomEntry(parentEntry);
+  //     return parentEntry;
+  //   }
+  //   try {
+  //     entry.metadata = JSON.parse(entry.metadata);
+  //   } catch (err) {
+  //     // pass
+  //   }
+  //   setRandomEntry(entry);
+  //   return entry;
+  // };
 
   // for time machine, fetch entries from the past week, month, or year depending on the timeMachine state and select a random entry from the fetched entries
   /*
@@ -240,13 +248,13 @@ const SimpleDashboard = () => {
     }
   }, [isLoaded, user]);
 
-  useEffect(() => {
-    const fetchEntry = async () => {
-      // fetch random entry
-      handleRandom();
-    };
-    fetchEntry();
-  }, []);
+  // useEffect(() => {
+  //   const fetchEntry = async () => {
+  //     // fetch random entry
+  //     handleRandom();
+  //   };
+  //   fetchEntry();
+  // }, []);
 
   // get log entries
   const fetchLogEntries = async () => {
@@ -258,7 +266,7 @@ const SimpleDashboard = () => {
         },
         body: JSON.stringify({
           page: 1,
-          limit: 10,
+          limit: 20,
           sortModel: [{ colId: 'createdAt', sort: 'desc' }],
         }),
       });
@@ -299,7 +307,17 @@ const SimpleDashboard = () => {
     fetchLogEntries();
   }, []);
 
-  const closeModal = () => setSearchModalBetaOpen(false);
+  const closeModal = () => {
+    setSearchModalBetaOpen(false);
+    setHelpModalOpen(false);
+    setUploaderModalOpen(false);
+  };
+
+  const handleRandomOpen = async () => {
+    // fetch a random entry and open it
+    const entry = await fetchRandomEntry();
+    router.push(`/dashboard/entry/${entry.id}`);
+  };
 
   return (
     <div>
@@ -310,8 +328,125 @@ const SimpleDashboard = () => {
         </span>
         , {firstLastName.firstName}!
       </h1>
+      <h2 className="mx-2 mt-8 text-xl font-extrabold text-gray-400 md:text-lg lg:text-lg">
+        What do you want to accomplish today?
+      </h2>
       <div className="mx-2 my-4">
-        <Link
+        <button
+          type="button"
+          className="my-2 me-2 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4"
+          onClick={() => {
+            setSearchModalBetaOpen(true);
+          }}
+        >
+          I want to find something specific
+        </button>
+        <button
+          type="button"
+          className="my-2 me-2 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4"
+          onClick={() => {
+            // open the flow page
+            router.push('/dashboard/flow');
+          }}
+        >
+          I want to journal
+        </button>
+        <button
+          type="button"
+          className="my-2 me-2 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4"
+          onClick={() => {
+            // open a modal with instructions
+            setHelpModalOpen(true);
+            setInstructions([
+              {
+                text: 'Note! You can hit the random button in the speed dial in the corner on any page in the Companion to get a random entry. Press the button below to be taken to a random entry.',
+                img: 'https://imagedelivery.net/CrhaOMV08a-ykXmRKTxGRA/6bd285af-7268-4433-9916-4b23631edd00/public',
+              },
+            ]);
+
+            setButtons([
+              {
+                label: 'Random',
+                handler: () => {
+                  handleRandomOpen();
+                },
+              },
+            ]);
+          }}
+        >
+          I want to browse
+        </button>
+        <button
+          type="button"
+          className="my-2 me-2 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4"
+          onClick={() => {
+            setHelpModalOpen(true);
+            setInstructions([
+              {
+                text: 'To connect entries, you can add a comment or create a wikilink. This makes Your Commonbase much more expansive and allows you to connect your thoughts and ideas in a way that is not possible with a traditional wiki.',
+              },
+              {
+                text: 'To add a comment, click on the entry you want to comment on and then click the "Add Comment" button. Make sure to save it by clicking the save button.',
+                img: 'https://imagedelivery.net/CrhaOMV08a-ykXmRKTxGRA/61f586bb-412a-476f-dfe8-b79fb0643400/public',
+              },
+              {
+                text: 'To create a wikilink, put double brackets around the text you want to link, like [[this is a link]].',
+                img: 'https://imagedelivery.net/CrhaOMV08a-ykXmRKTxGRA/1db94277-9be7-4d4e-847c-2ef0dcb0bb00/public',
+              },
+              {
+                text: 'Close this window and use the "I want to browse" button or "I want to find something specific" button to continue to an entry you want to connect.',
+              },
+            ]);
+            setButtons([null, null, null, null]);
+          }}
+        >
+          I want to connect my entries
+        </button>
+        <button
+          type="button"
+          className="my-2 me-2 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4"
+          onClick={() => {
+            setHelpModalOpen(true);
+            setInstructions([
+              {
+                text: 'To add a new entry from inside companion, click the "Upload" button in the speed dial in the corner on any page in the Companion. You can also press the hotkey cmd/ctrl + u anywhere on the website.',
+                img: 'https://imagedelivery.net/CrhaOMV08a-ykXmRKTxGRA/6bd285af-7268-4433-9916-4b23631edd00/public',
+              },
+              {
+                text: 'To add a entry from Chrome, use the Chrome extension.',
+              },
+              {
+                text: 'To add a entry from iOS, use the iOS Shortcut.',
+              },
+            ]);
+
+            setButtons([
+              {
+                label: 'Upload',
+                handler: () => setUploaderModalOpen(true),
+              },
+              {
+                label: 'Open Chrome Extension',
+                handler: () => {
+                  window.open(
+                    'https://github.com/bramses/simple-chrome-ycb',
+                    '_blank',
+                  );
+                },
+              },
+              null,
+            ]);
+          }}
+        >
+          I want to add something new
+        </button>
+        <button
+          type="button"
+          className="my-2 me-2 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4"
+        >
+          I want to share something with others
+        </button>
+        {/* <Link
           href={`/dashboard/entry/${randomEntry ? randomEntry.id : '#'}`}
           className="mb-4 inline-block"
         >
@@ -355,17 +490,27 @@ const SimpleDashboard = () => {
               Search Metadata
             </button>
           </>
-        )}
+        )} */}
       </div>
-      <ForceFromEntry inputEntry={randomEntry} inputComments={comments} />
+      {/* <ForceFromEntry inputEntry={randomEntry} inputComments={comments} /> */}
+      <HelpModal
+        isOpen={isHelpModalOpen || false}
+        closeModalFn={() => closeModal()}
+        stepButtons={buttons}
+        instructions={instructions}
+      />
       <SearchModalBeta
         isOpen={isSearchModalBetaOpen || false}
         closeModalFn={() => closeModal()}
         inputQuery={searchBetaModalQuery}
       />
-      {randomEntry && (
+      <UploaderModalWrapper
+        isOpen={isUploaderModalOpen || false}
+        closeModalFn={() => closeModal()}
+      />
+      {/* {randomEntry && (
         <>
-          {/* <button
+          <button
             onClick={() => {
               const { id } = randomEntry;
               router.push(`/dashboard/entry/${id}`);
@@ -374,7 +519,7 @@ const SimpleDashboard = () => {
             className="my-2 me-2 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4"
           >
             Open Entry
-          </button> */}
+          </button> 
           <button
             onClick={handleRandom}
             type="button"
@@ -383,11 +528,11 @@ const SimpleDashboard = () => {
             Next Entry
           </button>
         </>
-      )}
+      )} */}
 
       <div>
         <h1 className="my-4 text-xl font-extrabold text-gray-900 md:text-xl lg:text-xl">
-          Last {timeMachine}, you were thinking about:
+          Last {timeMachine}, you saved:
         </h1>
         <div className="mx-2 my-4">
           <select
@@ -408,33 +553,6 @@ const SimpleDashboard = () => {
     "updatedAt": "2024-10-18T00:47:41.990Z"
 } */}
 
-        {randomTimeMachineEntry && (
-          <Link
-            href={{
-              pathname: `/dashboard/entry/${randomTimeMachineEntry.id}`,
-            }}
-            className="block text-gray-900 no-underline"
-          >
-            <div className="relative">
-              <span className="font-normal">{randomTimeMachineEntry.data}</span>
-            </div>
-            <div className="text-sm text-gray-500">
-              Created:{' '}
-              {new Date(randomTimeMachineEntry.createdAt).toLocaleDateString()}
-              {randomTimeMachineEntry.createdAt !==
-                randomTimeMachineEntry.updatedAt && (
-                <>
-                  {' '}
-                  | Last Updated:{' '}
-                  {new Date(
-                    randomTimeMachineEntry.updatedAt,
-                  ).toLocaleDateString()}{' '}
-                </>
-              )}
-            </div>
-          </Link>
-        )}
-        {/* if timeMachineEntries is > 1 length, a btn fetches a new random entry from the timeMachineEntries array */}
         {timeMachineEntries.length > 1 && (
           <button
             onClick={() => {
@@ -446,12 +564,48 @@ const SimpleDashboard = () => {
             type="button"
             className="my-2 me-2 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4 focus:ring-gray-300"
           >
-            Next Entry
+            Next
           </button>
         )}
+        {randomTimeMachineEntry && (
+          <Link
+            href={{
+              pathname: `/dashboard/entry/${randomTimeMachineEntry.id}`,
+            }}
+            className="block text-gray-900 no-underline"
+          >
+            <div className="relative">
+              {JSON.parse(randomTimeMachineEntry.metadata).author &&
+                JSON.parse(randomTimeMachineEntry.metadata).author.includes(
+                  'imagedelivery.net',
+                ) && (
+                  <img
+                    src={JSON.parse(randomTimeMachineEntry.metadata).author}
+                    alt="ycb-companion-image"
+                  />
+                )}
+              <span className="font-normal">{randomTimeMachineEntry.data}</span>
+            </div>
+            {/* <div className="text-sm text-gray-500">
+              Created:{" "}
+              {new Date(randomTimeMachineEntry.createdAt).toLocaleDateString()}
+              {randomTimeMachineEntry.createdAt !==
+                randomTimeMachineEntry.updatedAt && (
+                <>
+                  {" "}
+                  | Last Updated:{" "}
+                  {new Date(
+                    randomTimeMachineEntry.updatedAt
+                  ).toLocaleDateString()}{" "}
+                </>
+              )}
+            </div> */}
+          </Link>
+        )}
+        {/* if timeMachineEntries is > 1 length, a btn fetches a new random entry from the timeMachineEntries array */}
       </div>
       {/* ask the user what they are thinking about right now in a text box and add it as an entry -- like a journal */}
-      <h1 className="my-4 text-xl font-extrabold text-gray-900 md:text-xl lg:text-xl">
+      {/* <h1 className="my-4 text-xl font-extrabold text-gray-900 md:text-xl lg:text-xl">
         Journal
       </h1>
       <div className="mx-2 my-4">
@@ -459,14 +613,14 @@ const SimpleDashboard = () => {
           id="journal-message"
           rows={4}
           className="mt-4 block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500"
-          style={{ fontSize: '17px' }}
+          style={{ fontSize: "17px" }}
           placeholder="What are you thinking about right now?"
         />
         <button
           type="button"
           onClick={async () => {
             const journalMessage = (
-              document.getElementById('journal-message') as HTMLInputElement
+              document.getElementById("journal-message") as HTMLInputElement
             ).value;
             if (!journalMessage) {
               return;
@@ -474,42 +628,42 @@ const SimpleDashboard = () => {
             setIsSaving(true); // Set loading state
             try {
               // add the journal message as an entry
-              await fetch('/api/add', {
-                method: 'POST',
+              await fetch("/api/add", {
+                method: "POST",
                 headers: {
-                  'Content-Type': 'application/json',
+                  "Content-Type": "application/json",
                 },
                 body: JSON.stringify({
                   data: journalMessage,
                   metadata: {
-                    author: 'https://ycb-companion.onrender.com/dashboard',
-                    title: 'Journal',
+                    author: "https://ycb-companion.onrender.com/dashboard",
+                    title: "Journal",
                   },
                 }),
               });
               (
-                document.getElementById('journal-message') as HTMLInputElement
-              ).value = ''; // Clear textarea
+                document.getElementById("journal-message") as HTMLInputElement
+              ).value = ""; // Clear textarea
               await fetchLogEntries(); // Reload log entries
             } catch (error) {
-              console.error('Error saving journal entry:', error);
+              console.error("Error saving journal entry:", error);
             } finally {
               setIsSaving(false); // Reset loading state
             }
           }}
           disabled={isSaving} // Disable button while saving
           className={`mt-2 w-full rounded-lg ${
-            isSaving ? 'bg-gray-400' : 'bg-blue-700'
+            isSaving ? "bg-gray-400" : "bg-blue-700"
           } px-5 py-2.5 text-sm font-medium text-white ${
-            isSaving ? '' : 'hover:bg-blue-800'
+            isSaving ? "" : "hover:bg-blue-800"
           } focus:outline-none focus:ring-4 focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800`}
         >
-          {isSaving ? 'Loading...' : 'Save'}
+          {isSaving ? "Loading..." : "Save"}
         </button>
-      </div>
+      </div> */}
 
       <h1 className="my-4 text-xl font-extrabold text-gray-900 md:text-xl lg:text-xl">
-        Recent Activity
+        Recent Activity Log
       </h1>
       <div className="mx-2 my-4">
         {logEntries.map((entry: any) => (
@@ -526,6 +680,15 @@ const SimpleDashboard = () => {
                   className="block text-gray-900 no-underline"
                 >
                   <div className="relative">
+                    {JSON.parse(entry.metadata).author &&
+                      JSON.parse(entry.metadata).author.includes(
+                        'imagedelivery.net',
+                      ) && (
+                        <img
+                          src={JSON.parse(entry.metadata).author}
+                          alt="ycb-companion-image"
+                        />
+                      )}
                     <span className="font-normal">{entry.data}</span>
                   </div>
                 </Link>

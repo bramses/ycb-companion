@@ -33,7 +33,7 @@ export default function Chat({ seedMessages }: { seedMessages: string[] }) {
     <>
       {messagesToDisplay.map((message: any) => (
         <div key={message.id}>
-          {message.role === 'user' ? 'User: ' : 'AI: '}
+          {message.role === 'user' ? 'You: ' : 'YCB: '}
           <ReactMarkdown
             components={{
               a: CustomLink, // Use the custom link component here
@@ -45,8 +45,20 @@ export default function Chat({ seedMessages }: { seedMessages: string[] }) {
       ))}
 
       <form onSubmit={handleSubmit}>
-        <input name="prompt" value={input} onChange={handleInputChange} />
-        <button type="submit">ChatYCB</button>
+        <input
+          name="prompt"
+          value={input}
+          onChange={handleInputChange}
+          className="w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500"
+          placeholder="Chat with YCB"
+        />
+        <button
+          type="submit"
+          className="mt-2 rounded-lg bg-blue-700 px-5 py-2.5 text-sm font-medium text-white hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300"
+        >
+          Chat
+        </button>
+        <br />
       </form>
     </>
   );

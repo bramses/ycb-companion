@@ -1,3 +1,6 @@
+/* eslint-disable jsx-a11y/label-has-associated-control */
+/* eslint-disable no-param-reassign */
+
 'use client';
 
 import { useUser } from '@clerk/nextjs';
@@ -13,7 +16,7 @@ function RecursiveNode({ node, checkedNodes, setCheckedNodes }: any) {
   const isChecked = node.id ? checkedNodes[node.id] : true;
 
   const toggleRecursive = (_: any, newVal: any, nodeObj: any) => {
-    const updates = {};
+    const updates: any = {};
     function toggleAll(n: any) {
       if (n && typeof n === 'object') {
         if (n.id) {
@@ -87,7 +90,7 @@ function RecursiveNode({ node, checkedNodes, setCheckedNodes }: any) {
       {Array.isArray(node.comments) && node.comments.length > 0 && (
         <div style={{ marginLeft: '16px' }}>
           <strong>comments:</strong>
-          {node.comments.map((c, i) => (
+          {node.comments.map((c: any, i: any) => (
             <RecursiveNode
               key={c.id || i}
               node={c}
@@ -102,7 +105,7 @@ function RecursiveNode({ node, checkedNodes, setCheckedNodes }: any) {
       {Array.isArray(node.penPals) && node.penPals.length > 0 && (
         <div style={{ marginLeft: '16px' }}>
           <strong>penPals:</strong>
-          {node.penPals.map((p, i) => (
+          {node.penPals.map((p: any, i: any) => (
             <RecursiveNode
               key={p.id || i}
               node={p}
@@ -117,7 +120,7 @@ function RecursiveNode({ node, checkedNodes, setCheckedNodes }: any) {
       {Array.isArray(node.internalLinks) && node.internalLinks.length > 0 && (
         <div style={{ marginLeft: '16px' }}>
           <strong>internalLinks:</strong>
-          {node.internalLinks.map((il, i) => (
+          {node.internalLinks.map((il: any, i: any) => (
             <RecursiveNode
               key={il.id || i}
               node={il}
@@ -221,9 +224,10 @@ const replaceImagesWithBase64 = async (json: any) => {
     modifiedJsonWithImages.expansion = await Promise.all(
       modifiedJsonWithImages.expansion.map(async (expansionNode: any) => {
         if (Array.isArray(expansionNode.children)) {
-          expansionNode.children = await Promise.all(
+          const updatedChildren = await Promise.all(
             expansionNode.children.map(convertImageDataToBase64),
           );
+          return { ...expansionNode, children: updatedChildren };
         }
         return expansionNode;
       }),
@@ -240,7 +244,7 @@ export default function Share({
   originalData,
   entryId,
 }: any) {
-  const [checkedNodes, setCheckedNodes] = useState({});
+  const [checkedNodes, setCheckedNodes] = useState<any>({});
   const [modalOpen, setModalOpen] = useState(true);
   const [showShareButton, setShowShareButton] = useState(true);
 
@@ -249,6 +253,10 @@ export default function Share({
     firstName: '',
     lastName: '',
   });
+
+  useEffect(() => {
+    console.log(modalOpen);
+  }, [modalOpen]);
 
   useEffect(() => {
     if (!isLoaded) return;
@@ -261,10 +269,10 @@ export default function Share({
     }
   }, [isLoaded, user]);
 
-  // a btn that checks url http://localhost:3001/p/{entryid} and if not a 404 does not show the button
+  // a btn that checks url https://share-ycbs.onrender.com/p/{entryid} and if not a 404 does not show the button
   useEffect(() => {
     if (entryId) {
-      fetch(`http://localhost:3001/api/ping?entryid=${entryId}`)
+      fetch(`https://share-ycbs.onrender.com/api/ping?entryid=${entryId}`)
         .then((response) => {
           if (!response.ok) {
             // If the response is not OK (e.g., 404, 500), hide the button
@@ -286,7 +294,8 @@ export default function Share({
   function assignIds(node: any) {
     if (node && typeof node === 'object') {
       if (!node.id) {
-        node.id = `generated-${tempIdCounter++}`;
+        tempIdCounter += 1;
+        node = { ...node, id: `generated-${tempIdCounter}` };
       }
       if (Array.isArray(node.neighbors)) node.neighbors.forEach(assignIds);
       if (Array.isArray(node.comments)) node.comments.forEach(assignIds);
@@ -308,7 +317,7 @@ export default function Share({
 
   useEffect(() => {
     console.log('originalData:', originalData);
-    const initChecked = {};
+    const initChecked: any = {};
     function markAllChecked(node: any) {
       if (node && typeof node === 'object') {
         if (node.id) {
@@ -391,7 +400,7 @@ export default function Share({
       entryid: entryId,
     };
 
-    fetch('http://localhost:3001/api/add', {
+    fetch('https://share-ycbs.onrender.com/api/add', {
       method: 'POST',
       body: JSON.stringify(body),
       headers: {
@@ -405,7 +414,7 @@ export default function Share({
 
   const uncheckAll = () => {
     // set all to false
-    setCheckedNodes((prev) => {
+    setCheckedNodes((prev: any) => {
       const newChecked = { ...prev };
       Object.keys(newChecked).forEach((k) => {
         newChecked[k] = false;
@@ -435,7 +444,10 @@ export default function Share({
           download modified json
         </button>
         {showShareButton && (
-          <Link target="_blank" href={`http://localhost:3001/p/${entryId}`}>
+          <Link
+            target="_blank"
+            href={`https://share-ycbs.onrender.com/p/${entryId}`}
+          >
             share
           </Link>
         )}
