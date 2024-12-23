@@ -1,3 +1,14 @@
+# [1.52.0](https://github.com/bramses/ycb-companion/compare/v1.51.0...v1.52.0) (2024-12-23)
+
+
+### Features
+
+* Add base64 image conversion in ShareModal for JSON export ([8799f60](https://github.com/bramses/ycb-companion/commit/8799f6017a1d307905b018f3ed5404f6ee16812f))
+* Enhance ShareModal and Uploader components for improved sharing functionality ([ed3b8aa](https://github.com/bramses/ycb-companion/commit/ed3b8aa9d16138295f6914a7e1e778c31fc4f38e))
+* Implement ShareModal in EntryPage for sharing graph data ([d03e501](https://github.com/bramses/ycb-companion/commit/d03e501108672bb910b19f532134e82abe94c8c3))
+* Show share button conditionally in ShareModal based on entry ID validity ([8cf4f0b](https://github.com/bramses/ycb-companion/commit/8cf4f0beabdc5cc28f4624c8c25e731bb0606d82))
+* Update Uploader and Dashboard components for enhanced entry management ([5f7b08d](https://github.com/bramses/ycb-companion/commit/5f7b08d8e21c199c0c93ae31d82a93182bc55e4c))
+
 # [1.51.0](https://github.com/bramses/ycb-companion/compare/v1.50.0...v1.51.0) (2024-12-17)
 
 
