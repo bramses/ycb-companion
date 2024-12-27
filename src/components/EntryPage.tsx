@@ -39,7 +39,7 @@ import EditModal from './EditModal';
 import ForceDirectedGraph from './ForceDirectedGraph';
 // import LinksModal from './LinksModal';
 import Loading from './Loading';
-import SearchModalBeta from './SearchModalBeta';
+import SearchModalBeta from './SearchModalBetaV1';
 import ShareModal from './ShareModal';
 import UrlSVG from './UrlSVG';
 
@@ -1676,6 +1676,9 @@ const EntryPage = () => {
                 month: 'long',
                 day: 'numeric',
                 year: 'numeric',
+                hour: 'numeric',
+                minute: 'numeric',
+                hour12: true,
               }).format(new Date(renderedData.createdAt))}
             </a>
           </div>
