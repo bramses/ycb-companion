@@ -1,3 +1,11 @@
+## [1.53.1](https://github.com/bramses/ycb-companion/compare/v1.53.0...v1.53.1) (2025-01-08)
+
+
+### Bug Fixes
+
+* Improve layout in SearchModalBeta component for better text handling ([f8f2182](https://github.com/bramses/ycb-companion/commit/f8f2182ad1d21f65f07c836609d4610edf7608af))
+* Update MeiliSearch host environment variable in SearchModalBeta component ([be8f288](https://github.com/bramses/ycb-companion/commit/be8f2883e920729bb6aae6c578063052bdb4dc4a))
+
 # [1.53.0](https://github.com/bramses/ycb-companion/compare/v1.52.0...v1.53.0) (2025-01-08)
 
 
