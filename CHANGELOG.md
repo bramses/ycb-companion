@@ -1,3 +1,11 @@
+# [1.53.0](https://github.com/bramses/ycb-companion/compare/v1.52.0...v1.53.0) (2025-01-08)
+
+
+### Features
+
+* Enhance SearchModalBeta with error handling and improved UI elements ([b579d0c](https://github.com/bramses/ycb-companion/commit/b579d0caa403c959b515ec1ef53760e9f36bc7b0))
+* Integrate MeiliSearch for enhanced search functionality ([2a49d51](https://github.com/bramses/ycb-companion/commit/2a49d517113dabde08d06208e3a0fdfe3a1aba8c))
+
 # [1.52.0](https://github.com/bramses/ycb-companion/compare/v1.51.0...v1.52.0) (2024-12-23)
 
 
