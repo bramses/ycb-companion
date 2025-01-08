@@ -121,6 +121,20 @@ const Grid = () => {
 
   const [isDownloading, setIsDownloading] = useState(false);
 
+  // function convertToCSV(data: any): string {
+  //   const array = Array.isArray(data) ? data : [data];
+  //   const keys = Object.keys(array[0]);
+  //   const csvRows = array.map((row) =>
+  //     keys.map((key) => JSON.stringify(row[key], replacer)).join(','),
+  //   );
+  //   return [keys.join(','), ...csvRows].join('\n');
+  // }
+
+  // // Optional: Custom replacer function to handle special cases
+  // function replacer(key: string, value: any) {
+  //   return value === null ? '' : value;
+  // }
+
   async function downloadEntries() {
     setIsDownloading(true);
     try {
@@ -138,6 +152,18 @@ const Grid = () => {
         throw new Error('Network response was not ok');
       }
 
+      // const responseData = await response.json();
+      // const csvData = convertToCSV(responseData);
+
+      // const blob = new Blob([csvData], { type: 'text/csv' });
+      // const url = window.URL.createObjectURL(blob);
+      // const a = document.createElement('a');
+      // a.href = url;
+      // a.download = 'entries.csv'; // Change the file extension to .csv
+      // document.body.appendChild(a);
+      // a.click();
+      // a.remove();
+      // window.URL.revokeObjectURL(url);
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
