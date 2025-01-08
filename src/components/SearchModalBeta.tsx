@@ -42,7 +42,7 @@ const CustomHit = ({ hit, closeModalFn }: any) => {
   return (
     <div key={hit.id}>
       <div className="mx-2 mb-4 flex items-center justify-between">
-        <div className="grow">
+        <div className="max-w-full overflow-visible whitespace-normal break-words">
           <Link
             href={{
               pathname: `/dashboard/entry/${hit.id}`,
@@ -52,7 +52,10 @@ const CustomHit = ({ hit, closeModalFn }: any) => {
             }}
             className="block text-gray-900 no-underline"
           >
-            <div className="relative">
+            <div
+              className="w-full max-w-full overflow-visible whitespace-normal break-words"
+              style={{ maxWidth: '100%' }}
+            >
               <span
                 className="font-normal"
                 dangerouslySetInnerHTML={{
