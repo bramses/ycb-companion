@@ -163,7 +163,7 @@ const SearchModalBeta = ({
       }
 
       const { searchClient } = instantMeiliSearch(
-        process.env.MEILI_HOST!, // Host
+        process.env.NEXT_PUBLIC_MEILI_HOST!, // Host
         tokenData.token.token, // API key,
         {
           placeholderSearch: true, // default: true.

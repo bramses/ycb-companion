@@ -18,7 +18,7 @@ const MeliSearchInstant = () => {
       });
       const tokenData = await token.json();
       const { searchClient: meliSearchClient } = instantMeiliSearch(
-        process.env.MEILI_HOST!, // Host
+        process.env.NEXT_PUBLIC_MEILI_HOST!, // Host
         tokenData, // API key,
         {
           placeholderSearch: false, // default: true.
