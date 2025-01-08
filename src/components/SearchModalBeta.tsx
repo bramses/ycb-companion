@@ -1,5 +1,6 @@
 /* eslint-disable @next/next/no-img-element */
 /* eslint-disable jsx-a11y/img-redundant-alt */
+/* eslint-disable no-underscore-dangle */
 
 import { useUser } from '@clerk/nextjs';
 import { instantMeiliSearch } from '@meilisearch/instant-meilisearch';
@@ -7,7 +8,7 @@ import type { SearchClient } from 'instantsearch.js';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { Hits, InstantSearch, useSearchBox } from 'react-instantsearch';
+import { InstantSearch, useHits, useSearchBox } from 'react-instantsearch';
 import Modal from 'react-modal';
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import { docco } from 'react-syntax-highlighter/dist/esm/styles/hljs';
@@ -17,14 +18,6 @@ import {
   splitIntoWords,
   toHostname,
 } from '@/helpers/functions';
-
-// const { searchClient } = instantMeiliSearch(
-//   'https://meili-i59l.onrender.com', // Host
-//   '22e70777b5f1d1d9959f8e7764277500f6fbc03b4c8688cb778051c7255f7059', // API key,
-//   {
-//     placeholderSearch: false, // default: true.
-//   },
-// );
 
 const CustomSearchBox = ({ setSemanticSearchResults }: any) => {
   const { query, refine } = useSearchBox();
@@ -45,90 +38,77 @@ const CustomSearchBox = ({ setSemanticSearchResults }: any) => {
   );
 };
 
-const CustomHit = ({
-  hit,
-  closeModalFn,
-  renderResultData,
-  firstLastName,
-}: any) => (
-  <div key={hit.id}>
-    <div className="mx-2 mb-4 flex items-center justify-between">
-      <div className="grow">
-        <Link
-          href={{
-            pathname: `/dashboard/entry/${hit.id}`,
-          }}
-          onClick={() => {
-            closeModalFn();
-          }}
-          className="block text-gray-900 no-underline"
-        >
-          <div className="relative">
-            <span
-              className="font-normal"
-              dangerouslySetInnerHTML={{
-                __html: hit._highlightResult.data.value,
-              }}
-            />
-          </div>
-          <div className="ml-6 flex items-center">
-            {hit.parentData ? (
-              <>
-                <div className="mr-2 flex size-6 shrink-0 items-center justify-center rounded-full bg-gray-300 text-xs font-bold text-white">
-                  {firstLastName.firstName && firstLastName.lastName ? (
-                    <>
-                      {firstLastName.firstName[0]}
-                      {firstLastName.lastName[0]}
-                    </>
-                  ) : (
-                    'yCb'
-                  )}
-                </div>
-                <span className="font-normal">{hit.data}</span>
-              </>
-            ) : null}
-          </div>
-        </Link>
-        <span
-          className="font-normal  text-gray-500"
-          dangerouslySetInnerHTML={{
-            __html: hit._highlightResult.metadata.value,
-          }}
-        />
-        <div className="text-sm text-gray-500">
-          Created: {new Date(hit.createdat).toLocaleString()}
-          {hit.createdat !== hit.updatedat && (
-            <> | Last Updated: {new Date(hit.updatedat).toLocaleString()} </>
-          )}
-        </div>
-        {/* <a
-          target="_blank"
-          href={JSON.parse(hit.metadata).author}
-          rel="noopener noreferrer"
-          className="inline-flex items-center font-medium text-blue-600 hover:underline"
-        >
-          {toHostname(JSON.parse(hit.metadata).author)}
-          <svg
-            className="ms-2.5 size-3 rtl:rotate-[270deg]"
-            aria-hidden="true"
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 18 18"
+const CustomHit = ({ hit, closeModalFn }: any) => {
+  return (
+    <div key={hit.id}>
+      <div className="mx-2 mb-4 flex items-center justify-between">
+        <div className="grow">
+          <Link
+            href={{
+              pathname: `/dashboard/entry/${hit.id}`,
+            }}
+            onClick={() => {
+              closeModalFn();
+            }}
+            className="block text-gray-900 no-underline"
           >
-            <path
-              stroke="currentColor"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              d="M15 11v4.833A1.166 1.166 0 0 1 13.833 17H2.167A1.167 1.167 0 0 1 1 15.833V4.167A1.166 1.166 0 0 1 2.167 3h4.618m4.447-2H17v5.768M9.111 8.889l7.778-7.778"
-            />
-          </svg>
-        </a> */}
+            <div className="relative">
+              <span
+                className="font-normal"
+                dangerouslySetInnerHTML={{
+                  __html: hit._highlightResult.data.value,
+                }}
+              />
+            </div>
+          </Link>
+          {hit._highlightResult.metadata.author && (
+            <>
+              <span>Author: </span>
+              <span
+                className="font-normal text-gray-500"
+                dangerouslySetInnerHTML={{
+                  __html: hit._highlightResult.metadata.author.value,
+                }}
+              />
+              <br />
+            </>
+          )}
+          {hit._highlightResult.metadata.title && (
+            <>
+              <span>Title: </span>
+              <span
+                className="font-normal text-gray-500"
+                dangerouslySetInnerHTML={{
+                  __html: hit._highlightResult.metadata.title.value,
+                }}
+              />
+            </>
+          )}
+
+          <div className="text-sm text-gray-500">
+            Created: {new Date(hit.created_at).toLocaleString()}
+            {hit.createdat !== hit.updated_at && (
+              <> | Last Updated: {new Date(hit.updated_at).toLocaleString()} </>
+            )}
+          </div>
+        </div>
       </div>
+      <hr className="my-4" />
     </div>
-    <hr className="my-4" />
-  </div>
-);
+  );
+};
+
+const CustomHits = ({ hits, closeModalFn }: any) => {
+  const { items } = useHits(hits);
+
+  return (
+    <div>
+      {items.map((item: any) => (
+        <CustomHit key={item.id} hit={item} closeModalFn={closeModalFn} />
+      ))}
+    </div>
+  );
+};
 
 const SearchModalBeta = ({
   isOpen,
@@ -163,44 +143,58 @@ const SearchModalBeta = ({
     setSearchResults(parsedEntries);
   };
 
-  // todo useEffect to get a search token from the server w user id https://www.meilisearch.com/docs/guides/security/multitenancy_nodejs
   const [isSearchClient, setSearchClient] = useState<SearchClient | null>(null);
 
+  const fetchToken = async () => {
+    try {
+      const token = await fetch('/api/searchToken', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      const tokenData = await token.json();
+
+      if (tokenData.error) {
+        throw new Error(tokenData.error);
+      }
+      if (Object.keys(tokenData).length === 0) {
+        throw new Error('No token data returned from the API');
+      }
+
+      const { searchClient } = instantMeiliSearch(
+        process.env.MEILI_HOST!, // Host
+        tokenData.token.token, // API key,
+        {
+          placeholderSearch: true, // default: true.
+        },
+      );
+
+      setSearchClient(searchClient);
+    } catch (err) {
+      console.error('Error fetching search token:', err);
+    }
+  };
+
+  const handleSearchError = (error: any) => {
+    if (error.message.includes('Tenant token expired')) {
+      console.warn('Tenant token expired, fetching a new token...');
+      fetchToken(); // Re-fetch the token
+    } else {
+      console.error('Search error:', error);
+    }
+  };
+
   useEffect(() => {
-    const fetchToken = async () => {
+    const initializeSearchClient = async () => {
       try {
-        const token = await fetch('/api/searchToken', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
-        const tokenData = await token.json();
-
-        // if tokenData.error, throw error
-        // or if tokenData is empty object, throw error
-        if (tokenData.error) {
-          throw new Error(tokenData.error);
-        }
-        if (Object.keys(tokenData).length === 0) {
-          throw new Error('No token data returned from the API');
-        }
-
-        const { searchClient } = instantMeiliSearch(
-          'https://meili-i59l.onrender.com', // Host
-          tokenData.token.token, // API key,
-          {
-            placeholderSearch: false, // default: true.
-          },
-        );
-
-        setSearchClient(searchClient);
-      } catch (err) {
-        console.error('Error fetching search token:', err);
+        await fetchToken();
+      } catch (error) {
+        handleSearchError(error);
       }
     };
 
-    fetchToken();
+    initializeSearchClient();
   }, []);
 
   // on open focus on the input
@@ -349,7 +343,10 @@ const SearchModalBeta = ({
       ariaHideApp={false}
     >
       {isSearchClient ? (
-        <InstantSearch searchClient={isSearchClient} indexName="pg_rollover">
+        <InstantSearch
+          searchClient={isSearchClient}
+          indexName="commonbase_prod"
+        >
           <button onClick={closeModalFn} type="button">
             (close)
           </button>
@@ -427,119 +424,49 @@ const SearchModalBeta = ({
                       ) : null}
                     </div>
                   </Link>
+                  <div className="text-sm text-gray-500">
+                    Created: {new Date(result.createdAt).toLocaleString()}
+                    {result.createdAt !== result.updatedAt && (
+                      <>
+                        {' '}
+                        | Last Updated:{' '}
+                        {new Date(result.updatedAt).toLocaleString()}{' '}
+                      </>
+                    )}
+                  </div>
+                  <div className="text-sm text-gray-500">
+                    <span className="font-normal">
+                      {Math.round(result.similarity * 100)}% similar
+                    </span>
+                  </div>
+                  <a
+                    target="_blank"
+                    href={result.metadata.author}
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center font-medium text-blue-600 hover:underline"
+                  >
+                    {toHostname(result.metadata.author)}
+                    <svg
+                      className="ms-2.5 size-3 rtl:rotate-[270deg]"
+                      aria-hidden="true"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 18 18"
+                    >
+                      <path
+                        stroke="currentColor"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M15 11v4.833A1.166 1.166 0 0 1 13.833 17H2.167A1.167 1.167 0 0 1 1 15.833V4.167A1.166 1.166 0 0 1 2.167 3h4.618m4.447-2H17v5.768M9.111 8.889l7.778-7.778"
+                      />
+                    </svg>
+                  </a>
                 </div>
                 <hr className="my-4" />
               </>
             ))}
-
-            <Hits
-              hitComponent={(hitProps) => (
-                <CustomHit
-                  {...hitProps}
-                  closeModalFn={closeModalFn}
-                  renderResultData={renderResultData}
-                  firstLastName={firstLastName}
-                  setInputValue={setInputValue}
-                />
-              )}
-            />
-
-            {/* <div className="">
-            {searchResults.map((result) => (
-              <div key={result.id}>
-                <div
-                  key={result.id}
-                  className="mx-2 mb-4 flex items-center justify-between"
-                >
-                  <div className="grow">
-                    <Link
-                      href={{
-                        pathname: `/dashboard/entry/${result.id}`,
-                      }}
-                      onClick={() => {
-                        closeModalFn();
-                      }}
-                      className="block text-gray-900 no-underline"
-                    >
-                      <div className="relative">
-                        <Image
-                          src={result.favicon}
-                          alt="favicon"
-                          width={16}
-                          height={16}
-                          className="float-left mr-2"
-                        />
-                        <span className="font-normal">
-                          {renderResultData(result)}
-                        </span>
-                      </div>
-                      <div className="ml-6 flex items-center">
-                        {result.parentData ? (
-                          <>
-                            <div className="mr-2 flex size-6 shrink-0 items-center justify-center rounded-full bg-gray-300 text-xs font-bold text-white">
-                              {firstLastName.firstName &&
-                              firstLastName.lastName ? (
-                                <>
-                                  {firstLastName.firstName[0]}
-                                  {firstLastName.lastName[0]}
-                                </>
-                              ) : (
-                                'yCb'
-                              )}
-                            </div>
-                            <span className="font-normal">{result.data}</span>
-                          </>
-                        ) : null}
-                      </div>
-                    </Link>
-                    <div className="text-sm text-gray-500">
-                      Created: {new Date(result.createdAt).toLocaleString()}
-                      {result.createdAt !== result.updatedAt && (
-                        <>
-                          {' '}
-                          | Last Updated:{' '}
-                          {new Date(result.updatedAt).toLocaleString()}{' '}
-                        </>
-                      )}
-                    </div>
-                    <a
-                      target="_blank"
-                      href={result.metadata.author}
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center font-medium text-blue-600 hover:underline"
-                    >
-                      {toHostname(result.metadata.author)}
-                      <svg
-                        className="ms-2.5 size-3 rtl:rotate-[270deg]"
-                        aria-hidden="true"
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 18 18"
-                      >
-                        <path
-                          stroke="currentColor"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M15 11v4.833A1.166 1.166 0 0 1 13.833 17H2.167A1.167 1.167 0 0 1 1 15.833V4.167A1.166 1.166 0 0 1 2.167 3h4.618m4.447-2H17v5.768M9.111 8.889l7.778-7.778"
-                        />
-                      </svg>
-                    </a>
-                    <button
-                      type="button"
-                      className="ms-2 inline-flex items-center rounded border border-gray-300 px-2 py-1 text-xs font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4"
-                      onClick={() => {
-                        setInputValue(`"metadata:${result.metadata.title}"`);
-                      }}
-                    >
-                      Search Metadata
-                    </button>
-                  </div>
-                </div>
-                <hr className="my-4" />
-              </div>
-            ))}
-          </div> */}
+            <CustomHits hits={searchResults} closeModalFn={closeModalFn} />
           </div>
         </InstantSearch>
       ) : (

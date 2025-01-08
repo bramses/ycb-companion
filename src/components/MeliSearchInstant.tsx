@@ -1,18 +1,14 @@
-"use client";
+'use client';
 
 import { instantMeiliSearch } from '@meilisearch/instant-meilisearch';
-import { SearchClient } from 'instantsearch.js';
+import type { SearchClient } from 'instantsearch.js';
 import { useEffect, useState } from 'react';
 import { Hits, InstantSearch, SearchBox } from 'react-instantsearch';
 
-
-
 const MeliSearchInstant = () => {
-
   const [searchClient, setSearchClient] = useState<SearchClient | null>(null);
 
   useEffect(() => {
-
     const fetchToken = async () => {
       const token = await fetch('/api/searchToken', {
         method: 'POST',
@@ -21,28 +17,26 @@ const MeliSearchInstant = () => {
         },
       });
       const tokenData = await token.json();
-      const { searchClient } = instantMeiliSearch(
-        'https://meili-i59l.onrender.com', // Host
+      const { searchClient: meliSearchClient } = instantMeiliSearch(
+        process.env.MEILI_HOST!, // Host
         tokenData, // API key,
         {
           placeholderSearch: false, // default: true.
         },
       );
-  
-      setSearchClient(searchClient);
-    };
-  
-    fetchToken();
-    
-  }, []);
-    
 
-  return (
-    searchClient ? <InstantSearch searchClient={searchClient} indexName="pg_rollover">
+      setSearchClient(meliSearchClient);
+    };
+
+    fetchToken();
+  }, []);
+
+  return searchClient ? (
+    <InstantSearch searchClient={searchClient} indexName="commonbase_prod">
       <SearchBox />
       <Hits />
-    </InstantSearch> : null
-  );
+    </InstantSearch>
+  ) : null;
 };
 
 export default MeliSearchInstant;
