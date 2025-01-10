@@ -8,7 +8,12 @@ import type { SearchClient } from 'instantsearch.js';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { InstantSearch, useHits, useSearchBox } from 'react-instantsearch';
+import {
+  InstantSearch,
+  useHits,
+  useInstantSearch,
+  useSearchBox,
+} from 'react-instantsearch';
 import Modal from 'react-modal';
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import { docco } from 'react-syntax-highlighter/dist/esm/styles/hljs';
@@ -26,7 +31,11 @@ const CustomSearchBox = ({ setSemanticSearchResults }: any) => {
     <input
       id="modal-beta-search"
       onChange={(e) => {
-        refine(e.target.value);
+        try {
+          refine(e.target.value);
+        } catch (err) {
+          console.error('Error refining search:', err);
+        }
         setSemanticSearchResults();
       }} // Use refine to update the search query
       type="text"
@@ -147,6 +156,7 @@ const SearchModalBeta = ({
   };
 
   const [isSearchClient, setSearchClient] = useState<SearchClient | null>(null);
+  const [meliToken, setMeliToken] = useState<{ token: string, expiresAt: string } | null>(null);
 
   const fetchToken = async () => {
     try {
@@ -165,6 +175,13 @@ const SearchModalBeta = ({
         throw new Error('No token data returned from the API');
       }
 
+      // expires 10s after the token is created
+      setMeliToken({
+        token: tokenData.token.token,
+        expiresAt: new Date((Date.now() + 10 * 60 * 1000) - 2000).toISOString(),
+      });
+
+
       const { searchClient } = instantMeiliSearch(
         process.env.NEXT_PUBLIC_MEILI_HOST!, // Host
         tokenData.token.token, // API key,
@@ -179,21 +196,31 @@ const SearchModalBeta = ({
     }
   };
 
-  const handleSearchError = (error: any) => {
-    if (error.message.includes('Tenant token expired')) {
-      console.warn('Tenant token expired, fetching a new token...');
-      fetchToken(); // Re-fetch the token
-    } else {
-      console.error('Search error:', error);
-    }
-  };
+  useEffect(() => {
+    // Check if the token is expired by polling every 5 seconds
+    const interval = setInterval(() => {
+      if (meliToken && new Date(meliToken.expiresAt) < new Date()) {
+        console.log('Token expired, fetching a new token...');
+        fetchToken();
+      }
+    }, 1000);
+
+    return () => {
+      clearInterval(interval);
+    };
+  }, [meliToken]);
 
   useEffect(() => {
     const initializeSearchClient = async () => {
       try {
         await fetchToken();
-      } catch (error) {
-        handleSearchError(error);
+      } catch (error: any) {
+        if (error.message.includes('Tenant token expired')) {
+          console.warn('Tenant token expired, fetching a new token...');
+          fetchToken(); // Re-fetch the token
+        } else {
+          console.error('Search error:', error);
+        }
       }
     };
 
