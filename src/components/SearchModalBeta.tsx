@@ -8,11 +8,7 @@ import type { SearchClient } from 'instantsearch.js';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import {
-  InstantSearch,
-  useHits,
-  useSearchBox,
-} from 'react-instantsearch';
+import { InstantSearch, useHits, useSearchBox } from 'react-instantsearch';
 import Modal from 'react-modal';
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import { docco } from 'react-syntax-highlighter/dist/esm/styles/hljs';
@@ -155,7 +151,10 @@ const SearchModalBeta = ({
   };
 
   const [isSearchClient, setSearchClient] = useState<SearchClient | null>(null);
-  const [meliToken, setMeliToken] = useState<{ token: string, expiresAt: string } | null>(null);
+  const [meliToken, setMeliToken] = useState<{
+    token: string;
+    expiresAt: string;
+  } | null>(null);
 
   const fetchToken = async () => {
     try {
@@ -177,9 +176,8 @@ const SearchModalBeta = ({
       // expires 10s after the token is created
       setMeliToken({
         token: tokenData.token.token,
-        expiresAt: new Date((Date.now() + 10 * 60 * 1000) - 2000).toISOString(),
+        expiresAt: new Date(Date.now() + 10 * 60 * 1000 - 2000).toISOString(),
       });
-
 
       const { searchClient } = instantMeiliSearch(
         process.env.NEXT_PUBLIC_MEILI_HOST!, // Host
