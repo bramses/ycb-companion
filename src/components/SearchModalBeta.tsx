@@ -11,7 +11,6 @@ import { useEffect, useState } from 'react';
 import {
   InstantSearch,
   useHits,
-  useInstantSearch,
   useSearchBox,
 } from 'react-instantsearch';
 import Modal from 'react-modal';
