@@ -1,3 +1,10 @@
+# [1.54.0](https://github.com/bramses/ycb-companion/compare/v1.53.2...v1.54.0) (2025-01-10)
+
+
+### Features
+
+* Add total entries count to SimpleDashboard and implement API for fetching entry count ([4880a23](https://github.com/bramses/ycb-companion/commit/4880a235ffa97ca823c8dcd5d38a4b2d3e507959))
+
 ## [1.53.2](https://github.com/bramses/ycb-companion/compare/v1.53.1...v1.53.2) (2025-01-10)
 
 
