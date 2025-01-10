@@ -1,6 +1,8 @@
 /* eslint-disable @next/next/no-img-element */
 /* eslint-disable jsx-a11y/img-redundant-alt */
 /* eslint-disable no-underscore-dangle */
+/* eslint-disable jsx-a11y/click-events-have-key-events */
+/* eslint-disable jsx-a11y/no-static-element-interactions */
 
 import { useUser } from '@clerk/nextjs';
 import { instantMeiliSearch } from '@meilisearch/instant-meilisearch';
@@ -72,9 +74,12 @@ const CustomHit = ({ hit, closeModalFn }: any) => {
             <>
               <span>Author: </span>
               <span
-                className="font-normal text-gray-500"
+                className="font-normal text-gray-500 underline hover:text-blue-600"
                 dangerouslySetInnerHTML={{
                   __html: hit._highlightResult.metadata.author.value,
+                }}
+                onClick={() => {
+                  window.open(hit.metadata.author, '_blank');
                 }}
               />
               <br />
