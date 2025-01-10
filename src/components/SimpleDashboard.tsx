@@ -34,6 +34,8 @@ const SimpleDashboard = () => {
   const [instructions, setInstructions] = useState<any[]>([]);
   const [buttons, setButtons] = useState<any[]>([]);
   const [isUploaderModalOpen, setUploaderModalOpen] = useState(false);
+  const [totalEntries, setTotalEntries] = useState(-1);
+
 
   // const [inboxEntries, setInboxEntries] = useState<any[]>([]);
   const { user, isLoaded } = useUser();
@@ -226,6 +228,26 @@ const SimpleDashboard = () => {
   //   fetchInboxEntries();
   // }, []);
 
+  const fetchTotalEntries = async () => {
+    try {
+      const response = await fetch('/api/count', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      const data = await response.json();
+      console.log('Total entries:', data.data);
+      setTotalEntries(data.data);
+    } catch (error) {
+      console.error('Error fetching total entries:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchTotalEntries();
+  }, []);
+
   const searchParams = useSearchParams();
 
   useEffect(() => {
@@ -328,6 +350,9 @@ const SimpleDashboard = () => {
         </span>
         , {firstLastName.firstName}!
       </h1>
+      {totalEntries >= 0 && (<h2 className="mx-2 mt-8 text-xl font-extrabold text-gray-400 md:text-lg lg:text-lg">
+        You have <span className="bg-gradient-to-r from-sky-400 to-emerald-600 bg-clip-text text-transparent">{totalEntries}</span> entries in your commonbase. That's the equivalent of <span className="bg-gradient-to-r from-sky-400 to-emerald-600 bg-clip-text text-transparent">{Math.round(totalEntries / 251)}</span> journals filled!
+      </h2>)}
       <h2 className="mx-2 mt-8 text-xl font-extrabold text-gray-400 md:text-lg lg:text-lg">
         What do you want to accomplish today?
       </h2>
