@@ -1,3 +1,10 @@
+## [1.53.2](https://github.com/bramses/ycb-companion/compare/v1.53.1...v1.53.2) (2025-01-10)
+
+
+### Bug Fixes
+
+* Enhance SearchModalBeta with token management and error handling ([79fbe89](https://github.com/bramses/ycb-companion/commit/79fbe8971f7f85168969ca70c4896596f67b3889))
+
 ## [1.53.1](https://github.com/bramses/ycb-companion/compare/v1.53.0...v1.53.1) (2025-01-08)
 
 
