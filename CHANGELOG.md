@@ -1,3 +1,10 @@
+# [1.55.0](https://github.com/bramses/ycb-companion/compare/v1.54.0...v1.55.0) (2025-01-11)
+
+
+### Features
+
+* Update SimpleDashboard to display entries until next journal fill ([67cab80](https://github.com/bramses/ycb-companion/commit/67cab80f01009bc962dc2bff9f2fdb31a6c6027a))
+
 # [1.54.0](https://github.com/bramses/ycb-companion/compare/v1.53.2...v1.54.0) (2025-01-10)
 
 
