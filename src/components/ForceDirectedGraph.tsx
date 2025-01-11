@@ -75,6 +75,18 @@ const ForceDirectedGraph = ({ data, onExpand, onAddComment }: any) => {
   // Close the modal
   const closeModal = () => setShowModal(false);
 
+  /**
+   * Prevent background scrolling or swiping when modal is open.
+   * We do this by setting body overflow: hidden while modal is shown.
+   */
+  useEffect(() => {
+    if (showModal) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'auto';
+    }
+  }, [showModal]);
+
   // Arrow-key navigation: left/right to move through nodes if hovered
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
@@ -138,8 +150,8 @@ const ForceDirectedGraph = ({ data, onExpand, onAddComment }: any) => {
       startX = null;
     }
 
-    window.addEventListener('touchstart', handleTouchStart);
-    window.addEventListener('touchend', handleTouchEnd);
+    window.addEventListener('touchstart', handleTouchStart, { passive: false });
+    window.addEventListener('touchend', handleTouchEnd, { passive: false });
     return () => {
       window.removeEventListener('touchstart', handleTouchStart);
       window.removeEventListener('touchend', handleTouchEnd);
@@ -523,7 +535,7 @@ const ForceDirectedGraph = ({ data, onExpand, onAddComment }: any) => {
       >
         {/* 
           Wrap the entire modal content in a relative container so we
-          can position the index counter at the top-left of the modal.
+          can position the index counter at the top-left of the modal content.
         */}
         <div style={{ position: 'relative' }}>
           {/* If we have a currently selected node, show the index in top-left of the modal */}
@@ -538,7 +550,7 @@ const ForceDirectedGraph = ({ data, onExpand, onAddComment }: any) => {
                   color: getNodeColor(graphNodes[currentIndex]),
                   zIndex: 9999,
                   fontWeight: 'bold',
-                  marginBottom: '10px', // Add margin to separate from other elements
+                  marginBottom: '10px', // A bit of spacing
                 }}
               >
                 {`< ${currentIndex + 1} / ${graphNodes.length} >`}
