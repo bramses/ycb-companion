@@ -1,3 +1,10 @@
+# [1.56.0](https://github.com/bramses/ycb-companion/compare/v1.55.0...v1.56.0) (2025-01-11)
+
+
+### Features
+
+* Enhance ForceDirectedGraph component with keyboard and touch navigation ([ccdd6a6](https://github.com/bramses/ycb-companion/commit/ccdd6a6a05c1841c52aebe1b5a373f3c40fd3a17))
+
 # [1.55.0](https://github.com/bramses/ycb-companion/compare/v1.54.0...v1.55.0) (2025-01-11)
 
 
