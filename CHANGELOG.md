@@ -1,3 +1,10 @@
+# [1.57.0](https://github.com/bramses/ycb-companion/compare/v1.56.0...v1.57.0) (2025-01-11)
+
+
+### Features
+
+* Enhance ForceDirectedGraph component with modal background behavior and touch event handling ([8d14436](https://github.com/bramses/ycb-companion/commit/8d14436c6bc8649a302ce3226169a0a5c9a79cdd))
+
 # [1.56.0](https://github.com/bramses/ycb-companion/compare/v1.55.0...v1.56.0) (2025-01-11)
 
 
