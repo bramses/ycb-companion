@@ -1,3 +1,10 @@
+# [1.58.0](https://github.com/bramses/ycb-companion/compare/v1.57.0...v1.58.0) (2025-01-11)
+
+
+### Features
+
+* Add navigation instructions to EntryPage component ([9b62276](https://github.com/bramses/ycb-companion/commit/9b62276f5900933c10403dfffb900a6c245514c8))
+
 # [1.57.0](https://github.com/bramses/ycb-companion/compare/v1.56.0...v1.57.0) (2025-01-11)
 
 
