@@ -1691,6 +1691,11 @@ const EntryPage = () => {
                   onExpand={handleExpand}
                   onAddComment={handleAddCommentGraph}
                 />
+                <p className="text-sm text-gray-500">
+                  Use left/right arrow keys to navigate, swipe left/right on
+                  mobile to cycle through entries (open an entry first).
+                  <br />
+                </p>
                 {isGraphLoading && (
                   <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-75">
                     <span className="text-lg font-bold">Loading...</span>
