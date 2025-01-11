@@ -359,7 +359,11 @@ const SimpleDashboard = () => {
           <span className="bg-gradient-to-r from-sky-400 to-emerald-600 bg-clip-text text-transparent">
             {Math.round(totalEntries / 251)}
           </span>{' '}
-          journals filled!
+          journals filled! You are{' '}
+          <span className="bg-gradient-to-r from-sky-400 to-emerald-600 bg-clip-text text-transparent">
+            {251 - (totalEntries % 251)}
+          </span>{' '}
+          entries away from filling your next journal!
         </h2>
       )}
       <h2 className="mx-2 mt-8 text-xl font-extrabold text-gray-400 md:text-lg lg:text-lg">
