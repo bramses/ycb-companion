@@ -1,3 +1,10 @@
+# [1.60.0](https://github.com/bramses/ycb-companion/compare/v1.59.0...v1.60.0) (2025-01-13)
+
+
+### Features
+
+* Simplify handleExpand function in EntryPage by removing redundant nodeGroup checks for fetching node data ([e562081](https://github.com/bramses/ycb-companion/commit/e5620812dcb0451bab5feab1a9808e5598754c14))
+
 # [1.59.0](https://github.com/bramses/ycb-companion/compare/v1.58.0...v1.59.0) (2025-01-13)
 
 
