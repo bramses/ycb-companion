@@ -1325,17 +1325,8 @@ const EntryPage = () => {
     return newDataAdded;
   };
 
-  const handleExpand = async (nodeId: string, nodeGroup: string) => {
-    let nodeData;
-
-    // Fetch data based on the node type
-    if (nodeGroup === 'comment') {
-      nodeData = await fetchByID(nodeId);
-    } else if (nodeGroup === 'internalLink') {
-      nodeData = await fetchByID(nodeId);
-    } else {
-      nodeData = await fetchByID(nodeId);
-    }
+  const handleExpand = async (nodeId: string) => {
+    const nodeData = await fetchByID(nodeId);
 
     if (!nodeData) {
       console.error(`Cannot fetch data for node with id ${nodeId}`);
