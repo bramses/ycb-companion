@@ -1,3 +1,10 @@
+# [1.59.0](https://github.com/bramses/ycb-companion/compare/v1.58.0...v1.59.0) (2025-01-13)
+
+
+### Features
+
+* Refactor ForceDirectedGraph to improve node data handling and deduplicate links, enhancing graph rendering efficiency ([002d54a](https://github.com/bramses/ycb-companion/commit/002d54a2c7e9e6665a08989bfe90328efbf307b8))
+
 # [1.58.0](https://github.com/bramses/ycb-companion/compare/v1.57.0...v1.58.0) (2025-01-11)
 
 
