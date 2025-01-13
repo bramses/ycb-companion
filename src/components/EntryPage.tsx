@@ -1453,7 +1453,6 @@ const EntryPage = () => {
       comments: processedComments,
       internalLinks: processedInternalLinks,
     }));
-
     setIsGraphLoading(false);
   };
 

@@ -12,7 +12,17 @@ import { InstagramEmbed } from 'react-social-media-embed';
 import { Spotify } from 'react-spotify-embed';
 import { Tweet } from 'react-tweet';
 
-const ForceDirectedGraph = ({ data, onExpand, onAddComment }: any) => {
+interface ForceDirectedGraphProps {
+  data: any;
+  onExpand: (id: string) => void;
+  onAddComment: (comment: string, parent: any) => void;
+}
+
+const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
+  data,
+  onExpand,
+  onAddComment,
+}) => {
   const svgRef = useRef<SVGSVGElement | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -37,6 +47,7 @@ const ForceDirectedGraph = ({ data, onExpand, onAddComment }: any) => {
     author: '',
     group: '',
     comments: [],
+    matchedCommentId: '',
   });
 
   // Utility: given a node object, return a pastel color for the circle/fill
@@ -49,16 +60,16 @@ const ForceDirectedGraph = ({ data, onExpand, onAddComment }: any) => {
         return '#A3BE8C'; // pastel green
       case 'comment':
         return '#EBCB8B'; // pastel yellow
-      case 'parent':
-        return '#B48EAD'; // pastel purple
       case 'internalLink':
         return '#D08770'; // pastel orange
+      case 'expansionChild':
+        return '#FFA500'; // pastel-ish orange
       default:
         return '#D8DEE9'; // light gray
     }
   }
 
-  // Open the modal with the specified node data
+  // Open the modal
   const openModal = (
     content: any,
     id: any,
@@ -67,18 +78,25 @@ const ForceDirectedGraph = ({ data, onExpand, onAddComment }: any) => {
     author: any,
     group: any,
     comments: any,
+    matchedCommentId: any,
   ) => {
-    setModalContent({ content, id, image, title, author, group, comments });
+    setModalContent({
+      content,
+      id,
+      image,
+      title,
+      author,
+      group,
+      comments,
+      matchedCommentId,
+    });
     setShowModal(true);
   };
 
   // Close the modal
   const closeModal = () => setShowModal(false);
 
-  /**
-   * Prevent background scrolling or swiping when modal is open.
-   * We do this by setting body overflow: hidden while modal is shown.
-   */
+  // Prevent background scrolling when modal is open
   useEffect(() => {
     if (showModal) {
       document.body.style.overflow = 'hidden';
@@ -87,7 +105,7 @@ const ForceDirectedGraph = ({ data, onExpand, onAddComment }: any) => {
     }
   }, [showModal]);
 
-  // Arrow-key navigation: left/right to move through nodes if hovered
+  // Keyboard navigation with arrow-left/right
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
       if (!hovered || graphNodes.length === 0) return;
@@ -111,12 +129,11 @@ const ForceDirectedGraph = ({ data, onExpand, onAddComment }: any) => {
     };
   }, [hovered, graphNodes]);
 
-  // Mobile swipe detection: when modal is open, swiping left/right changes node
+  // Mobile swipe detection: change nodes if modal is open
   useEffect(() => {
     let startX: number | null = null;
 
     function handleTouchStart(e: TouchEvent) {
-      // Only if the modal is open and screen is mobile sized
       if (!showModal || window.innerWidth >= 768) return;
       if (e.touches.length > 0) {
         startX = e.touches[0]!.clientX;
@@ -124,13 +141,11 @@ const ForceDirectedGraph = ({ data, onExpand, onAddComment }: any) => {
     }
 
     function handleTouchEnd(e: TouchEvent) {
-      // Only if the modal is open and screen is mobile sized
       if (!showModal || window.innerWidth >= 768) return;
       if (startX === null) return;
       if (e.changedTouches.length > 0) {
         const endX = e.changedTouches[0]!.clientX;
         const deltaX = endX - startX;
-        // If swipe is significant in distance
         if (Math.abs(deltaX) > 50) {
           if (deltaX < 0) {
             // Swipe left => same as ArrowRight
@@ -170,6 +185,7 @@ const ForceDirectedGraph = ({ data, onExpand, onAddComment }: any) => {
       selectedNode.author,
       selectedNode.group,
       selectedNode.comments,
+      selectedNode.matchedCommentId,
     );
   }, [currentIndex, graphNodes]);
 
@@ -178,7 +194,7 @@ const ForceDirectedGraph = ({ data, onExpand, onAddComment }: any) => {
     onAddComment(comment, parent);
   };
 
-  // Utility to parse YouTube ID from URL
+  // Utility to parse YouTube ID
   const getYTId = (url: string): string => {
     if (!url) return '';
     if (url.includes('t=')) {
@@ -187,7 +203,7 @@ const ForceDirectedGraph = ({ data, onExpand, onAddComment }: any) => {
     return url.split('v=')[1]?.split('&')[0]!;
   };
 
-  // Utility to parse Twitter (or X) ID from URL
+  // Utility to parse Twitter (or X) ID
   const getTwitterId = (url: string): string => {
     if (!url) return '';
     if (url.includes('twitter.com') || /^https:\/\/(www\.)?x\.com/.test(url)) {
@@ -196,7 +212,45 @@ const ForceDirectedGraph = ({ data, onExpand, onAddComment }: any) => {
     return '';
   };
 
+  // ----------------------------------------------------------------------------
+  // NOTE: Helper function:
+  //       "If an item has a parent, return the parent object. Otherwise return the item."
+  //
+  //       We'll use this to ensure we show the parent's data in the graph (not the child).
+  //       You can adapt this for neighbors, penPals, or comments as needed.
+  // ----------------------------------------------------------------------------
+  function getParentOrSelf(item: any, defaultGroup: string) {
+    if (item.parent) {
+      // Return the parent's data in place of the child's
+      console.log('item.parent:', item.id);
+      return {
+        id: item.parent.id,
+        label: item.parent.data,
+        group: defaultGroup, // or 'parent', or however you want to label them
+        image: item.parent.image,
+        title: item.parent.title,
+        author: item.parent.author,
+        comments: item.parent.comments,
+        matchedCommentId: item.id,
+        similarity: item.similarity,
+      };
+    }
+    // If there's no parent, just return the item
+    return {
+      id: item.id,
+      label: item.data,
+      group: defaultGroup,
+      image: item.image,
+      title: item.title,
+      author: item.author,
+      comments: item.comments,
+      similarity: item.similarity,
+    };
+  }
+
+  // ----------------------------------------------------------------------------
   // Main effect to build/update the D3 force-directed graph
+  // ----------------------------------------------------------------------------
   useEffect(() => {
     if (!data.entry) return;
     if (!svgRef.current) return;
@@ -206,16 +260,15 @@ const ForceDirectedGraph = ({ data, onExpand, onAddComment }: any) => {
     const width = containerWidth;
     const height = containerWidth;
 
-    // Set up the SVG
     const svg = d3
       .select(svgRef.current)
       .attr('viewBox', `0 0 ${width} ${height}`)
       .attr('preserveAspectRatio', 'xMidYMid meet');
 
-    // Clear any existing content
+    // Clear existing content
     svg.selectAll('*').remove();
 
-    // Create arrowhead defs
+    // Arrowhead
     svg
       .append('defs')
       .append('marker')
@@ -230,8 +283,11 @@ const ForceDirectedGraph = ({ data, onExpand, onAddComment }: any) => {
       .attr('d', 'M0,-5L10,0L0,5')
       .attr('fill', '#aaa');
 
-    // Build the list of nodes
-    const nodes = [
+    // ----------------------------------------------------------------------------
+    // Build rawNodes
+    // ----------------------------------------------------------------------------
+    const rawNodes = [
+      // main node
       {
         id: data.entry,
         label: data.entry,
@@ -239,19 +295,12 @@ const ForceDirectedGraph = ({ data, onExpand, onAddComment }: any) => {
         image: data.image,
         comments: data.comments,
       },
-      // Neighbors
-      ...data.neighbors.map((n: any) => ({
-        id: n.id,
-        label: n.data,
-        group: 'neighbor',
-        similarity: n.similarity,
-        image: n.image,
-        title: n.title,
-        author: n.author,
-        comments: n.comments,
-      })),
-      // Internal links
-      ...data.internalLinks.map((link: any, idx: any) => ({
+
+      // neighbors => either the neighbor itself or its parent
+      ...data.neighbors.map((n: any) => getParentOrSelf(n, 'neighbor')),
+
+      // internal links
+      ...data.internalLinks.map((link: any, idx: number) => ({
         id: `internalLink-${idx}`,
         label: link.internalLink,
         group: 'internalLink',
@@ -259,158 +308,129 @@ const ForceDirectedGraph = ({ data, onExpand, onAddComment }: any) => {
         title: link.title,
         author: link.author,
       })),
+
+      // penPals from internalLinks => parent or self
       ...data.internalLinks.flatMap((link: any) =>
-        link.penPals.map((penPal: any) => ({
-          id: penPal.id,
-          label: penPal.data,
-          group: 'penPal',
-          similarity: penPal.similarity,
-          image: penPal.image,
-          title: penPal.title,
-          author: penPal.author,
-        })),
+        link.penPals.map((penPal: any) => getParentOrSelf(penPal, 'penPal')),
       ),
-      // Comments
-      ...data.comments.map((comment: any, idx: any) => ({
+
+      // comments => keep them as nodes (or adapt if you want the parent's node)
+      ...data.comments.map((comment: any, idx: number) => ({
         id: `comment-${idx}`,
         label: comment.comment,
         group: 'comment',
         image: comment.image,
         title: comment.title,
         author: comment.author,
+        comments: comment.penPals,
       })),
+
+      // penPals from comments => parent or self
       ...data.comments.flatMap((comment: any) =>
-        comment.penPals.map((penPal: any) => ({
-          id: penPal.id,
-          label: penPal.data,
-          group: 'penPal',
-          similarity: penPal.similarity,
-          image: penPal.image,
-          title: penPal.title,
-          author: penPal.author,
-        })),
+        comment.penPals.map((penPal: any) => getParentOrSelf(penPal, 'penPal')),
       ),
-      // Expansion
-      ...data.expansion.flatMap((expansion: any) => [
-        ...expansion.children.map((child: any) => ({
+
+      // expansions
+      ...data.expansion.flatMap((expansion: any) =>
+        expansion.children.map((child: any) => ({
           id: child.id,
           label: child.data,
           group: 'expansionChild',
           image: child.image,
           title: child.title,
           author: child.author,
+          comments: child.comments,
+          similarity: child.similarity,
         })),
-      ]),
-      // Parents of neighbors and penPals
-      ...data.neighbors
-        .filter((n: any) => n.parent)
-        .map((n: any) => ({
-          id: n.parent.id,
-          label: n.parent.data,
-          group: 'parent',
-          comments: n.parent.comments,
-        })),
-      ...data.internalLinks.flatMap((link: any) =>
-        link.penPals
-          .filter((penPal: any) => penPal.parent)
-          .map((penPal: any) => ({
-            id: penPal.parent.id,
-            label: penPal.parent.data,
-            group: 'parent',
-          })),
       ),
-      ...data.comments.flatMap((comment: any) =>
-        comment.penPals
-          .filter((penPal: any) => penPal.parent)
-          .map((penPal: any) => ({
-            id: penPal.parent.id,
-            label: penPal.parent.data,
-            group: 'parent',
-            comments: penPal.parent.comments,
-          })),
-      ),
+
+      // ----------------------------------------------------------------------------
+      // NOTE: We skip the explicit "parents of neighbors/penPals" blocks,
+      //       because we've already returned the parent (if it exists) via getParentOrSelf.
+      // ----------------------------------------------------------------------------
     ];
 
-    // Build the list of links
-    const links = [
+    // Deduplicate
+    const uniqueNodes = Array.from(
+      new Map(rawNodes.map((node) => [node.id, node])).values(),
+    );
+
+    // ----------------------------------------------------------------------------
+    // Build links
+    // Whenever an item had a parent, we “link to the parent” rather than the item’s ID.
+    // For example, if neighbor n has a parent, we link source => n.parent.id, not n.id.
+    // ----------------------------------------------------------------------------
+    const rawLinks = [
       // neighbors
       ...data.neighbors.map((n: any) => ({
         source: data.entry,
-        target: n.id,
+        target: n.parent ? n.parent.id : n.id, // link to parent if it exists
         similarity: n.similarity,
       })),
-      // internal links
-      ...data.internalLinks.map((_: any, idx: any) => ({
+
+      // internal links => still link from main entry
+      ...data.internalLinks.map((_: any, idx: number) => ({
         source: data.entry,
         target: `internalLink-${idx}`,
         similarity: 0.5,
       })),
-      // comments
-      ...data.comments.map((_: any, idx: any) => ({
+
+      // comments => link from entry to each comment node
+      ...data.comments.map((_: any, idx: number) => ({
         source: data.entry,
         target: `comment-${idx}`,
         similarity: 0.5,
       })),
-      // expansion
+
+      // expansions
       ...data.expansion.flatMap((expansion: any) =>
-        expansion.children.flatMap((child: any) => ({
+        expansion.children.map((child: any) => ({
           source: expansion.parent,
           target: child.id,
           similarity: child.similarity,
         })),
       ),
+
       // internalLinks -> penPals
-      ...data.internalLinks.flatMap((link: any, idx: any) =>
+      ...data.internalLinks.flatMap((link: any, idx: number) =>
         link.penPals.map((penPal: any) => ({
           source: `internalLink-${idx}`,
-          target: penPal.id,
+          target: penPal.parent ? penPal.parent.id : penPal.id, // link to parent if it exists
           similarity: penPal.similarity,
         })),
       ),
+
       // comments -> penPals
-      ...data.comments.flatMap((comment: any, idx: any) =>
+      ...data.comments.flatMap((comment: any, idx: number) =>
         comment.penPals.map((penPal: any) => ({
           source: `comment-${idx}`,
-          target: penPal.id,
+          target: penPal.parent ? penPal.parent.id : penPal.id,
           similarity: penPal.similarity,
         })),
       ),
-      // neighbors -> parent
-      ...data.neighbors
-        .filter((n: any) => n.parent)
-        .map((n: any) => ({
-          source: n.id,
-          target: n.parent.id,
-          similarity: 0.5,
-        })),
-      // penPals -> parent
-      ...data.comments.flatMap((comment: any) =>
-        comment.penPals
-          .filter((penPal: any) => penPal.parent)
-          .map((penPal: any) => ({
-            source: penPal.id,
-            target: penPal.parent.id,
-            similarity: 0.5,
-          })),
-      ),
-      ...data.internalLinks.flatMap((link: any) =>
-        link.penPals
-          .filter((penPal: any) => penPal.parent)
-          .map((penPal: any) => ({
-            source: penPal.id,
-            target: penPal.parent.id,
-            similarity: 0.5,
-          })),
-      ),
+
+      // We skip the old "neighbors -> parent" and "penPals -> parent"
+      // because we've already replaced references to the child with the parent's ID above.
     ];
 
-    // Set up the force simulation
+    // Deduplicate links
+    const linkSet = new Set<string>();
+    const uniqueLinks: any[] = [];
+    for (const l of rawLinks) {
+      const linkKey = `${l.source}--${l.target}`;
+      if (!linkSet.has(linkKey)) {
+        linkSet.add(linkKey);
+        uniqueLinks.push(l);
+      }
+    }
+
+    // Force simulation
     const simulation = d3
-      .forceSimulation(nodes)
+      .forceSimulation(uniqueNodes)
       .force(
         'link',
         d3
-          .forceLink(links)
+          .forceLink(uniqueLinks)
           .id((d: any) => d.id)
           .distance((d: any) => 150 - (d.similarity || 0) * 80),
       )
@@ -425,27 +445,27 @@ const ForceDirectedGraph = ({ data, onExpand, onAddComment }: any) => {
     const link = g
       .append('g')
       .selectAll('line')
-      .data(links)
+      .data(uniqueLinks)
       .join('line')
       .attr('stroke-width', 1.5)
       .attr('stroke', '#aaa')
       .attr('marker-end', 'url(#arrowhead)');
 
-    // Define drag behavior
-    function drag(sSimulation: any) {
+    // Drag behavior
+    function drag(sim: any) {
       return d3
-        .drag()
-        .on('start', (event, d: any) => {
-          if (!event.active) sSimulation.alphaTarget(0.3).restart();
+        .drag<SVGCircleElement, any>()
+        .on('start', (event, d) => {
+          if (!event.active) sim.alphaTarget(0.3).restart();
           d.fx = d.x;
           d.fy = d.y;
         })
-        .on('drag', (event, d: any) => {
+        .on('drag', (event, d) => {
           d.fx = event.x;
           d.fy = event.y;
         })
-        .on('end', (event, d: any) => {
-          if (!event.active) sSimulation.alphaTarget(0);
+        .on('end', (event, d) => {
+          if (!event.active) sim.alphaTarget(0);
           d.fx = null;
           d.fy = null;
         });
@@ -455,7 +475,7 @@ const ForceDirectedGraph = ({ data, onExpand, onAddComment }: any) => {
     const node = g
       .append('g')
       .selectAll('circle')
-      .data(nodes)
+      .data(uniqueNodes)
       .join('circle')
       .attr('r', 10)
       .attr('fill', (d) => getNodeColor(d))
@@ -468,15 +488,16 @@ const ForceDirectedGraph = ({ data, onExpand, onAddComment }: any) => {
           d.author,
           d.group,
           d.comments,
+          d.matchedCommentId,
         ),
       )
-      .call(drag(simulation) as any);
+      .call(drag(simulation as any) as any);
 
     // Draw labels
     const labels = g
       .append('g')
       .selectAll('foreignObject')
-      .data(nodes)
+      .data(uniqueNodes)
       .join('foreignObject')
       .attr('width', 150)
       .attr('height', 20)
@@ -514,8 +535,8 @@ const ForceDirectedGraph = ({ data, onExpand, onAddComment }: any) => {
         }),
     );
 
-    // Store these nodes in state so we can cycle through them
-    setGraphNodes(nodes);
+    // Store nodes so we can cycle through them
+    setGraphNodes(uniqueNodes);
   }, [data]);
 
   return (
@@ -533,12 +554,8 @@ const ForceDirectedGraph = ({ data, onExpand, onAddComment }: any) => {
         contentLabel="Node Content"
         ariaHideApp={false}
       >
-        {/* 
-          Wrap the entire modal content in a relative container so we
-          can position the index counter at the top-left of the modal content.
-        */}
         <div style={{ position: 'relative' }}>
-          {/* If we have a currently selected node, show the index in top-left of the modal */}
+          {/* Node index at top-left of modal */}
           {currentIndex !== null &&
             currentIndex >= 0 &&
             currentIndex < graphNodes.length && (
@@ -550,7 +567,7 @@ const ForceDirectedGraph = ({ data, onExpand, onAddComment }: any) => {
                   color: getNodeColor(graphNodes[currentIndex]),
                   zIndex: 9999,
                   fontWeight: 'bold',
-                  marginBottom: '10px', // A bit of spacing
+                  marginBottom: '10px',
                 }}
               >
                 {`< ${currentIndex + 1} / ${graphNodes.length} >`}
@@ -566,7 +583,7 @@ const ForceDirectedGraph = ({ data, onExpand, onAddComment }: any) => {
               />
             )}
 
-            {/* YouTube embed */}
+            {/* YouTube */}
             {modalContent.author &&
               modalContent.author.includes('youtube.com') && (
                 <LiteYouTubeEmbed
@@ -575,56 +592,64 @@ const ForceDirectedGraph = ({ data, onExpand, onAddComment }: any) => {
                 />
               )}
 
-            {/* Twitter/X embed */}
+            {/* Twitter */}
             {modalContent.author &&
               (modalContent.author.includes('twitter.com') ||
                 /^https:\/\/(www\.)?x\.com/.test(modalContent.author)) && (
                 <Tweet id={getTwitterId(modalContent.author)} />
               )}
 
-            {/* Instagram embed */}
+            {/* Instagram */}
             {modalContent.author &&
               modalContent.author.includes('instagram.com') && (
                 <InstagramEmbed url={modalContent.author} />
               )}
 
-            {/* Spotify embed */}
+            {/* Spotify */}
             {modalContent.author &&
               modalContent.author.includes('open.spotify.com') && (
                 <Spotify link={modalContent.author} wide />
               )}
 
+            {/* Main content */}
             <ReactMarkdown>{modalContent.content}</ReactMarkdown>
 
             <br />
-            {/* Show existing comments (if group !== 'comment') */}
+
+            {/* Show comments if group != 'comment' */}
             {modalContent.group !== 'comment' &&
               modalContent.comments &&
               modalContent.comments.map((comment: any) => (
-                <div key={comment.id}>
-                  <div
-                    key={comment.id}
-                    className="mx-2 mb-4 flex items-center justify-between"
-                  >
-                    <div className="grow">
-                      <div className="block text-gray-900 no-underline">
-                        <div className="relative">
-                          <span className="font-normal">{comment.data}</span>
-                        </div>
-                      </div>
-                      <div className="text-sm text-gray-500">
-                        Created: {new Date(comment.createdAt).toLocaleString()}
-                        {comment.createdAt !== comment.updatedAt && (
-                          <>
-                            {' '}
-                            | Last Updated:{' '}
-                            {new Date(comment.updatedAt).toLocaleString()}{' '}
-                          </>
-                        )}
+                <div
+                  key={comment.id}
+                  className="mx-2 mb-4 flex items-center justify-between"
+                >
+                  <div className="grow">
+                    <div className="block text-gray-900 no-underline">
+                      <div className="relative">
+                        <span
+                          style={{
+                            fontWeight:
+                              comment.id === modalContent.matchedCommentId
+                                ? 'bold'
+                                : 'normal',
+                          }}
+                        >
+                          {comment.data}
+                        </span>
                       </div>
                     </div>
+                    <div className="text-sm text-gray-500">
+                      Created: {new Date(comment.createdAt).toLocaleString()}
+                      {comment.createdAt !== comment.updatedAt && (
+                        <>
+                          {' '}
+                          | Last Updated:{' '}
+                          {new Date(comment.updatedAt).toLocaleString()}{' '}
+                        </>
+                      )}
+                    </div>
                   </div>
-                  <hr className="my-4" />
                 </div>
               ))}
 
@@ -647,7 +672,7 @@ const ForceDirectedGraph = ({ data, onExpand, onAddComment }: any) => {
                     const alias = (aliasInput as HTMLInputElement).value;
                     handleAddComment(alias, modalContent);
                     (aliasInput as HTMLInputElement).value = '';
-                    // Add the new comment in real-time to modalContent
+                    // Real-time add to modalContent
                     if (!modalContent.comments) {
                       modalContent.comments = [];
                     }
@@ -675,7 +700,7 @@ const ForceDirectedGraph = ({ data, onExpand, onAddComment }: any) => {
             </Link>
             <br />
 
-            {/* Expand button to fetch new data and update graph */}
+            {/* Expand button */}
             <button
               onClick={() => {
                 onExpand(modalContent.id);
@@ -686,7 +711,7 @@ const ForceDirectedGraph = ({ data, onExpand, onAddComment }: any) => {
               Expand
             </button>
 
-            {/* Close modal button */}
+            {/* Close modal */}
             <button onClick={closeModal} type="button">
               Close
             </button>
