@@ -227,7 +227,7 @@ const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
         id: item.parent.id,
         label: item.parent.data,
         group: defaultGroup, // or 'parent', or however you want to label them
-        image: item.parent.image,
+        image: item.image,
         title: item.parent.title,
         author: item.parent.author,
         comments: item.parent.comments,
