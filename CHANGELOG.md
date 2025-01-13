@@ -1,3 +1,10 @@
+## [1.60.1](https://github.com/bramses/ycb-companion/compare/v1.60.0...v1.60.1) (2025-01-13)
+
+
+### Bug Fixes
+
+* Correct parent image reference to use item image in ForceDirectedGraph component for accurate rendering ([0c300aa](https://github.com/bramses/ycb-companion/commit/0c300aadb29b93c0a5e663583e63abcde4dc6c08))
+
 # [1.60.0](https://github.com/bramses/ycb-companion/compare/v1.59.0...v1.60.0) (2025-01-13)
 
 
