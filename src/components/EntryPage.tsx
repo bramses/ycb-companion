@@ -1005,17 +1005,12 @@ const EntryPage = () => {
       }),
     });
     const res = await response.json();
-    console.log('Neighbors:', res);
     const neighbors = [];
     for await (const neighbor of res.data) {
       if (skipIDS.includes(neighbor.id)) {
         console.log('skipping neighbor:', neighbor.id);
       } else {
         if (JSON.parse(neighbor.metadata).parent_id) {
-          console.log(
-            'neighbor.metadata:',
-            JSON.parse(neighbor.metadata).parent_id,
-          );
           const parent = await fetchByID(
             JSON.parse(neighbor.metadata).parent_id,
           );
@@ -1326,6 +1321,7 @@ const EntryPage = () => {
   };
 
   const handleExpand = async (nodeId: string) => {
+    setIsGraphLoading(true);
     const nodeData = await fetchByID(nodeId);
 
     if (!nodeData) {
@@ -1342,6 +1338,7 @@ const EntryPage = () => {
     if (!newDataAdded) {
       alert('Area is fully explored');
     }
+    setIsGraphLoading(false);
   };
 
   // const generateFData = async (entry: any, comments: any[] = []) => {
@@ -1679,6 +1676,7 @@ const EntryPage = () => {
                 <ForceDirectedGraph
                   data={fData}
                   onExpand={handleExpand}
+                  isGraphLoading={isGraphLoading}
                   onAddComment={handleAddCommentGraph}
                 />
                 <p className="text-sm text-gray-500">

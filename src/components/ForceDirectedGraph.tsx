@@ -16,12 +16,14 @@ interface ForceDirectedGraphProps {
   data: any;
   onExpand: (id: string) => void;
   onAddComment: (comment: string, parent: any) => void;
+  isGraphLoading: boolean;
 }
 
 const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
   data,
   onExpand,
   onAddComment,
+  isGraphLoading,
 }) => {
   const svgRef = useRef<SVGSVGElement | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -124,10 +126,12 @@ const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
       // space bar => expand selected node && user is not writing a comment in the input field
       if (
         event.key === ' ' &&
-        event.altKey &&
         currentIndex !== null &&
         currentIndex > 0 &&
+        showModal &&
         document.activeElement &&
+        document.activeElement.tagName !== 'INPUT' &&
+        document.activeElement.tagName !== 'TEXTAREA' &&
         !document.activeElement.id.includes('alias-input')
       ) {
         event.preventDefault();
@@ -642,7 +646,30 @@ const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
           zIndex: 999,
         }}
       >
-        <svg ref={miniMapRef} width="100%" height="100%" />
+        <svg
+          ref={miniMapRef}
+          width="100%"
+          height="100%"
+          onClick={() => {
+            if (
+              currentIndex !== null &&
+              currentIndex >= 0 &&
+              currentIndex < graphNodes.length
+            ) {
+              const selectedNode = graphNodes[currentIndex];
+              openModal(
+                selectedNode.label,
+                selectedNode.id,
+                selectedNode.image,
+                selectedNode.title,
+                selectedNode.author,
+                selectedNode.group,
+                selectedNode.comments,
+                selectedNode.matchedCommentId,
+              );
+            }
+          }}
+        />
       </div>
 
       <Modal
@@ -794,7 +821,7 @@ const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
             </Link>
             <br />
 
-            <button
+            {/* <button
               onClick={() => {
                 onExpand(modalContent.id);
                 // closeModal();
@@ -802,7 +829,9 @@ const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
               type="button"
             >
               expand
-            </button>
+            </button> */}
+
+            {isGraphLoading && <p>Loading...</p>}
 
             <button onClick={closeModal} type="button">
               close
