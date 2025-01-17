@@ -124,6 +124,7 @@ const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
       // space bar => expand selected node && user is not writing a comment in the input field
       if (
         event.key === ' ' &&
+        event.shiftKey &&
         currentIndex !== null &&
         currentIndex > 0 &&
         document.activeElement &&
@@ -147,15 +148,15 @@ const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
       }
 
       // c => focus on comment input
-      if (event.key === 'c') {
-        event.preventDefault();
-        const commentInput = document.getElementById(
-          `alias-input-${modalContent.id}`,
-        );
-        if (commentInput) {
-          commentInput.focus();
-        }
-      }
+      // if (event.key === 'c') {
+      //   event.preventDefault();
+      //   const commentInput = document.getElementById(
+      //     `alias-input-${modalContent.id}`,
+      //   );
+      //   if (commentInput) {
+      //     commentInput.focus();
+      //   }
+      // }
     }
 
     window.addEventListener('keydown', handleKeyDown);
