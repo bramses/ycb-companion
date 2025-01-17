@@ -26,19 +26,22 @@ const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
   const svgRef = useRef<SVGSVGElement | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Tracks whether the modal is open
+  // minimap ref
+  const miniMapRef = useRef<SVGSVGElement | null>(null);
+
+  // modal open/close
   const [showModal, setShowModal] = useState(false);
 
-  // Tracks if mouse is currently hovering over the D3 area
+  // hovered over main graph
   const [hovered, setHovered] = useState(false);
 
-  // Stores all the node objects so we can iterate via keyboard (or swipe)
+  // all node objects
   const [graphNodes, setGraphNodes] = useState<any[]>([]);
 
-  // Which index in graphNodes is currently selected
+  // which index is currently selected
   const [currentIndex, setCurrentIndex] = useState<number | null>(null);
 
-  // Modal content state
+  // modal content
   const [modalContent, setModalContent] = useState<any>({
     content: '',
     id: '',
@@ -50,26 +53,26 @@ const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
     matchedCommentId: '',
   });
 
-  // Utility: given a node object, return a pastel color for the circle/fill
+  // utility for pastel color
   function getNodeColor(node: any) {
     switch (node.group) {
       case 'main':
-        return '#88C0D0'; // pastel blue
+        return '#88C0D0';
       case 'neighbor':
       case 'penPal':
-        return '#A3BE8C'; // pastel green
+        return '#A3BE8C';
       case 'comment':
-        return '#EBCB8B'; // pastel yellow
+        return '#EBCB8B';
       case 'internalLink':
-        return '#D08770'; // pastel orange
+        return '#D08770';
       case 'expansionChild':
-        return '#FFA500'; // pastel-ish orange
+        return '#FFA500';
       default:
-        return '#D8DEE9'; // light gray
+        return '#D8DEE9';
     }
   }
 
-  // Open the modal
+  // open/close modal
   const openModal = (
     content: any,
     id: any,
@@ -92,24 +95,20 @@ const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
     });
     setShowModal(true);
   };
-
-  // Close the modal
   const closeModal = () => setShowModal(false);
 
-  // Prevent background scrolling when modal is open
+  // disable background scroll when modal is open
   useEffect(() => {
-    if (showModal) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = 'auto';
-    }
+    if (showModal) document.body.style.overflow = 'hidden';
+    else document.body.style.overflow = 'auto';
   }, [showModal]);
 
-  // Keyboard navigation with arrow-left/right
+  // keyboard navigation
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
       if (!hovered || graphNodes.length === 0) return;
 
+      // arrow navigation
       if (event.key === 'ArrowRight') {
         setCurrentIndex((prevIndex) => {
           if (prevIndex === null) return 0;
@@ -121,25 +120,57 @@ const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
           return (prevIndex - 1 + graphNodes.length) % graphNodes.length;
         });
       }
+
+      // space bar => expand selected node && user is not writing a comment in the input field
+      if (
+        event.key === ' ' &&
+        currentIndex !== null &&
+        currentIndex > 0 &&
+        document.activeElement &&
+        !document.activeElement.id.includes('alias-input')
+      ) {
+        event.preventDefault();
+        if (currentIndex !== null) {
+          const selectedNode = graphNodes[currentIndex];
+          if (selectedNode) {
+            onExpand(selectedNode.id);
+          }
+        }
+      }
+
+      // triple tap on mobile => expand
+
+      // escape => close modal
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        closeModal();
+      }
+
+      // c => focus on comment input
+      if (event.key === 'c') {
+        event.preventDefault();
+        const commentInput = document.getElementById(
+          `alias-input-${modalContent.id}`,
+        );
+        if (commentInput) {
+          commentInput.focus();
+        }
+      }
     }
 
     window.addEventListener('keydown', handleKeyDown);
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [hovered, graphNodes]);
+  }, [hovered, graphNodes, currentIndex, onExpand]);
 
-  // Mobile swipe detection: change nodes if modal is open
+  // mobile swipe
   useEffect(() => {
     let startX: number | null = null;
-
     function handleTouchStart(e: TouchEvent) {
       if (!showModal || window.innerWidth >= 768) return;
-      if (e.touches.length > 0) {
-        startX = e.touches[0]!.clientX;
-      }
+      if (e.touches.length > 0) startX = e.touches[0]!.clientX;
     }
-
     function handleTouchEnd(e: TouchEvent) {
       if (!showModal || window.innerWidth >= 768) return;
       if (startX === null) return;
@@ -148,13 +179,13 @@ const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
         const deltaX = endX - startX;
         if (Math.abs(deltaX) > 50) {
           if (deltaX < 0) {
-            // Swipe left => same as ArrowRight
+            // swipe left => arrowRight
             setCurrentIndex((prevIndex) => {
               if (prevIndex === null) return 0;
               return (prevIndex + 1) % graphNodes.length;
             });
           } else {
-            // Swipe right => same as ArrowLeft
+            // swipe right => arrowLeft
             setCurrentIndex((prevIndex) => {
               if (prevIndex === null) return graphNodes.length - 1;
               return (prevIndex - 1 + graphNodes.length) % graphNodes.length;
@@ -165,15 +196,43 @@ const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
       startX = null;
     }
 
+    let tapCount = 0;
+    let tapTimeout: NodeJS.Timeout | null = null;
+
+    function handleTripleTap(e: TouchEvent) {
+      if (!hovered || graphNodes.length === 0) return;
+
+      if (e.touches.length > 1) return;
+
+      tapCount += 1;
+
+      if (tapCount === 3) {
+        tapCount = 0;
+        if (currentIndex !== null) {
+          const selectedNode = graphNodes[currentIndex];
+          if (selectedNode) {
+            onExpand(selectedNode.id);
+          }
+        }
+      }
+
+      if (tapTimeout) clearTimeout(tapTimeout);
+      tapTimeout = setTimeout(() => {
+        tapCount = 0;
+      }, 300); // reset tap count after 300ms
+    }
+
     window.addEventListener('touchstart', handleTouchStart, { passive: false });
     window.addEventListener('touchend', handleTouchEnd, { passive: false });
+    window.addEventListener('touchend', handleTripleTap, { passive: false });
     return () => {
       window.removeEventListener('touchstart', handleTouchStart);
       window.removeEventListener('touchend', handleTouchEnd);
+      window.removeEventListener('touchend', handleTripleTap);
     };
   }, [showModal, graphNodes]);
 
-  // Whenever currentIndex changes, open that node's modal
+  // open selected node's modal on index change
   useEffect(() => {
     if (currentIndex === null) return;
     const selectedNode = graphNodes[currentIndex];
@@ -189,12 +248,12 @@ const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
     );
   }, [currentIndex, graphNodes]);
 
-  // Add comment
+  // add comment
   const handleAddComment = async (comment: string, parent: any) => {
     onAddComment(comment, parent);
   };
 
-  // Utility to parse YouTube ID
+  // parse youtube
   const getYTId = (url: string): string => {
     if (!url) return '';
     if (url.includes('t=')) {
@@ -203,7 +262,7 @@ const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
     return url.split('v=')[1]?.split('&')[0]!;
   };
 
-  // Utility to parse Twitter (or X) ID
+  // parse twitter
   const getTwitterId = (url: string): string => {
     if (!url) return '';
     if (url.includes('twitter.com') || /^https:\/\/(www\.)?x\.com/.test(url)) {
@@ -212,21 +271,13 @@ const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
     return '';
   };
 
-  // ----------------------------------------------------------------------------
-  // NOTE: Helper function:
-  //       "If an item has a parent, return the parent object. Otherwise return the item."
-  //
-  //       We'll use this to ensure we show the parent's data in the graph (not the child).
-  //       You can adapt this for neighbors, penPals, or comments as needed.
-  // ----------------------------------------------------------------------------
+  // pick parent or self
   function getParentOrSelf(item: any, defaultGroup: string) {
     if (item.parent) {
-      // Return the parent's data in place of the child's
-      console.log('item.parent:', item.id);
       return {
         id: item.parent.id,
         label: item.parent.data,
-        group: defaultGroup, // or 'parent', or however you want to label them
+        group: defaultGroup,
         image: item.image,
         title: item.parent.title,
         author: item.parent.author,
@@ -235,7 +286,6 @@ const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
         similarity: item.similarity,
       };
     }
-    // If there's no parent, just return the item
     return {
       id: item.id,
       label: item.data,
@@ -248,9 +298,7 @@ const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
     };
   }
 
-  // ----------------------------------------------------------------------------
-  // Main effect to build/update the D3 force-directed graph
-  // ----------------------------------------------------------------------------
+  // main effect: build the d3
   useEffect(() => {
     if (!data.entry) return;
     if (!svgRef.current) return;
@@ -265,10 +313,10 @@ const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
       .attr('viewBox', `0 0 ${width} ${height}`)
       .attr('preserveAspectRatio', 'xMidYMid meet');
 
-    // Clear existing content
+    // clear old
     svg.selectAll('*').remove();
 
-    // Arrowhead
+    // arrowhead
     svg
       .append('defs')
       .append('marker')
@@ -283,11 +331,8 @@ const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
       .attr('d', 'M0,-5L10,0L0,5')
       .attr('fill', '#aaa');
 
-    // ----------------------------------------------------------------------------
-    // Build rawNodes
-    // ----------------------------------------------------------------------------
+    // build rawNodes
     const rawNodes = [
-      // main node
       {
         id: data.entry,
         label: data.entry,
@@ -295,11 +340,7 @@ const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
         image: data.image,
         comments: data.comments,
       },
-
-      // neighbors => either the neighbor itself or its parent
       ...data.neighbors.map((n: any) => getParentOrSelf(n, 'neighbor')),
-
-      // internal links
       ...data.internalLinks.map((link: any, idx: number) => ({
         id: `internalLink-${idx}`,
         label: link.internalLink,
@@ -308,13 +349,9 @@ const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
         title: link.title,
         author: link.author,
       })),
-
-      // penPals from internalLinks => parent or self
       ...data.internalLinks.flatMap((link: any) =>
         link.penPals.map((penPal: any) => getParentOrSelf(penPal, 'penPal')),
       ),
-
-      // comments => keep them as nodes (or adapt if you want the parent's node)
       ...data.comments.map((comment: any, idx: number) => ({
         id: `comment-${idx}`,
         label: comment.comment,
@@ -324,16 +361,13 @@ const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
         author: comment.author,
         comments: comment.penPals,
       })),
-
-      // penPals from comments => parent or self
       ...data.comments.flatMap((comment: any) =>
         comment.penPals.map((penPal: any) => getParentOrSelf(penPal, 'penPal')),
       ),
-
-      // expansions
       ...data.expansion.flatMap((expansion: any) =>
         expansion.children.map((child: any) => ({
           id: child.id,
+          root: expansion.parent,
           label: child.data,
           group: 'expansionChild',
           image: child.image,
@@ -343,46 +377,42 @@ const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
           similarity: child.similarity,
         })),
       ),
-
-      // ----------------------------------------------------------------------------
-      // NOTE: We skip the explicit "parents of neighbors/penPals" blocks,
-      //       because we've already returned the parent (if it exists) via getParentOrSelf.
-      // ----------------------------------------------------------------------------
     ];
 
-    // Deduplicate
+    const reorderedNodes = rawNodes.reduce((acc: any[], rnode: any) => {
+      if (rnode.root) {
+        const rootIndex = acc.findIndex((n: any) => n.id === rnode.root);
+        if (rootIndex !== -1) {
+          acc.splice(rootIndex + 1, 0, rnode); // Insert rnode right after rootNode
+          return acc;
+        }
+      }
+      acc.push(rnode); // If no root, or root not found, just add to the end
+      return acc;
+    }, []);
+
+    // deduplicate
     const uniqueNodes = Array.from(
-      new Map(rawNodes.map((node) => [node.id, node])).values(),
+      new Map(reorderedNodes.map((node) => [node.id, node])).values(),
     );
 
-    // ----------------------------------------------------------------------------
-    // Build links
-    // Whenever an item had a parent, we “link to the parent” rather than the item’s ID.
-    // For example, if neighbor n has a parent, we link source => n.parent.id, not n.id.
-    // ----------------------------------------------------------------------------
+    // build links
     const rawLinks = [
-      // neighbors
       ...data.neighbors.map((n: any) => ({
         source: data.entry,
-        target: n.parent ? n.parent.id : n.id, // link to parent if it exists
+        target: n.parent ? n.parent.id : n.id,
         similarity: n.similarity,
       })),
-
-      // internal links => still link from main entry
       ...data.internalLinks.map((_: any, idx: number) => ({
         source: data.entry,
         target: `internalLink-${idx}`,
         similarity: 0.5,
       })),
-
-      // comments => link from entry to each comment node
       ...data.comments.map((_: any, idx: number) => ({
         source: data.entry,
         target: `comment-${idx}`,
         similarity: 0.5,
       })),
-
-      // expansions
       ...data.expansion.flatMap((expansion: any) =>
         expansion.children.map((child: any) => ({
           source: expansion.parent,
@@ -390,17 +420,13 @@ const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
           similarity: child.similarity,
         })),
       ),
-
-      // internalLinks -> penPals
       ...data.internalLinks.flatMap((link: any, idx: number) =>
         link.penPals.map((penPal: any) => ({
           source: `internalLink-${idx}`,
-          target: penPal.parent ? penPal.parent.id : penPal.id, // link to parent if it exists
+          target: penPal.parent ? penPal.parent.id : penPal.id,
           similarity: penPal.similarity,
         })),
       ),
-
-      // comments -> penPals
       ...data.comments.flatMap((comment: any, idx: number) =>
         comment.penPals.map((penPal: any) => ({
           source: `comment-${idx}`,
@@ -408,12 +434,8 @@ const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
           similarity: penPal.similarity,
         })),
       ),
-
-      // We skip the old "neighbors -> parent" and "penPals -> parent"
-      // because we've already replaced references to the child with the parent's ID above.
     ];
 
-    // Deduplicate links
     const linkSet = new Set<string>();
     const uniqueLinks: any[] = [];
     for (const l of rawLinks) {
@@ -424,7 +446,7 @@ const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
       }
     }
 
-    // Force simulation
+    // force sim
     const simulation = d3
       .forceSimulation(uniqueNodes)
       .force(
@@ -438,10 +460,9 @@ const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
       .force('collision', d3.forceCollide().radius(20))
       .force('center', d3.forceCenter(width / 2, height / 2));
 
-    // Create a group for the entire graph
     const g = svg.append('g');
 
-    // Draw links
+    // links
     const link = g
       .append('g')
       .selectAll('line')
@@ -451,7 +472,7 @@ const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
       .attr('stroke', '#aaa')
       .attr('marker-end', 'url(#arrowhead)');
 
-    // Drag behavior
+    // dragging
     function drag(sim: any) {
       return d3
         .drag<SVGCircleElement, any>()
@@ -471,7 +492,7 @@ const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
         });
     }
 
-    // Draw the nodes as circles
+    // nodes
     const node = g
       .append('g')
       .selectAll('circle')
@@ -493,7 +514,7 @@ const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
       )
       .call(drag(simulation as any) as any);
 
-    // Draw labels
+    // labels
     const labels = g
       .append('g')
       .selectAll('foreignObject')
@@ -512,20 +533,80 @@ const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
         return `<div style="font-size: 12px;">${text}</div>`;
       });
 
-    // On each tick, update positions
+    // minimap init
+    function updateMiniMap(nodes: any[], links: any[]) {
+      if (!miniMapRef.current) return;
+      const mmWidth = 150;
+      const mmHeight = 150;
+
+      const miniSvg = d3.select(miniMapRef.current);
+      miniSvg.selectAll('*').remove();
+
+      const xValues = nodes.map((n) => n.x);
+      const yValues = nodes.map((n) => n.y);
+      const minX = d3.min(xValues) || 0;
+      const maxX = d3.max(xValues) || 1;
+      const minY = d3.min(yValues) || 0;
+      const maxY = d3.max(yValues) || 1;
+
+      const scaleX = d3.scaleLinear().domain([minX, maxX]).range([0, mmWidth]);
+      const scaleY = d3.scaleLinear().domain([minY, maxY]).range([0, mmHeight]);
+
+      const mmG = miniSvg.append('g');
+
+      // draw links
+      mmG
+        .selectAll('line')
+        .data(links)
+        .join('line')
+        .attr('x1', (d) => scaleX(d.source.x))
+        .attr('y1', (d) => scaleY(d.source.y))
+        .attr('x2', (d) => scaleX(d.target.x))
+        .attr('y2', (d) => scaleY(d.target.y))
+        .attr('stroke', '#aaa')
+        .attr('stroke-width', 1);
+
+      // draw nodes
+      mmG
+        .selectAll('circle')
+        .data(nodes)
+        .join('circle')
+        .attr('cx', (d) => scaleX(d.x))
+        .attr('cy', (d) => scaleY(d.y))
+        .attr('r', 3)
+        .attr('fill', (d) => getNodeColor(d));
+
+      // highlight current node
+      if (currentIndex !== null) {
+        const highlightedNode = nodes[currentIndex];
+        if (highlightedNode) {
+          mmG
+            .append('circle')
+            .attr('cx', scaleX(highlightedNode.x))
+            .attr('cy', scaleY(highlightedNode.y))
+            .attr('r', 6)
+            .attr('stroke', 'purple')
+            .attr('stroke-width', 2)
+            .attr('fill', 'none');
+        }
+      }
+    }
+
+    // tick updates
     simulation.on('tick', () => {
       link
         .attr('x1', (d) => d.source.x)
         .attr('y1', (d) => d.source.y)
         .attr('x2', (d) => d.target.x)
         .attr('y2', (d) => d.target.y);
-
       node.attr('cx', (d) => d.x).attr('cy', (d) => d.y);
-
       labels.attr('x', (d) => d.x).attr('y', (d) => d.y);
+
+      // also update minimap
+      updateMiniMap(uniqueNodes, uniqueLinks);
     });
 
-    // Enable zooming/panning
+    // zoom/pan
     svg.call(
       d3
         .zoom<SVGSVGElement, unknown>()
@@ -535,18 +616,33 @@ const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
         }),
     );
 
-    // Store nodes so we can cycle through them
     setGraphNodes(uniqueNodes);
-  }, [data]);
+  }, [data, currentIndex]);
 
   return (
     <div
       ref={containerRef}
-      style={{ width: '100%', margin: '0 auto' }}
+      style={{ width: '100%', margin: '0 auto', position: 'relative' }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
       <svg ref={svgRef} />
+
+      {/* minimap container */}
+      <div
+        style={{
+          position: 'fixed',
+          bottom: 10,
+          left: 10,
+          width: '150px',
+          height: '150px',
+          border: '1px solid #ccc',
+          backgroundColor: '#fff',
+          zIndex: 999,
+        }}
+      >
+        <svg ref={miniMapRef} width="100%" height="100%" />
+      </div>
 
       <Modal
         isOpen={showModal}
@@ -555,7 +651,6 @@ const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
         ariaHideApp={false}
       >
         <div style={{ position: 'relative' }}>
-          {/* Node index at top-left of modal */}
           {currentIndex !== null &&
             currentIndex >= 0 &&
             currentIndex < graphNodes.length && (
@@ -583,7 +678,7 @@ const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
               />
             )}
 
-            {/* YouTube */}
+            {/* youtube */}
             {modalContent.author &&
               modalContent.author.includes('youtube.com') && (
                 <LiteYouTubeEmbed
@@ -592,31 +687,31 @@ const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
                 />
               )}
 
-            {/* Twitter */}
+            {/* twitter */}
             {modalContent.author &&
               (modalContent.author.includes('twitter.com') ||
                 /^https:\/\/(www\.)?x\.com/.test(modalContent.author)) && (
                 <Tweet id={getTwitterId(modalContent.author)} />
               )}
 
-            {/* Instagram */}
+            {/* instagram */}
             {modalContent.author &&
               modalContent.author.includes('instagram.com') && (
                 <InstagramEmbed url={modalContent.author} />
               )}
 
-            {/* Spotify */}
+            {/* spotify */}
             {modalContent.author &&
               modalContent.author.includes('open.spotify.com') && (
                 <Spotify link={modalContent.author} wide />
               )}
 
-            {/* Main content */}
+            {/* main content */}
             <ReactMarkdown>{modalContent.content}</ReactMarkdown>
 
             <br />
 
-            {/* Show comments if group != 'comment' */}
+            {/* show comments if not a "comment" node */}
             {modalContent.group !== 'comment' &&
               modalContent.comments &&
               modalContent.comments.map((comment: any) => (
@@ -640,11 +735,11 @@ const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
                       </div>
                     </div>
                     <div className="text-sm text-gray-500">
-                      Created: {new Date(comment.createdAt).toLocaleString()}
+                      created: {new Date(comment.createdAt).toLocaleString()}
                       {comment.createdAt !== comment.updatedAt && (
                         <>
                           {' '}
-                          | Last Updated:{' '}
+                          | last updated:{' '}
                           {new Date(comment.updatedAt).toLocaleString()}{' '}
                         </>
                       )}
@@ -653,13 +748,13 @@ const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
                 </div>
               ))}
 
-            {/* Input to add comment (if group !== 'comment') */}
+            {/* add comment if not "comment" node */}
             {modalContent.group !== 'comment' && (
               <div>
                 <input
                   type="text"
                   className="w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-gray-900 focus:border-blue-500 focus:ring-blue-500"
-                  placeholder="Add a comment..."
+                  placeholder="add a comment..."
                   id={`alias-input-${modalContent.id}`}
                 />
                 <button
@@ -672,7 +767,6 @@ const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
                     const alias = (aliasInput as HTMLInputElement).value;
                     handleAddComment(alias, modalContent);
                     (aliasInput as HTMLInputElement).value = '';
-                    // Real-time add to modalContent
                     if (!modalContent.comments) {
                       modalContent.comments = [];
                     }
@@ -686,7 +780,7 @@ const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
                   }}
                   className="mb-2 me-2 mt-4 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4 focus:ring-gray-300"
                 >
-                  Add Comment
+                  add comment
                 </button>
               </div>
             )}
@@ -694,26 +788,23 @@ const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
             <p className="text-sm text-gray-500">{modalContent.title}</p>
             <br />
 
-            {/* View Entry link */}
             <Link href={`/dashboard/entry/${modalContent.id}`} className="mt-4">
-              View Entry
+              view entry
             </Link>
             <br />
 
-            {/* Expand button */}
             <button
               onClick={() => {
                 onExpand(modalContent.id);
-                closeModal();
+                // closeModal();
               }}
               type="button"
             >
-              Expand
+              expand
             </button>
 
-            {/* Close modal */}
             <button onClick={closeModal} type="button">
-              Close
+              close
             </button>
           </div>
         </div>
