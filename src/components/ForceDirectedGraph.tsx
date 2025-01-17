@@ -124,7 +124,7 @@ const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
       // space bar => expand selected node && user is not writing a comment in the input field
       if (
         event.key === ' ' &&
-        event.shiftKey &&
+        event.altKey &&
         currentIndex !== null &&
         currentIndex > 0 &&
         document.activeElement &&
