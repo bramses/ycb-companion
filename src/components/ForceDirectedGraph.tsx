@@ -667,6 +667,19 @@ const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
                 selectedNode.comments,
                 selectedNode.matchedCommentId,
               );
+            } else {
+              // open modal with the first node
+              const firstNode = graphNodes[0];
+              openModal(
+                firstNode.label,
+                firstNode.id,
+                firstNode.image,
+                firstNode.title,
+                firstNode.author,
+                firstNode.group,
+                firstNode.comments,
+                firstNode.matchedCommentId,
+              );
             }
           }}
         />
@@ -682,19 +695,38 @@ const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
           {currentIndex !== null &&
             currentIndex >= 0 &&
             currentIndex < graphNodes.length && (
-              <div
-                style={{
-                  padding: '4px 8px',
-                  backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                  borderRadius: '4px',
-                  color: getNodeColor(graphNodes[currentIndex]),
-                  zIndex: 9999,
-                  fontWeight: 'bold',
-                  marginBottom: '10px',
-                }}
-              >
-                {`< ${currentIndex + 1} / ${graphNodes.length} >`}
-              </div>
+              <>
+                <div
+                  style={{
+                    padding: '4px 8px',
+                    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                    borderRadius: '4px',
+                    color: getNodeColor(graphNodes[currentIndex]),
+                    zIndex: 9999,
+                    fontWeight: 'bold',
+                    marginBottom: '10px',
+                  }}
+                >
+                  {`< ${currentIndex + 1} / ${graphNodes.length} >`}
+                </div>
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: '10px',
+                    right: '10px',
+                    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                    borderRadius: '4px',
+                    color: getNodeColor(graphNodes[currentIndex]),
+                    zIndex: 9999,
+                    fontWeight: 'bold',
+                    marginBottom: '10px',
+                  }}
+                >
+                  {graphNodes[currentIndex].similarity
+                    ? `similarity: ${Math.round(graphNodes[currentIndex].similarity * 100)}%`
+                    : ''}
+                </div>
+              </>
             )}
 
           <div className="flex flex-col">
