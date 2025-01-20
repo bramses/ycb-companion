@@ -1178,6 +1178,7 @@ const EntryPage = () => {
     });
 
     const addedComment = commentRes.respData;
+    console.log('addedComment:', addedComment);
 
     // update parent aliasIds and aliasData
     const parentRes = await fetchByID(parent.id);
@@ -1473,6 +1474,7 @@ const EntryPage = () => {
 
     const addedCommentRespData = await addedComment.json();
     const addedCommentData = addedCommentRespData.respData;
+    console.log('addedCommentData [v2]:', addedCommentData);
 
     // extend the force directed graph with the new comment
     // get pen pals
