@@ -1010,10 +1010,8 @@ const EntryPage = () => {
       if (skipIDS.includes(neighbor.id)) {
         console.log('skipping neighbor:', neighbor.id);
       } else {
-        if (JSON.parse(neighbor.metadata).parent_id) {
-          const parent = await fetchByID(
-            JSON.parse(neighbor.metadata).parent_id,
-          );
+        if (neighbor.metadata.parent_id) {
+          const parent = await fetchByID(neighbor.metadata.parent_id);
           neighbor.parent = parent;
 
           // if neighbor has alias_ids, fetch them and add them to the aliases array
@@ -1029,8 +1027,8 @@ const EntryPage = () => {
         }
 
         // if neighbor has alias_ids, fetch them and add them to the aliases array
-        if (JSON.parse(neighbor.metadata).alias_ids) {
-          const commentIDs = JSON.parse(neighbor.metadata).alias_ids;
+        if (neighbor.metadata.alias_ids) {
+          const commentIDs = neighbor.metadata.alias_ids;
           // fetch each comment by id and add it to the comments array
           neighbor.comments = [];
           for await (const commentID of commentIDs) {
@@ -1040,16 +1038,14 @@ const EntryPage = () => {
         }
 
         // if metadata.author includes imagedelivery.net, add it to the thumbnails array
-        if (JSON.parse(neighbor.metadata).author) {
-          if (
-            JSON.parse(neighbor.metadata).author.includes('imagedelivery.net')
-          ) {
-            neighbor.image = JSON.parse(neighbor.metadata).author;
+        if (neighbor.metadata.author) {
+          if (neighbor.metadata.author.includes('imagedelivery.net')) {
+            neighbor.image = neighbor.metadata.author;
           }
-          neighbor.author = JSON.parse(neighbor.metadata).author;
+          neighbor.author = neighbor.metadata.author;
         }
-        if (JSON.parse(neighbor.metadata).title) {
-          neighbor.title = JSON.parse(neighbor.metadata).title;
+        if (neighbor.metadata.title) {
+          neighbor.title = neighbor.metadata.title;
         }
         neighbors.push(neighbor);
       }
@@ -1078,12 +1074,9 @@ const EntryPage = () => {
       if (skipIDS.includes(penPal.id)) {
         console.log('skipping penPal:', penPal.id);
       } else {
-        if (JSON.parse(penPal.metadata).parent_id) {
-          console.log(
-            'penPal.metadata:',
-            JSON.parse(penPal.metadata).parent_id,
-          );
-          const parent = await fetchByID(JSON.parse(penPal.metadata).parent_id);
+        if (penPal.metadata.parent_id) {
+          console.log('penPal.metadata:', penPal.metadata.parent_id);
+          const parent = await fetchByID(penPal.metadata.parent_id);
           penPal.parent = parent;
 
           // if neighbor has alias_ids, fetch them and add them to the aliases array
@@ -1099,8 +1092,8 @@ const EntryPage = () => {
         }
 
         // if neighbor has alias_ids, fetch them and add them to the aliases array
-        if (JSON.parse(penPal.metadata).alias_ids) {
-          const commentIDs = JSON.parse(penPal.metadata).alias_ids;
+        if (penPal.metadata.alias_ids) {
+          const commentIDs = penPal.metadata.alias_ids;
           // fetch each comment by id and add it to the comments array
           penPal.comments = [];
           for await (const commentID of commentIDs) {
@@ -1109,16 +1102,14 @@ const EntryPage = () => {
           }
         }
 
-        if (JSON.parse(penPal.metadata).author) {
-          if (
-            JSON.parse(penPal.metadata).author.includes('imagedelivery.net')
-          ) {
-            penPal.image = JSON.parse(penPal.metadata).author;
+        if (penPal.metadata.author) {
+          if (penPal.metadata.author.includes('imagedelivery.net')) {
+            penPal.image = penPal.metadata.author;
           }
-          penPal.author = JSON.parse(penPal.metadata).author;
+          penPal.author = penPal.metadata.author;
         }
-        if (JSON.parse(penPal.metadata).title) {
-          penPal.title = JSON.parse(penPal.metadata).title;
+        if (penPal.metadata.title) {
+          penPal.title = penPal.metadata.title;
         }
         penPals.push(penPal);
       }
@@ -1150,28 +1141,22 @@ const EntryPage = () => {
       } else if (internalLink.similarity === 1.01) {
         console.log('skipping internalLink kw match:', internalLink.id);
       } else {
-        if (JSON.parse(internalLink.metadata).parent_id) {
+        if (internalLink.metadata.parent_id) {
           console.log(
             'internalLink.metadata:',
-            JSON.parse(internalLink.metadata).parent_id,
+            internalLink.metadata.parent_id,
           );
-          const parent = await fetchByID(
-            JSON.parse(internalLink.metadata).parent_id,
-          );
+          const parent = await fetchByID(internalLink.metadata.parent_id);
           internalLink.parent = parent;
         }
-        if (JSON.parse(internalLink.metadata).author) {
-          if (
-            JSON.parse(internalLink.metadata).author.includes(
-              'imagedelivery.net',
-            )
-          ) {
-            internalLink.image = JSON.parse(internalLink.metadata).author;
+        if (internalLink.metadata.author) {
+          if (internalLink.metadata.author.includes('imagedelivery.net')) {
+            internalLink.image = internalLink.metadata.author;
           }
-          internalLink.author = JSON.parse(internalLink.metadata).author;
+          internalLink.author = internalLink.metadata.author;
         }
-        if (JSON.parse(internalLink.metadata).title) {
-          internalLink.title = JSON.parse(internalLink.metadata).title;
+        if (internalLink.metadata.title) {
+          internalLink.title = internalLink.metadata.title;
         }
         internalLinks.push(internalLink);
       }
@@ -1200,7 +1185,7 @@ const EntryPage = () => {
     // append to parentRes metadata alias ids
     let parentMetadata = parentRes.metadata;
     try {
-      parentMetadata = JSON.parse(parentRes.metadata);
+      parentMetadata = parentRes.metadata;
     } catch (err) {
       console.error('Error parsing parent metadata:', err);
     }
@@ -1507,7 +1492,7 @@ const EntryPage = () => {
     console.log('parentRes:', parentRes);
     let parentResMetadata = parentRes.metadata;
     try {
-      parentResMetadata = JSON.parse(parentRes.metadata);
+      parentResMetadata = parentRes.metadata;
     } catch (err) {
       console.error('Error parsing parent metadata:', err);
     }

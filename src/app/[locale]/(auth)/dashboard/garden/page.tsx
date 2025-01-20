@@ -137,12 +137,10 @@ const GardenDaily = () => {
                 <span className="font-medium">
                   {/* eslint-disable no-nested-ternary */}
                   {result.metadata &&
-                  JSON.parse(result.metadata).author &&
-                  JSON.parse(result.metadata).author.includes(
-                    'imagedelivery.net',
-                  ) ? (
+                  result.metadata.author &&
+                  result.metadata.author.includes('imagedelivery.net') ? (
                     <img
-                      src={JSON.parse(result.metadata).author}
+                      src={result.metadata.author}
                       alt="ycb-companion-image"
                     />
                   ) : result.data.split(' ').length > 12 ? (
@@ -177,11 +175,11 @@ const GardenDaily = () => {
             </div>
             <a
               target="_blank"
-              href={JSON.parse(result.metadata).author}
+              href={result.metadata.author}
               rel="noopener noreferrer"
               className="inline-flex items-center font-medium text-blue-600 hover:underline"
             >
-              {toHostname(JSON.parse(result.metadata).author)}
+              {toHostname(result.metadata.author)}
               <svg
                 className="ms-2.5 size-3 rtl:rotate-[270deg]"
                 aria-hidden="true"

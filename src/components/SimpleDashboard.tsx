@@ -286,9 +286,7 @@ const SimpleDashboard = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          page: 1,
           limit: 20,
-          sortModel: [{ colId: 'createdAt', sort: 'desc' }],
         }),
       });
       const data = await response.json();
@@ -296,13 +294,7 @@ const SimpleDashboard = () => {
       const log = data.data
         .map((entry: any) => {
           // skip entries with parent_id
-          let metadata;
-          try {
-            metadata = JSON.parse(entry.metadata);
-          } catch (err) {
-            console.error('Error parsing metadata:', err);
-          }
-          if (metadata.parent_id) {
+          if (entry.metadata.parent_id) {
             return null;
           }
           if (entry.createdAt === entry.updatedAt) {
@@ -718,12 +710,10 @@ const SimpleDashboard = () => {
                   className="block text-gray-900 no-underline"
                 >
                   <div className="relative">
-                    {JSON.parse(entry.metadata).author &&
-                      JSON.parse(entry.metadata).author.includes(
-                        'imagedelivery.net',
-                      ) && (
+                    {entry.metadata.author &&
+                      entry.metadata.author.includes('imagedelivery.net') && (
                         <img
-                          src={JSON.parse(entry.metadata).author}
+                          src={entry.metadata.author}
                           alt="ycb-companion-image"
                         />
                       )}
