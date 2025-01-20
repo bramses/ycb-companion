@@ -1005,6 +1005,7 @@ const EntryPage = () => {
       }),
     });
     const res = await response.json();
+    console.log('resN:', res);
     const neighbors = [];
     for await (const neighbor of res.data) {
       if (skipIDS.includes(neighbor.id)) {

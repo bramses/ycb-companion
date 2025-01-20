@@ -32,7 +32,7 @@ export const POST = async (request: Request) => {
     body: JSON.stringify({
       text: submittedQuery,
       matchLimit: matchCt,
-      matchThreshold: 0.8,
+      matchThreshold: 0.5,
     }),
   });
 
