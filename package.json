@@ -14,7 +14,6 @@
     "format": "next lint --fix && prettier '**/*.{json,yaml}' --write --ignore-path .gitignore",
     "check-types": "tsc --noEmit --pretty",
     "test": "vitest run",
-    "commit": "cz",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "dotenv -c production -- drizzle-kit migrate",
     "db:studio": "dotenv -c production -- drizzle-kit studio",
@@ -155,22 +154,12 @@
     "vitest": "^2.0.4",
     "vitest-fail-on-console": "^0.7.0"
   },
-  "config": {
-    "commitizen": {
-      "path": "@commitlint/cz-commitlint"
-    }
-  },
+  "config": {},
   "release": {
     "branches": [
       "main"
     ],
     "plugins": [
-      [
-        "@semantic-release/commit-analyzer",
-        {
-          "preset": "conventionalcommits"
-        }
-      ],
       "@semantic-release/release-notes-generator",
       "@semantic-release/changelog",
       [

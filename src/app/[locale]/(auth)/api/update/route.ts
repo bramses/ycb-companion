@@ -20,11 +20,15 @@ export const POST = async (request: Request) => {
       metadata,
     }),
   });
-  logger.info('resp:', resp);
+  logger.info('update resp:', resp);
   const respData = await resp.json();
 
   try {
     logger.info(`A new update has been created ${JSON.stringify(respData)}`);
+
+    if (respData.error) {
+      throw new Error(respData.error);
+    }
 
     return NextResponse.json({
       respData,

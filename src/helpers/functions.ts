@@ -20,13 +20,7 @@ export const fetchByID = async (entryId: string) => {
 
   const entry = resData.data;
   console.log('entry:', entry);
-  let { metadata } = entry;
-  // parse metadata
-  try {
-    metadata = JSON.parse(entry.metadata);
-  } catch (err) {
-    console.error('Error parsing metadata:', err);
-  }
+  const { metadata } = entry;
 
   return {
     data: entry.data,

@@ -2,29 +2,20 @@ import { NextResponse } from 'next/server';
 
 import { logger } from '@/libs/Logger';
 
-import { GET } from '../getCBPath/route';
-
 // import env variables
 
 export const POST = async (request: Request) => {
   const { id } = await request.json();
-  const { CLOUD_URL } = process.env;
-
-  const dbRes = await GET(request);
-  if (!dbRes) {
-    return NextResponse.json({}, { status: 500 });
-  }
-  const { DATABASE_URL, API_KEY } = await dbRes.json();
+  const { CLOUD_URL, TOKEN } = process.env;
 
   const resp = await fetch(`${CLOUD_URL}/delete`, {
-    method: 'POST',
+    method: 'DELETE',
     headers: {
       'Content-Type': 'application/json',
+      Authorization: `Bearer ${TOKEN}`,
     },
     body: JSON.stringify({
-      id,
-      dbPath: DATABASE_URL,
-      apiKey: API_KEY,
+      platformId: id.toString(),
     }),
   });
 

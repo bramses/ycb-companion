@@ -987,7 +987,14 @@ const EntryPage = () => {
         );
       }
 
-      elements.push(<p key={`line-${uuidv4()}`}>{parts}</p>);
+      elements.push(
+        <span
+          key={`line-${uuidv4()}`}
+          style={{ display: 'block', marginBottom: '1em' }}
+        >
+          {parts}
+        </span>,
+      );
     });
 
     return elements;
@@ -1005,11 +1012,9 @@ const EntryPage = () => {
       }),
     });
     const res = await response.json();
-    console.log('resN:', res);
     const neighbors = [];
     for await (const neighbor of res.data) {
       if (skipIDS.includes(neighbor.id)) {
-        console.log('skipping neighbor:', neighbor.id);
       } else {
         if (neighbor.metadata.parent_id) {
           const parent = await fetchByID(neighbor.metadata.parent_id);
@@ -1514,6 +1519,85 @@ const EntryPage = () => {
     setIsSaving(false);
   };
 
+  const handleDeleteEntryV2 = async () => {
+    if (!data) return;
+    // Check if there are alias IDs
+    if (data.metadata.alias_ids && data.metadata.alias_ids.length > 0) {
+      alert('Please delete all comments before deleting the entry.');
+      return;
+    }
+
+    // Confirm deletion
+    const confirmDelete = window.confirm(
+      'Are you sure you want to delete this entry?',
+    );
+    if (!confirmDelete) return;
+
+    try {
+      // Attempt to delete the entry via API
+      const response = await fetch(`/api/delete`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ id: data.id }),
+      });
+
+      if (response.ok) {
+        // Redirect to homepage on successful deletion
+        window.location.href = '/dashboard';
+      } else {
+        throw new Error('Failed to delete entry');
+      }
+    } catch (error) {
+      alert('Failed to delete entry. Please try again.');
+      console.error('Error deleting entry:', error);
+    }
+  };
+
+  const handleEditEntryV2 = async (newData: string, newMetadata: any) => {
+    if (!data) return;
+
+    // Set saving state to true
+    setIsSaving(true);
+
+    const updatedMetadata = { ...newMetadata };
+    if (updatedMetadata.aliasData) {
+      delete updatedMetadata.aliasData;
+    }
+
+    try {
+      // Make an API call to update the entry
+      await fetch(`/api/update`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          id: data.id,
+          data: newData,
+          metadata: updatedMetadata,
+        }),
+      });
+
+      // Update the state with the new data and metadata
+      setData((prevData) => ({
+        data: newData,
+        metadata: newMetadata,
+        id: data.id,
+        createdAt: prevData!.createdAt,
+      }));
+
+      // Optionally, update any other state or UI elements as needed
+      console.log('Entry updated successfully');
+    } catch (error) {
+      console.error('Failed to update entry:', error);
+    } finally {
+      // Reset saving state
+      setIsSaving(false);
+    }
+  };
+
   // const exportGraph = () => {
   //   // load a ShareModal component
   //   // const graphData = JSON.stringify(fData);
@@ -1597,7 +1681,8 @@ const EntryPage = () => {
       )}
       {data ? (
         <div className="m-4 [&_p]:my-6">
-          <button
+          {/* todo Implement star button functionality */}
+          {/* <button
             type="button"
             className="my-2 me-2 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4"
             onClick={async () => {
@@ -1618,7 +1703,7 @@ const EntryPage = () => {
             }}
           >
             {data.metadata.isStarred ? 'Unstar' : 'Star'}
-          </button>
+          </button> */}
           <div
             onDoubleClick={() => {
               setModalStates((prev) => ({
@@ -1627,19 +1712,19 @@ const EntryPage = () => {
               }));
             }}
           >
-            {processCustomMarkdown(renderedData.data)}
+            {processCustomMarkdown(data.data)}
             <Link
-              href={renderedData.metadata.author}
+              href={data.metadata.author}
               className=" inline-flex items-center overflow-auto font-medium text-blue-600 hover:underline"
               target="_blank"
             >
-              {renderedData.metadata.title}
+              {data.metadata.title}
               <UrlSVG />
             </Link>
             <br />
             <br />
             <a
-              href={`/dashboard/garden?date=${new Date(renderedData.createdAt)
+              href={`/dashboard/garden?date=${new Date(data.createdAt)
                 .toLocaleDateString()
                 .split('/')
                 .map((d) => (d.length === 1 ? `0${d}` : d))
@@ -1654,7 +1739,7 @@ const EntryPage = () => {
                 hour: 'numeric',
                 minute: 'numeric',
                 hour12: true,
-              }).format(new Date(renderedData.createdAt))}
+              }).format(new Date(data.createdAt))}
             </a>
           </div>
 
@@ -1727,7 +1812,7 @@ again:
             id={renderedData.id}
             disabledKeys={['aliasData', 'alias_ids', 'links', 'parent_id']}
             metadata={renderedData.metadata}
-            onSave={handleEditEntry}
+            onSave={handleEditEntryV2}
           />
           <SearchModalBeta
             isOpen={modalStates.searchModalBeta || false}
@@ -2002,7 +2087,7 @@ again:
       )}
       <button
         type="button"
-        onClick={handleDeleteEntry}
+        onClick={handleDeleteEntryV2}
         className="my-2 me-2 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-red-600 hover:bg-red-800 hover:text-white focus:outline-none focus:ring-4"
       >
         Delete Entry

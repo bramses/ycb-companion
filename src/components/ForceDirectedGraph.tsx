@@ -255,6 +255,8 @@ const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
 
   // add comment
   const handleAddComment = async (comment: string, parent: any) => {
+    if (!comment) return;
+    if (comment.trim() === '') return;
     onAddComment(comment, parent);
   };
 
