@@ -27,6 +27,8 @@ storybook-static
 # cache
 .swc/
 
+*.swp
+
 # production
 /build
 

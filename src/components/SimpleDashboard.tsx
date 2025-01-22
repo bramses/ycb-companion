@@ -27,9 +27,9 @@ const SimpleDashboard = () => {
   const [logEntries, setLogEntries] = useState<any[]>([]);
   // const [isSaving, setIsSaving] = useState(false);
   const [timeMachine, setTimeMachine] = useState<any>('week');
-  const [randomTimeMachineEntry, setRandomTimeMachineEntry] =
-    useState<any>(null);
-  const [timeMachineEntries, setTimeMachineEntries] = useState<any[]>([]);
+  // const [randomTimeMachineEntry, setRandomTimeMachineEntry] =
+  //   useState<any>(null);
+  // const [timeMachineEntries, setTimeMachineEntries] = useState<any[]>([]);
   const [isHelpModalOpen, setHelpModalOpen] = useState(false);
   const [instructions, setInstructions] = useState<any[]>([]);
   const [buttons, setButtons] = useState<any[]>([]);
@@ -149,59 +149,59 @@ const SimpleDashboard = () => {
     [setSelectedDay, setLoading, setEntries],
   );
   */
-  const fetchTimeMachineEntries = async () => {
-    try {
-      const date = new Date();
-      switch (timeMachine) {
-        case 'week':
-          date.setDate(date.getDate() - 7);
-          break;
-        case 'month':
-          date.setMonth(date.getMonth() - 1);
-          break;
-        case 'year':
-          date.setFullYear(date.getFullYear() - 1);
-          break;
-        default:
-          break;
-      }
-      // use daily endpoint to fetch entries from the past week, month, or year
+  // const fetchTimeMachineEntries = async () => {
+  //   try {
+  //     const date = new Date();
+  //     switch (timeMachine) {
+  //       case 'week':
+  //         date.setDate(date.getDate() - 7);
+  //         break;
+  //       case 'month':
+  //         date.setMonth(date.getMonth() - 1);
+  //         break;
+  //       case 'year':
+  //         date.setFullYear(date.getFullYear() - 1);
+  //         break;
+  //       default:
+  //         break;
+  //     }
+  //     // use daily endpoint to fetch entries from the past week, month, or year
 
-      // convert date to form 2024-01-01
-      const year = date.getFullYear();
-      const month = date.getMonth() + 1;
-      let monthString = month.toString();
-      // put a 0 in front of month if it is less than 10
-      if (month < 10) {
-        monthString = `0${month}`;
-      }
-      const day = date.getDate();
-      let dayString = day.toString();
-      if (day < 10) {
-        dayString = `0${day}`;
-      }
-      const dateString = `${year}-${monthString}-${dayString}`;
+  //     // convert date to form 2024-01-01
+  //     const year = date.getFullYear();
+  //     const month = date.getMonth() + 1;
+  //     let monthString = month.toString();
+  //     // put a 0 in front of month if it is less than 10
+  //     if (month < 10) {
+  //       monthString = `0${month}`;
+  //     }
+  //     const day = date.getDate();
+  //     let dayString = day.toString();
+  //     if (day < 10) {
+  //       dayString = `0${day}`;
+  //     }
+  //     const dateString = `${year}-${monthString}-${dayString}`;
 
-      const response = await fetch('/api/daily', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ date: dateString }),
-      });
-      const responseData = await response.json();
-      setTimeMachineEntries(responseData.data);
-      // math random number between 0 and the length of the responseData.data array
-      const randomIndex = Math.floor(Math.random() * responseData.data.length);
-      setRandomTimeMachineEntry(responseData.data[randomIndex]);
-    } catch (error) {
-      console.error('Error fetching time machine entries:', error);
-    }
-  };
+  //     const response = await fetch('/api/daily', {
+  //       method: 'POST',
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //       },
+  //       body: JSON.stringify({ date: dateString }),
+  //     });
+  //     const responseData = await response.json();
+  //     setTimeMachineEntries(responseData.data);
+  //     // math random number between 0 and the length of the responseData.data array
+  //     const randomIndex = Math.floor(Math.random() * responseData.data.length);
+  //     setRandomTimeMachineEntry(responseData.data[randomIndex]);
+  //   } catch (error) {
+  //     console.error('Error fetching time machine entries:', error);
+  //   }
+  // };
 
-  useEffect(() => {
-    fetchTimeMachineEntries();
-  }, [timeMachine]);
+  // useEffect(() => {
+  //   fetchTimeMachineEntries();
+  // }, [timeMachine]);
 
   // const fetchInboxEntries = async () => {
   //   try {
@@ -236,8 +236,7 @@ const SimpleDashboard = () => {
         },
       });
       const data = await response.json();
-      console.log('Total entries:', data.data);
-      setTotalEntries(data.data);
+      setTotalEntries(data.count);
     } catch (error) {
       console.error('Error fetching total entries:', error);
     }
@@ -560,7 +559,8 @@ const SimpleDashboard = () => {
         </>
       )} */}
 
-      <div>
+        {/* todo time machine */}
+      {/* <div>
         <h1 className="my-4 text-xl font-extrabold text-gray-900 md:text-xl lg:text-xl">
           Last {timeMachine}, you saved:
         </h1>
@@ -575,13 +575,6 @@ const SimpleDashboard = () => {
             <option value="year">Year</option>
           </select>
         </div>
-        {/* {
-    "id": "14586",
-    "data": "This is a crucial, often missed, point about the transition from foraging to farming. The change wasn’t merely a pivotal point in how our species lived in the world. It marked a fundamental shift in what kind of world human beings inhabited, both materially and conceptually. It isn’t hyperbole to say that agriculture extracted humans from the world and pitted us against it. Niles Eldredge of the American Museum of Natural History has written that the shift to agriculture and resulting civilization removed our species from the relation with the natural world that we had until then shared with every other species since life began. “We abruptly stepped out of the local ecosystem.… Our interests no longer dovetail[ed] with those of the natural world around us.…” Adopting agriculture was “tantamount to declaring war on local ecosystems.”",
-    "metadata": "{\"author\":\"https://readwise.io/open/626412500\",\"title\":\"Civilized to Death - Christopher Ryan\",\"readwise_id\":626412500}",
-    "createdAt": "2023-11-14T19:38:04.037Z",
-    "updatedAt": "2024-10-18T00:47:41.990Z"
-} */}
 
         {timeMachineEntries.length > 1 && (
           <button
@@ -605,35 +598,20 @@ const SimpleDashboard = () => {
             className="block text-gray-900 no-underline"
           >
             <div className="relative">
-              {JSON.parse(randomTimeMachineEntry.metadata).author &&
-                JSON.parse(randomTimeMachineEntry.metadata).author.includes(
+              {randomTimeMachineEntry.metadata.author &&
+                randomTimeMachineEntry.metadata.author.includes(
                   'imagedelivery.net',
                 ) && (
                   <img
-                    src={JSON.parse(randomTimeMachineEntry.metadata).author}
+                    src={randomTimeMachineEntry.metadata.author}
                     alt="ycb-companion-image"
                   />
                 )}
               <span className="font-normal">{randomTimeMachineEntry.data}</span>
             </div>
-            {/* <div className="text-sm text-gray-500">
-              Created:{" "}
-              {new Date(randomTimeMachineEntry.createdAt).toLocaleDateString()}
-              {randomTimeMachineEntry.createdAt !==
-                randomTimeMachineEntry.updatedAt && (
-                <>
-                  {" "}
-                  | Last Updated:{" "}
-                  {new Date(
-                    randomTimeMachineEntry.updatedAt
-                  ).toLocaleDateString()}{" "}
-                </>
-              )}
-            </div> */}
           </Link>
         )}
-        {/* if timeMachineEntries is > 1 length, a btn fetches a new random entry from the timeMachineEntries array */}
-      </div>
+      </div> */}
       {/* ask the user what they are thinking about right now in a text box and add it as an entry -- like a journal */}
       {/* <h1 className="my-4 text-xl font-extrabold text-gray-900 md:text-xl lg:text-xl">
         Journal

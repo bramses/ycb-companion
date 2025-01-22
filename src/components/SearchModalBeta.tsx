@@ -156,78 +156,79 @@ const SearchModalBeta = ({
   };
 
   const [isSearchClient, setSearchClient] = useState<SearchClient | null>(null);
-  const [meliToken, setMeliToken] = useState<{
-    token: string;
-    expiresAt: string;
-  } | null>(null);
+    // todo fix token
 
-  const fetchToken = async () => {
-    try {
-      const token = await fetch('/api/searchToken', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-      const tokenData = await token.json();
+  // const [meliToken, setMeliToken] = useState<{
+  //   token: string;
+  //   expiresAt: string;
+  // } | null>(null);
 
-      if (tokenData.error) {
-        throw new Error(tokenData.error);
-      }
-      if (Object.keys(tokenData).length === 0) {
-        throw new Error('No token data returned from the API');
-      }
+  // const fetchToken = async () => {
+  //   try {
+  //     const token = await fetch('/api/searchToken', {
+  //       method: 'POST',
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //       },
+  //     });
+  //     const tokenData = await token.json();
 
-      // expires 10s after the token is created
-      setMeliToken({
-        token: tokenData.token.token,
-        expiresAt: new Date(Date.now() + 10 * 60 * 1000 - 2000).toISOString(),
-      });
+  //     if (tokenData.error) {
+  //       throw new Error(tokenData.error);
+  //     }
+  //     if (Object.keys(tokenData).length === 0) {
+  //       throw new Error('No token data returned from the API');
+  //     }
 
-      const { searchClient } = instantMeiliSearch(
-        process.env.NEXT_PUBLIC_MEILI_HOST!, // Host
-        tokenData.token.token, // API key,
-        {
-          placeholderSearch: true, // default: true.
-        },
-      );
+  //     // expires 10s after the token is created
+  //     setMeliToken({
+  //       token: tokenData.token.token,
+  //       expiresAt: new Date(Date.now() + 10 * 60 * 1000 - 2000).toISOString(),
+  //     });
 
-      setSearchClient(searchClient);
-    } catch (err) {
-      console.error('Error fetching search token:', err);
-    }
-  };
+  //     const { searchClient } = instantMeiliSearch(
+  //       process.env.NEXT_PUBLIC_MEILI_HOST!, // Host
+  //       tokenData.token.token, // API key,
+  //       {
+  //         placeholderSearch: true, // default: true.
+  //       },
+  //     );
 
-  useEffect(() => {
-    // Check if the token is expired by polling every 5 seconds
-    const interval = setInterval(() => {
-      if (meliToken && new Date(meliToken.expiresAt) < new Date()) {
-        console.log('Token expired, fetching a new token...');
-        fetchToken();
-      }
-    }, 1000);
+  //     setSearchClient(searchClient);
+  //   } catch (err) {
+  //     console.error('Error fetching search token:', err);
+  //   }
+  // };
 
-    return () => {
-      clearInterval(interval);
-    };
-  }, [meliToken]);
+  // useEffect(() => {
+  //   const interval = setInterval(() => {
+  //     if (meliToken && new Date(meliToken.expiresAt) < new Date()) {
+  //       console.log('Token expired, fetching a new token...');
+  //       fetchToken();
+  //     }
+  //   }, 1000);
 
-  useEffect(() => {
-    const initializeSearchClient = async () => {
-      try {
-        await fetchToken();
-      } catch (error: any) {
-        if (error.message.includes('Tenant token expired')) {
-          console.warn('Tenant token expired, fetching a new token...');
-          fetchToken(); // Re-fetch the token
-        } else {
-          console.error('Search error:', error);
-        }
-      }
-    };
+  //   return () => {
+  //     clearInterval(interval);
+  //   };
+  // }, [meliToken]);
 
-    initializeSearchClient();
-  }, []);
+  // useEffect(() => {
+  //   const initializeSearchClient = async () => {
+  //     try {
+  //       await fetchToken();
+  //     } catch (error: any) {
+  //       if (error.message.includes('Tenant token expired')) {
+  //         console.warn('Tenant token expired, fetching a new token...');
+  //         fetchToken(); // Re-fetch the token
+  //       } else {
+  //         console.error('Search error:', error);
+  //       }
+  //     }
+  //   };
+
+  //   initializeSearchClient();
+  // }, []);
 
   // on open focus on the input
   useEffect(() => {

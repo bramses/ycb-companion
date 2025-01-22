@@ -19,7 +19,7 @@ export const fetchByID = async (entryId: string) => {
   }
 
   const entry = resData.data;
-  console.log('entry:', entry);
+  // console.log('entry:', entry);
   const { metadata } = entry;
 
   return {

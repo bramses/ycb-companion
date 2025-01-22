@@ -25,6 +25,7 @@ const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
   onAddComment,
   isGraphLoading,
 }) => {
+  console.log('fdata:', data);
   const svgRef = useRef<SVGSVGElement | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -143,6 +144,8 @@ const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
         }
       }
 
+
+
       // triple tap on mobile => expand
 
       // escape => close modal
@@ -241,6 +244,7 @@ const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
   useEffect(() => {
     if (currentIndex === null) return;
     const selectedNode = graphNodes[currentIndex];
+    if (!selectedNode) return;
     openModal(
       selectedNode.label,
       selectedNode.id,
@@ -308,6 +312,7 @@ const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
   // main effect: build the d3
   useEffect(() => {
     if (!data.entry) return;
+    if (!data.entry.data) return;
     if (!svgRef.current) return;
     if (!containerRef.current) return;
 
@@ -338,11 +343,13 @@ const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
       .attr('d', 'M0,-5L10,0L0,5')
       .attr('fill', '#aaa');
 
+    console.log('data id', data.entry.id);
+    console.log('data data', data.entry.data);
     // build rawNodes
     const rawNodes = [
       {
-        id: data.entry,
-        label: data.entry,
+        id: data.entry.id,
+        label: data.entry.data,
         group: 'main',
         image: data.image,
         comments: data.comments,
@@ -359,8 +366,8 @@ const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
       ...data.internalLinks.flatMap((link: any) =>
         link.penPals.map((penPal: any) => getParentOrSelf(penPal, 'penPal')),
       ),
-      ...data.comments.map((comment: any, idx: number) => ({
-        id: `comment-${idx}`,
+      ...data.comments.map((comment: any) => ({
+        id: comment.id,
         label: comment.comment,
         group: 'comment',
         image: comment.image,
@@ -406,18 +413,18 @@ const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
     // build links
     const rawLinks = [
       ...data.neighbors.map((n: any) => ({
-        source: data.entry,
+        source: data.entry.id,
         target: n.parent ? n.parent.id : n.id,
         similarity: n.similarity,
       })),
       ...data.internalLinks.map((_: any, idx: number) => ({
-        source: data.entry,
+        source: data.entry.id,
         target: `internalLink-${idx}`,
         similarity: 0.5,
       })),
-      ...data.comments.map((_: any, idx: number) => ({
-        source: data.entry,
-        target: `comment-${idx}`,
+      ...data.comments.map((comment: any) => ({
+        source: data.entry.id,
+        target: comment.id,
         similarity: 0.5,
       })),
       ...data.expansion.flatMap((expansion: any) =>
@@ -434,9 +441,9 @@ const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
           similarity: penPal.similarity,
         })),
       ),
-      ...data.comments.flatMap((comment: any, idx: number) =>
+      ...data.comments.flatMap((comment: any) =>
         comment.penPals.map((penPal: any) => ({
-          source: `comment-${idx}`,
+          source: comment.id,
           target: penPal.parent ? penPal.parent.id : penPal.id,
           similarity: penPal.similarity,
         })),
@@ -659,6 +666,9 @@ const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
               currentIndex < graphNodes.length
             ) {
               const selectedNode = graphNodes[currentIndex];
+
+              if (!selectedNode) return;
+
               openModal(
                 selectedNode.label,
                 selectedNode.id,
@@ -770,11 +780,14 @@ const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
 
             {/* main content */}
             <ReactMarkdown>{modalContent.content}</ReactMarkdown>
+            <p className="text-sm text-gray-500">{modalContent.title}</p>
+            <p className="text-sm text-gray-500">{modalContent.author}</p>
+            <p className="text-sm text-gray-500">{modalContent.date}</p>
 
             <br />
 
             {/* show comments if not a "comment" node */}
-            {modalContent.group !== 'comment' &&
+            {modalContent.group !== 'comment' && modalContent.group !== 'main' &&
               modalContent.comments &&
               modalContent.comments.map((comment: any) => (
                 <div
@@ -811,7 +824,7 @@ const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
               ))}
 
             {/* add comment if not "comment" node */}
-            {modalContent.group !== 'comment' && (
+            {modalContent.group !== 'comment' && modalContent.group !== 'main' && (
               <div>
                 <input
                   type="text"
@@ -847,12 +860,11 @@ const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
               </div>
             )}
 
-            <p className="text-sm text-gray-500">{modalContent.title}</p>
             <br />
 
-            <Link href={`/dashboard/entry/${modalContent.id}`} className="mt-4">
+            {modalContent.group !== 'comment' && modalContent.group !== 'main' && <Link href={`/dashboard/entry/${modalContent.id}`} className="mt-4">
               view entry
-            </Link>
+            </Link>}
             <br />
 
             {/* <button

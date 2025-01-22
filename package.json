@@ -37,6 +37,7 @@
     "@sentry/nextjs": "^8.19.0",
     "@spotlightjs/spotlight": "^2.0.0",
     "@t3-oss/env-nextjs": "^0.11.0",
+    "@tailwindcss/typography": "^0.5.16",
     "add": "^2.0.6",
     "ag-grid-community": "^32.1.0",
     "ag-grid-react": "^32.1.0",
