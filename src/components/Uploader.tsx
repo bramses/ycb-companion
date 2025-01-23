@@ -91,88 +91,195 @@ const Uploader = ({ closeModal }: { closeModal: () => void }) => {
   };
 
   const uploadFromShareYCB = async (id: string) => {
-    const response = await fetch(
-      `https://share-ycbs.onrender.com/api/get-upload?id=${id}`,
-    );
-    const respData = await response.json();
-    if (respData.error) {
-      throw new Error(respData.error);
-    }
-    const { data } = respData;
-    // add data using /api/add
-    const addresponse = await fetch('/api/add', {
+
+    // decode the base64 string
+    const decoded = atob(id); // { ids: string[], from: string }
+    // turn to json
+    const json = JSON.parse(decoded);
+    const { ids, from } = json;
+    console.log(ids, from);
+
+    for (let i = 0; i < ids.length; i++) {
+      const id = ids[i];
+      const response = await fetch(
+        `https://share-ycbs.onrender.com/api/get-upload?id=${id}`,
+      );
+      const respData = await response.json();
+      if (respData.error) {
+        throw new Error(respData.error);
+      }
+      const { data } = respData;
+      console.log(`data for id: ${id}`, data);
+      // // add data using /api/add
+      /* {
+    "id": 7,
+    "created_at": "2025-01-23T05:26:19.989819+00:00",
+    "updated_at": "2025-01-23T05:26:19.989819+00:00",
+    "json": {
+        "entry": {
+            "data": "He’s like how do we stop this demon and willem Defoe hit him with the I don’t know",
+            "metadata": {
+                "title": "thought",
+                "author": "https://ycb-companion.onrender.com/dashboard"
+            }
+        },
+        "comments": [
+            {
+                "data": "from Nosferatu, 2024",
+                "metadata": {
+                    "title": "thought",
+                    "author": "https://ycb-companion.onrender.com/dashboard"
+                }
+            },
+            {
+                "data": "call it nosfera2",
+                "metadata": {
+                    "title": "thought",
+                    "author": "https://ycb-companion.onrender.com/dashboard"
+                }
+            }
+        ],
+        "username": "bram"
+    },
+    "creator": "bram"
+}
+    */
+   // add entry first and then add comments youll need to add the entry id to the comments and then after all comments are added, update the parent entry with the new comments ids
+    const yresponse = await fetch('/api/add', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        data: data.json.data,
-        metadata: JSON.parse(data.json.metadata),
+        data: data.json.entry.data,
+        metadata: data.json.entry.metadata,
       }),
     });
-    const addrData = await addresponse.json();
+    const addrData = await yresponse.json();
+    const parentId = addrData.respData.id;
     console.log('addrData:', addrData);
-    return addrData;
-  };
-
-  const uploadAudio = async () => {
-    const fileInput = document.getElementById('file-input-audio');
-    if (!fileInput) return;
-    (fileInput as HTMLInputElement).click();
-
-    fileInput.addEventListener('change', async (event) => {
-      const file = (event.target as HTMLInputElement).files?.[0];
-      if (!file) return;
-      setLoading(true);
-      const formData = new FormData();
-      formData.append('audio', file);
-
-      const response = await fetch('/api/transcribe', {
+    // add comments
+    const aliasIDs = [];
+    for (let i = 0; i < data.json.comments.length; i++) {
+      const comment = data.json.comments[i];
+      const response = await fetch('/api/add', {
         method: 'POST',
-        body: formData, // This mimics your curl -F "audio=@test.m4a"
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          data: comment.data,
+          metadata: {
+            ...comment.metadata,
+            parent_id: parentId,
+          },
+        }),
       });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
-      const { transcription, cfURL } = data;
-      console.log('Transcribe response:', data);
-
-      console.log('Audio description:', `${transcription} - ${cfURL}`);
-
-      add(data.data.transcription, {
-        author: data.data.cfURL,
-        title: 'Audio',
-      });
-      setLoading(false);
-
-      // const reader = new FileReader();
-      // reader.onload = () => {
-      //   const arrayBuffer = reader.result;
-      //   setLoading(true);
-
-      //   const worker = new Worker('/audioWorker.js');
-      //   worker.postMessage({ file: arrayBuffer, apiKey });
-
-      //   worker.onmessage = (e) => {
-      //     const { success, data, error } = e.data;
-      //     if (success) {
-      //       console.log('Audio description:', data);
-      //       // add(data.transcription, {
-      //       //   author: data.cfURL,
-      //       //   title: 'Audio',
-      //       // });
-      //     } else {
-      //       console.error('Error:', error);
-      //     }
-      //     setLoading(false);
-      //   };
-      // };
-      // reader.readAsArrayBuffer(file);
+      const addrData = await response.json();
+      console.log('comment addrData:', addrData);
+      aliasIDs.push(addrData.respData.id);
+    }
+    // update parent entry with new comments ids
+    const zresponse = await fetch('/api/update', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        id: addrData.respData.id,
+        data: data.json.entry.data,
+        metadata: {
+          ...data.json.entry.metadata,
+          alias_ids: aliasIDs,
+        },
+      }),
     });
+    const zaddrData = await zresponse.json();
+    console.log('zaddrData:', zaddrData);
+    return addrData;
+  }
+    // const response = await fetch(
+    //   `https://share-ycbs.onrender.com/api/get-upload?id=${id}`,
+    // );
+    // const respData = await response.json();
+    // if (respData.error) {
+    //   throw new Error(respData.error);
+    // }
+    // const { data } = respData;
+    // // add data using /api/add
+    // const addresponse = await fetch('/api/add', {
+    //   method: 'POST',
+    //   headers: {
+    //     'Content-Type': 'application/json',
+    //   },
+    //   body: JSON.stringify({
+    //     data: data.json.data,
+    //     metadata: JSON.parse(data.json.metadata),
+    //   }),
+    // });
+    // const addrData = await addresponse.json();
+    // console.log('addrData:', addrData);
+    // return addrData;
   };
+
+  // const uploadAudio = async () => {
+  //   const fileInput = document.getElementById('file-input-audio');
+  //   if (!fileInput) return;
+  //   (fileInput as HTMLInputElement).click();
+
+  //   fileInput.addEventListener('change', async (event) => {
+  //     const file = (event.target as HTMLInputElement).files?.[0];
+  //     if (!file) return;
+  //     setLoading(true);
+  //     const formData = new FormData();
+  //     formData.append('audio', file);
+
+  //     const response = await fetch('/api/transcribe', {
+  //       method: 'POST',
+  //       body: formData, // This mimics your curl -F "audio=@test.m4a"
+  //     });
+
+  //     if (!response.ok) {
+  //       throw new Error(`HTTP error! status: ${response.status}`);
+  //     }
+
+  //     const data = await response.json();
+  //     const { transcription, cfURL } = data;
+  //     console.log('Transcribe response:', data);
+
+  //     console.log('Audio description:', `${transcription} - ${cfURL}`);
+
+  //     add(data.data.transcription, {
+  //       author: data.data.cfURL,
+  //       title: 'Audio',
+  //     });
+  //     setLoading(false);
+
+  //     // const reader = new FileReader();
+  //     // reader.onload = () => {
+  //     //   const arrayBuffer = reader.result;
+  //     //   setLoading(true);
+
+  //     //   const worker = new Worker('/audioWorker.js');
+  //     //   worker.postMessage({ file: arrayBuffer, apiKey });
+
+  //     //   worker.onmessage = (e) => {
+  //     //     const { success, data, error } = e.data;
+  //     //     if (success) {
+  //     //       console.log('Audio description:', data);
+  //     //       // add(data.transcription, {
+  //     //       //   author: data.cfURL,
+  //     //       //   title: 'Audio',
+  //     //       // });
+  //     //     } else {
+  //     //       console.error('Error:', error);
+  //     //     }
+  //     //     setLoading(false);
+  //     //   };
+  //     // };
+  //     // reader.readAsArrayBuffer(file);
+  //   });
+  // };
 
   const uploadImage = async () => {
     const fileInput = document.getElementById('file-input-modal');
@@ -306,7 +413,7 @@ const Uploader = ({ closeModal }: { closeModal: () => void }) => {
           or
         </span>
       </div>
-      <input type="file" className="hidden" id="file-input-audio" />
+      {/* <input type="file" className="hidden" id="file-input-audio" />
       <button
         type="button"
         onClick={uploadAudio}
@@ -320,7 +427,7 @@ const Uploader = ({ closeModal }: { closeModal: () => void }) => {
         <span className="absolute left-1/2 -translate-x-1/2 bg-white px-3 font-medium text-gray-900 dark:bg-gray-900 dark:text-white">
           or
         </span>
-      </div>
+      </div> */}
       <button
         type="button"
         className="mt-2 block rounded-lg bg-blue-700 px-5 py-2.5 text-sm font-medium text-white hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300"
@@ -329,11 +436,11 @@ const Uploader = ({ closeModal }: { closeModal: () => void }) => {
           if (url) {
             setLoading(true);
             const responseEntry = await uploadFromShareYCB(url);
-            console.log('responseEntry:', responseEntry);
-            if (responseEntry.respData) {
-              router.push(`/dashboard/entry/${responseEntry.respData.id}`);
-              closeModal();
-            }
+            // console.log('responseEntry:', responseEntry);
+            // if (responseEntry.respData) {
+            //   router.push(`/dashboard/entry/${responseEntry.respData.id}`);
+            //   closeModal();
+            // }
             setLoading(false);
           }
         }}
