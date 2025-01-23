@@ -1,17 +1,18 @@
-'use client';
+"use client";
 
-import { useUser } from '@clerk/nextjs';
-import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useUser } from "@clerk/nextjs";
+import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
+import AnimatedNumbers from "react-animated-numbers";
 
-import { fetchRandomEntry } from '@/helpers/functions';
+import { fetchRandomEntry } from "@/helpers/functions";
 
 // import ForceFromEntry from "./ForceFromEntry";
-import HelpModal from './HelpModal';
-import SearchModalBeta from './SearchModalBeta';
+import HelpModal from "./HelpModal";
+import SearchModalBeta from "./SearchModalBeta";
 // import Uploader from "./Uploader";
-import UploaderModalWrapper from './UploaderModalWrapper';
+import UploaderModalWrapper from "./UploaderModalWrapper";
 
 const SimpleDashboard = () => {
   const router = useRouter();
@@ -19,14 +20,14 @@ const SimpleDashboard = () => {
   // const [comments, setComments] = useState<any[]>([]);
 
   const [firstLastName, setFirstLastName] = useState({
-    firstName: '',
-    lastName: '',
+    firstName: "",
+    lastName: "",
   });
   const [isSearchModalBetaOpen, setSearchModalBetaOpen] = useState(false);
-  const [searchBetaModalQuery, setSearchBetaModalQuery] = useState('');
+  const [searchBetaModalQuery, setSearchBetaModalQuery] = useState("");
   const [logEntries, setLogEntries] = useState<any[]>([]);
   // const [isSaving, setIsSaving] = useState(false);
-  const [timeMachine, setTimeMachine] = useState<any>('week');
+  // const [timeMachine, setTimeMachine] = useState<any>('week');
   // const [randomTimeMachineEntry, setRandomTimeMachineEntry] =
   //   useState<any>(null);
   // const [timeMachineEntries, setTimeMachineEntries] = useState<any[]>([]);
@@ -35,6 +36,7 @@ const SimpleDashboard = () => {
   const [buttons, setButtons] = useState<any[]>([]);
   const [isUploaderModalOpen, setUploaderModalOpen] = useState(false);
   const [totalEntries, setTotalEntries] = useState(-1);
+  const [todaysEntriesLength, setTodaysEntriesLength] = useState(0);
 
   // const [inboxEntries, setInboxEntries] = useState<any[]>([]);
   const { user, isLoaded } = useUser();
@@ -229,16 +231,16 @@ const SimpleDashboard = () => {
 
   const fetchTotalEntries = async () => {
     try {
-      const response = await fetch('/api/count', {
-        method: 'POST',
+      const response = await fetch("/api/count", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
       });
       const data = await response.json();
       setTotalEntries(data.count);
     } catch (error) {
-      console.error('Error fetching total entries:', error);
+      console.error("Error fetching total entries:", error);
     }
   };
 
@@ -246,10 +248,45 @@ const SimpleDashboard = () => {
     fetchTotalEntries();
   }, []);
 
+  useEffect(() => {
+    const todaysEntriesLength = async () => {
+      const today = new Date();
+      const year = today.getFullYear();
+      const month = today.getMonth() + 1;
+      let monthString = month.toString();
+      // put a 0 in front of month if it is less than 10
+      if (month < 10) {
+        monthString = `0${month}`;
+      }
+      const day = today.getDate();
+      let dayString = day.toString();
+      if (day < 10) {
+        dayString = `0${day}`;
+      }
+      const dateString = `${year}-${monthString}-${dayString}`;
+
+      // call /api/entries
+      const response = await fetch("/api/daily", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ date: dateString }),
+      });
+      const responseData = await response.json();
+
+      // console.log('Fetched records:', responseData);
+      // set entries to the mapped data
+      setTodaysEntriesLength(responseData.data.length);
+    };
+
+    todaysEntriesLength();
+  }, []);
+
   const searchParams = useSearchParams();
 
   useEffect(() => {
-    const query = searchParams.get('query');
+    const query = searchParams.get("query");
     if (query) {
       // open search modal beta with query
       setSearchModalBetaOpen(true);
@@ -279,10 +316,10 @@ const SimpleDashboard = () => {
   // get log entries
   const fetchLogEntries = async () => {
     try {
-      const response = await fetch('/api/log', {
-        method: 'POST',
+      const response = await fetch("/api/log", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           limit: 20,
@@ -299,19 +336,19 @@ const SimpleDashboard = () => {
           if (entry.createdAt === entry.updatedAt) {
             return {
               ...entry,
-              action: 'added',
+              action: "added",
             };
           }
           return {
             ...entry,
-            action: 'updated',
+            action: "updated",
           };
         })
         .filter((entry: any) => entry !== null);
-      console.log('Log:', log);
+      console.log("Log:", log);
       setLogEntries(log);
     } catch (error) {
-      console.error('Error fetching log entries:', error);
+      console.error("Error fetching log entries:", error);
     }
   };
 
@@ -334,7 +371,7 @@ const SimpleDashboard = () => {
   return (
     <div>
       <h1 className="mx-2 mt-8 text-xl font-extrabold text-gray-900 md:text-xl lg:text-xl">
-        Welcome Back to{' '}
+        Welcome Back to{" "}
         <span className="bg-gradient-to-r from-sky-400 to-emerald-600 bg-clip-text text-transparent">
           Your Commonbase
         </span>
@@ -342,21 +379,39 @@ const SimpleDashboard = () => {
       </h1>
       {totalEntries >= 0 && (
         <h2 className="mx-2 mt-8 text-xl font-extrabold text-gray-400 md:text-lg lg:text-lg">
-          You have{' '}
+          You have{" "}
           <span className="bg-gradient-to-r from-sky-400 to-emerald-600 bg-clip-text text-transparent">
             {totalEntries}
-          </span>{' '}
-          entries in your commonbase. That&apos;s the equivalent of{' '}
+          </span>{" "}
+          total entries in your commonbase. That&apos;s the equivalent of{" "}
           <span className="bg-gradient-to-r from-sky-400 to-emerald-600 bg-clip-text text-transparent">
             {Math.round(totalEntries / 251)}
-          </span>{' '}
-          journals filled! You are{' '}
+          </span>{" "}
+          journals filled! You are{" "}
           <span className="bg-gradient-to-r from-sky-400 to-emerald-600 bg-clip-text text-transparent">
             {251 - (totalEntries % 251)}
-          </span>{' '}
+          </span>{" "}
           entries away from filling your next journal!
         </h2>
       )}
+      
+        <h2 className="mx-2 mt-8 text-xl font-extrabold text-gray-400 md:text-lg lg:text-lg">
+          You have{" "}
+          <AnimatedNumbers
+            includeComma
+            transitions={(index) => ({
+              type: "spring",
+              duration: index + 0.3,
+            })}
+            animateToNumber={todaysEntriesLength}
+            fontStyle={{
+              fontSize: 18,
+              color: "black",
+            }}
+          />
+          entries today!
+        </h2>
+    
       <h2 className="mx-2 mt-8 text-xl font-extrabold text-gray-400 md:text-lg lg:text-lg">
         What do you want to accomplish today?
       </h2>
@@ -375,7 +430,7 @@ const SimpleDashboard = () => {
           className="my-2 me-2 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4"
           onClick={() => {
             // open the flow page
-            router.push('/dashboard/flow');
+            router.push("/dashboard/flow");
           }}
         >
           I want to journal
@@ -388,14 +443,14 @@ const SimpleDashboard = () => {
             setHelpModalOpen(true);
             setInstructions([
               {
-                text: 'Note! You can hit the random button in the speed dial in the corner on any page in the Companion to get a random entry. Press the button below to be taken to a random entry.',
-                img: 'https://imagedelivery.net/CrhaOMV08a-ykXmRKTxGRA/6bd285af-7268-4433-9916-4b23631edd00/public',
+                text: "Note! You can hit the random button in the speed dial in the corner on any page in the Companion to get a random entry. Press the button below to be taken to a random entry.",
+                img: "https://imagedelivery.net/CrhaOMV08a-ykXmRKTxGRA/6bd285af-7268-4433-9916-4b23631edd00/public",
               },
             ]);
 
             setButtons([
               {
-                label: 'Random',
+                label: "Random",
                 handler: () => {
                   handleRandomOpen();
                 },
@@ -412,15 +467,15 @@ const SimpleDashboard = () => {
             setHelpModalOpen(true);
             setInstructions([
               {
-                text: 'To connect entries, you can add a comment or create a wikilink. This makes Your Commonbase much more expansive and allows you to connect your thoughts and ideas in a way that is not possible with a traditional wiki.',
+                text: "To connect entries, you can add a comment or create a wikilink. This makes Your Commonbase much more expansive and allows you to connect your thoughts and ideas in a way that is not possible with a traditional wiki.",
               },
               {
                 text: 'To add a comment, click on the entry you want to comment on and then click the "Add Comment" button. Make sure to save it by clicking the save button.',
-                img: 'https://imagedelivery.net/CrhaOMV08a-ykXmRKTxGRA/61f586bb-412a-476f-dfe8-b79fb0643400/public',
+                img: "https://imagedelivery.net/CrhaOMV08a-ykXmRKTxGRA/61f586bb-412a-476f-dfe8-b79fb0643400/public",
               },
               {
-                text: 'To create a wikilink, put double brackets around the text you want to link, like [[this is a link]].',
-                img: 'https://imagedelivery.net/CrhaOMV08a-ykXmRKTxGRA/1db94277-9be7-4d4e-847c-2ef0dcb0bb00/public',
+                text: "To create a wikilink, put double brackets around the text you want to link, like [[this is a link]].",
+                img: "https://imagedelivery.net/CrhaOMV08a-ykXmRKTxGRA/1db94277-9be7-4d4e-847c-2ef0dcb0bb00/public",
               },
               {
                 text: 'Close this window and use the "I want to browse" button or "I want to find something specific" button to continue to an entry you want to connect.',
@@ -439,27 +494,27 @@ const SimpleDashboard = () => {
             setInstructions([
               {
                 text: 'To add a new entry from inside companion, click the "Upload" button in the speed dial in the corner on any page in the Companion. You can also press the hotkey cmd/ctrl + u anywhere on the website.',
-                img: 'https://imagedelivery.net/CrhaOMV08a-ykXmRKTxGRA/6bd285af-7268-4433-9916-4b23631edd00/public',
+                img: "https://imagedelivery.net/CrhaOMV08a-ykXmRKTxGRA/6bd285af-7268-4433-9916-4b23631edd00/public",
               },
               {
-                text: 'To add a entry from Chrome, use the Chrome extension.',
+                text: "To add a entry from Chrome, use the Chrome extension.",
               },
               {
-                text: 'To add a entry from iOS, use the iOS Shortcut.',
+                text: "To add a entry from iOS, use the iOS Shortcut.",
               },
             ]);
 
             setButtons([
               {
-                label: 'Upload',
+                label: "Upload",
                 handler: () => setUploaderModalOpen(true),
               },
               {
-                label: 'Open Chrome Extension',
+                label: "Open Chrome Extension",
                 handler: () => {
                   window.open(
-                    'https://github.com/bramses/simple-chrome-ycb',
-                    '_blank',
+                    "https://github.com/bramses/simple-chrome-ycb",
+                    "_blank"
                   );
                 },
               },
@@ -559,7 +614,7 @@ const SimpleDashboard = () => {
         </>
       )} */}
 
-        {/* todo time machine */}
+      {/* todo time machine */}
       {/* <div>
         <h1 className="my-4 text-xl font-extrabold text-gray-900 md:text-xl lg:text-xl">
           Last {timeMachine}, you saved:
@@ -689,7 +744,7 @@ const SimpleDashboard = () => {
                 >
                   <div className="relative">
                     {entry.metadata.author &&
-                      entry.metadata.author.includes('imagedelivery.net') && (
+                      entry.metadata.author.includes("imagedelivery.net") && (
                         <img
                           src={entry.metadata.author}
                           alt="ycb-companion-image"
@@ -700,14 +755,14 @@ const SimpleDashboard = () => {
                 </Link>
                 <div className="text-sm text-gray-500">
                   {(() => {
-                    if (entry.action === 'added') {
+                    if (entry.action === "added") {
                       return <b>Added</b>;
                     }
-                    if (entry.action === 'updated') {
+                    if (entry.action === "updated") {
                       return <b>Updated</b>;
                     }
-                    return 'Deleted';
-                  })()}{' '}
+                    return "Deleted";
+                  })()}{" "}
                   {new Date(entry.updatedAt).toLocaleDateString()}
                 </div>
               </div>

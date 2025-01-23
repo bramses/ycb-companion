@@ -34,7 +34,7 @@ import {
 import { createEntryTransaction } from '../helpers/transactionFunctions';
 import type { Transaction } from '../helpers/transactionManager';
 import { TransactionManager } from '../helpers/transactionManager';
-import Chat from './Chat';
+// import Chat from './Chat';
 import EditModal from './EditModal';
 import ForceDirectedGraph from './ForceDirectedGraph';
 // import LinksModal from './LinksModal';
@@ -1428,31 +1428,24 @@ const EntryPage = () => {
   // };
 
   // Implement the 'expandFData' function to merge new data into 'fData'
-  const expandFData = async (entry: any, comments: any[] = []) => {
+  const expandFData = async (entry: any, comments: any[] = [], searchData: string | null = null) => {
     const commentIDs = comments.map((comment: any) => comment.aliasId).flat();
     const existingNodeIds = getAllNodeIds(fData);
 
     // Fetch neighbors
-    const neighbors = await searchNeighbors(entry.data, [
+    const neighbors = await searchNeighbors(searchData || entry.data, [
       entry.id,
       ...commentIDs,
       ...existingNodeIds,
     ]);
 
-    console.log('entry.id:', entry.id);
-    console.log('commentIDs:', commentIDs);
-
     // append entry.id to existingNodeIds
     existingNodeIds.push({id: entry.id});
     existingNodeIds.push(...commentIDs.map((id: string) => ({id})));
 
-    console.log('existingNodeIds:', existingNodeIds);
-
     const newNeighbors = neighbors.filter(
       (neighbor: any) => !existingNodeIds.includes(neighbor.id),
     );
-
-
 
     // Update 'fData' with new neighbors
     setFData((prevData: any) => ({
@@ -1460,7 +1453,7 @@ const EntryPage = () => {
       // neighbors: [...prevData.neighbors, ...newNeighbors],
       expansion: [
         ...prevData.expansion,
-        { parent: entry.id, children: newNeighbors },
+        { parent: entry.id, children: newNeighbors, comment: entry.data },
       ],
     }));
 
@@ -1471,33 +1464,51 @@ const EntryPage = () => {
     return newDataAdded;
   };
 
-  const handleExpand = async (nodeId: string) => {
+  const handleExpand = async (nodeId: string, initNodeData: string | null = null) => {
     setIsGraphLoading(true);
-    const nodeData = await fetchByID(nodeId);
 
-    if (!nodeData) {
-      alert(`Cannot fetch data for node with id ${nodeId}`);
+    if (!initNodeData) {
+      const nodeData = await fetchByID(nodeId);
+
+      if (!nodeData) {
+        alert(`Cannot fetch data for node with id ${nodeId}`);
+        setIsGraphLoading(false);
+        return;
+      }
+
+      if (!nodeData.metadata) {
+        alert(`Cannot fetch data for node with id ${nodeId}`);
+        setIsGraphLoading(false);
+        return;
+      }
+
+
+      // Expand the graph with the new data
+      const newDataAdded = await expandFData(
+        nodeData,
+        nodeData.metadata.aliasData,
+      );
+
+      if (!newDataAdded) {
+        alert('Area is fully explored');
+      }
+      setIsGraphLoading(false);
+      return;
+    } else {
+      const nodeData = await fetchByID(nodeId);
+      // Expand the graph with the new data
+      const newDataAdded = await expandFData(
+        nodeData,
+        nodeData.metadata.aliasData,
+        initNodeData
+      );
+
+      if (!newDataAdded) {
+        alert('Area is fully explored');
+      }
       setIsGraphLoading(false);
       return;
     }
-
-    if (!nodeData.metadata) {
-      alert(`Cannot fetch data for node with id ${nodeId}`);
-      setIsGraphLoading(false);
-      return;
-    }
-
-
-    // Expand the graph with the new data
-    const newDataAdded = await expandFData(
-      nodeData,
-      nodeData.metadata.aliasData,
-    );
-
-    if (!newDataAdded) {
-      alert('Area is fully explored');
-    }
-    setIsGraphLoading(false);
   };
 
   // const generateFData = async (entry: any, comments: any[] = []) => {
@@ -1842,29 +1853,7 @@ const EntryPage = () => {
     : data;
 
   return renderedData ? (
-    <div className="my-4 min-w-full max-w-full min-h-screen py-10 px-5">
-      {fData ? (
-            <div className="relative">
-              <div className="relative">
-                <ForceDirectedGraph
-                  data={fData}
-                  onExpand={handleExpand}
-                  isGraphLoading={isGraphLoading}
-                  onAddComment={handleAddCommentGraph}
-                />
-                <p className="text-sm text-gray-500">
-                  Use left/right arrow keys to navigate, swipe left/right on
-                  mobile to cycle through entries (open an entry first).
-                  <br />
-                </p>
-                {isGraphLoading && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-75">
-                    <span className="text-lg font-bold">Loading...</span>
-                  </div>
-                )}
-              </div>
-            </div>
-          ) : null}
+    <div className="min-w-full max-w-full min-h-screen py-4 px-5">
       {hasYouTubeEmbed && (
         <LiteYouTubeEmbed
           id={youtubeId}
@@ -1899,7 +1888,7 @@ const EntryPage = () => {
         </audio>
       )}
       {data ? (
-        <div className="mb-2 [&_p]:my-6">
+        <div className="mb-2 [&_p]:my-2">
           {/* todo Implement star button functionality */}
           {/* <button
             type="button"
@@ -1958,7 +1947,7 @@ const EntryPage = () => {
           <button
             onClick={() => setOpenShareModal(true)}
             type="button"
-            className="w-full rounded border border-neutral-light bg-neutral-light p-2 text-neutral-dark focus:border-brand focus:ring-brand"
+            className="w-full rounded border border-neutral-light bg-neutral-light p-2 text-neutral-dark focus:border-brand focus:ring-brand mt-2"
           >
             Share
           </button>
@@ -2021,6 +2010,28 @@ again:
       ) : (
         'Loading...'
       )}
+      {fData ? (
+            <div className="relative">
+              <div className="relative">
+                <ForceDirectedGraph
+                  data={fData}
+                  onExpand={handleExpand}
+                  isGraphLoading={isGraphLoading}
+                  onAddComment={handleAddCommentGraph}
+                />
+                <p className="text-sm text-gray-500">
+                  Use left/right arrow keys to navigate, swipe left/right on
+                  mobile to cycle through entries (open an entry first).
+                  <br />
+                </p>
+                {isGraphLoading && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-75">
+                    <span className="text-lg font-bold">Loading...</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          ) : null}
       {isInDraftState && (
         <button
           type="button"

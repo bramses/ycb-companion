@@ -1,20 +1,20 @@
 // components/ForceDirectedGraph.tsx
 /* eslint-disable no-param-reassign */
-import 'react-lite-youtube-embed/dist/LiteYouTubeEmbed.css';
+import "react-lite-youtube-embed/dist/LiteYouTubeEmbed.css";
 
-import * as d3 from 'd3';
-import Link from 'next/link';
-import React, { useEffect, useRef, useState } from 'react';
-import LiteYouTubeEmbed from 'react-lite-youtube-embed';
-import ReactMarkdown from 'react-markdown';
-import Modal from 'react-modal';
-import { InstagramEmbed } from 'react-social-media-embed';
-import { Spotify } from 'react-spotify-embed';
-import { Tweet } from 'react-tweet';
+import * as d3 from "d3";
+import Link from "next/link";
+import React, { useEffect, useRef, useState } from "react";
+import LiteYouTubeEmbed from "react-lite-youtube-embed";
+import ReactMarkdown from "react-markdown";
+import Modal from "react-modal";
+import { InstagramEmbed } from "react-social-media-embed";
+import { Spotify } from "react-spotify-embed";
+import { Tweet } from "react-tweet";
 
 interface ForceDirectedGraphProps {
   data: any;
-  onExpand: (id: string) => void;
+  onExpand: (id: string, initNodeData: string | null) => void;
   onAddComment: (comment: string, parent: any) => void;
   isGraphLoading: boolean;
 }
@@ -25,7 +25,7 @@ const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
   onAddComment,
   isGraphLoading,
 }) => {
-  console.log('fdata:', data);
+  console.log("fdata:", data);
   const svgRef = useRef<SVGSVGElement | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -46,32 +46,32 @@ const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
 
   // modal content
   const [modalContent, setModalContent] = useState<any>({
-    content: '',
-    id: '',
-    image: '',
-    title: '',
-    author: '',
-    group: '',
+    content: "",
+    id: "",
+    image: "",
+    title: "",
+    author: "",
+    group: "",
     comments: [],
-    matchedCommentId: '',
+    matchedCommentId: "",
   });
 
   // utility for pastel color
   function getNodeColor(node: any) {
     switch (node.group) {
-      case 'main':
-        return '#88C0D0';
-      case 'neighbor':
-      case 'penPal':
-        return '#A3BE8C';
-      case 'comment':
-        return '#EBCB8B';
-      case 'internalLink':
-        return '#D08770';
-      case 'expansionChild':
-        return '#FFA500';
+      case "main":
+        return "#88C0D0";
+      case "neighbor":
+      case "penPal":
+        return "#A3BE8C";
+      case "comment":
+        return "#EBCB8B";
+      case "internalLink":
+        return "#D08770";
+      case "expansionChild":
+        return "#FFA500";
       default:
-        return '#D8DEE9';
+        return "#D8DEE9";
     }
   }
 
@@ -84,7 +84,7 @@ const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
     author: any,
     group: any,
     comments: any,
-    matchedCommentId: any,
+    matchedCommentId: any
   ) => {
     setModalContent({
       content,
@@ -102,8 +102,8 @@ const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
 
   // disable background scroll when modal is open
   useEffect(() => {
-    if (showModal) document.body.style.overflow = 'hidden';
-    else document.body.style.overflow = 'auto';
+    if (showModal) document.body.style.overflow = "hidden";
+    else document.body.style.overflow = "auto";
   }, [showModal]);
 
   // keyboard navigation
@@ -112,12 +112,12 @@ const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
       if (!hovered || graphNodes.length === 0) return;
 
       // arrow navigation
-      if (event.key === 'ArrowRight') {
+      if (event.key === "ArrowRight") {
         setCurrentIndex((prevIndex) => {
           if (prevIndex === null) return 0;
           return (prevIndex + 1) % graphNodes.length;
         });
-      } else if (event.key === 'ArrowLeft') {
+      } else if (event.key === "ArrowLeft") {
         setCurrentIndex((prevIndex) => {
           if (prevIndex === null) return graphNodes.length - 1;
           return (prevIndex - 1 + graphNodes.length) % graphNodes.length;
@@ -126,30 +126,28 @@ const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
 
       // space bar => expand selected node && user is not writing a comment in the input field
       if (
-        event.key === ' ' &&
+        event.key === " " &&
         currentIndex !== null &&
         currentIndex > 0 &&
         showModal &&
         document.activeElement &&
-        document.activeElement.tagName !== 'INPUT' &&
-        document.activeElement.tagName !== 'TEXTAREA' &&
-        !document.activeElement.id.includes('alias-input')
+        document.activeElement.tagName !== "INPUT" &&
+        document.activeElement.tagName !== "TEXTAREA" &&
+        !document.activeElement.id.includes("alias-input")
       ) {
         event.preventDefault();
         if (currentIndex !== null) {
           const selectedNode = graphNodes[currentIndex];
           if (selectedNode) {
-            onExpand(selectedNode.id);
+            onExpand(selectedNode.id, null);
           }
         }
       }
 
-
-
       // triple tap on mobile => expand
 
       // escape => close modal
-      if (event.key === 'Escape') {
+      if (event.key === "Escape") {
         event.preventDefault();
         closeModal();
       }
@@ -166,9 +164,9 @@ const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
       // }
     }
 
-    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener("keydown", handleKeyDown);
     return () => {
-      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener("keydown", handleKeyDown);
     };
   }, [hovered, graphNodes, currentIndex, onExpand]);
 
@@ -219,7 +217,7 @@ const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
         if (currentIndex !== null) {
           const selectedNode = graphNodes[currentIndex];
           if (selectedNode) {
-            onExpand(selectedNode.id);
+            onExpand(selectedNode.id, null);
           }
         }
       }
@@ -230,13 +228,13 @@ const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
       }, 300); // reset tap count after 300ms
     }
 
-    window.addEventListener('touchstart', handleTouchStart, { passive: false });
-    window.addEventListener('touchend', handleTouchEnd, { passive: false });
-    window.addEventListener('touchend', handleTripleTap, { passive: false });
+    window.addEventListener("touchstart", handleTouchStart, { passive: false });
+    window.addEventListener("touchend", handleTouchEnd, { passive: false });
+    window.addEventListener("touchend", handleTripleTap, { passive: false });
     return () => {
-      window.removeEventListener('touchstart', handleTouchStart);
-      window.removeEventListener('touchend', handleTouchEnd);
-      window.removeEventListener('touchend', handleTripleTap);
+      window.removeEventListener("touchstart", handleTouchStart);
+      window.removeEventListener("touchend", handleTouchEnd);
+      window.removeEventListener("touchend", handleTripleTap);
     };
   }, [showModal, graphNodes]);
 
@@ -253,37 +251,38 @@ const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
       selectedNode.author,
       selectedNode.group,
       selectedNode.comments,
-      selectedNode.matchedCommentId,
+      selectedNode.matchedCommentId
     );
   }, [currentIndex, graphNodes]);
 
   // add comment
   const handleAddComment = async (comment: string, parent: any) => {
     if (!comment) return;
-    if (comment.trim() === '') return;
+    if (comment.trim() === "") return;
     onAddComment(comment, parent);
   };
 
   // parse youtube
   const getYTId = (url: string): string => {
-    if (!url) return '';
-    if (url.includes('t=')) {
-      return url.split('t=')[1]?.split('s')[0]!;
+    if (!url) return "";
+    if (url.includes("t=")) {
+      return url.split("t=")[1]?.split("s")[0]!;
     }
-    return url.split('v=')[1]?.split('&')[0]!;
+    return url.split("v=")[1]?.split("&")[0]!;
   };
 
   // parse twitter
   const getTwitterId = (url: string): string => {
-    if (!url) return '';
-    if (url.includes('twitter.com') || /^https:\/\/(www\.)?x\.com/.test(url)) {
-      return url.split('/').pop()!;
+    if (!url) return "";
+    if (url.includes("twitter.com") || /^https:\/\/(www\.)?x\.com/.test(url)) {
+      return url.split("/").pop()!;
     }
-    return '';
+    return "";
   };
 
   // pick parent or self
-  function getParentOrSelf(item: any, defaultGroup: string) {
+  function getParentOrSelf(item: any, defaultGroup: string ,root: any) {
+    console.log('root:', root);
     if (item.parent) {
       return {
         id: item.parent.id,
@@ -295,6 +294,7 @@ const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
         comments: item.parent.comments,
         matchedCommentId: item.id,
         similarity: item.similarity,
+        sourceLabel: root ? root.comment : item.parent.data,
       };
     }
     return {
@@ -306,6 +306,7 @@ const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
       author: item.author,
       comments: item.comments,
       similarity: item.similarity,
+      sourceLabel: root ? root.comment : item.data,
     };
   }
 
@@ -322,74 +323,75 @@ const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
 
     const svg = d3
       .select(svgRef.current)
-      .attr('viewBox', `0 0 ${width} ${height}`)
-      .attr('preserveAspectRatio', 'xMidYMid meet');
+      .attr("viewBox", `0 0 ${width} ${height}`)
+      .attr("preserveAspectRatio", "xMidYMid meet");
 
     // clear old
-    svg.selectAll('*').remove();
+    svg.selectAll("*").remove();
 
     // arrowhead
     svg
-      .append('defs')
-      .append('marker')
-      .attr('id', 'arrowhead')
-      .attr('viewBox', '0 -5 10 10')
-      .attr('refX', 15)
-      .attr('refY', 0)
-      .attr('markerWidth', 6)
-      .attr('markerHeight', 6)
-      .attr('orient', 'auto')
-      .append('path')
-      .attr('d', 'M0,-5L10,0L0,5')
-      .attr('fill', '#aaa');
+      .append("defs")
+      .append("marker")
+      .attr("id", "arrowhead")
+      .attr("viewBox", "0 -5 10 10")
+      .attr("refX", 15)
+      .attr("refY", 0)
+      .attr("markerWidth", 6)
+      .attr("markerHeight", 6)
+      .attr("orient", "auto")
+      .append("path")
+      .attr("d", "M0,-5L10,0L0,5")
+      .attr("fill", "#aaa");
 
-    console.log('data id', data.entry.id);
-    console.log('data data', data.entry.data);
+    console.log("data id", data.entry.id);
+    console.log("data data", data.entry.data);
     // build rawNodes
     const rawNodes = [
       {
         id: data.entry.id,
         label: data.entry.data,
-        group: 'main',
+        group: "main",
         image: data.image,
         comments: data.comments,
       },
-      ...data.neighbors.map((n: any) => getParentOrSelf(n, 'neighbor')),
+      ...data.neighbors.map((n: any) => getParentOrSelf(n, "neighbor", { comment: data.entry.data })),
       ...data.internalLinks.map((link: any, idx: number) => ({
         id: `internalLink-${idx}`,
         label: link.internalLink,
-        group: 'internalLink',
+        group: "internalLink",
         image: link.image,
         title: link.title,
         author: link.author,
       })),
       ...data.internalLinks.flatMap((link: any) =>
-        link.penPals.map((penPal: any) => getParentOrSelf(penPal, 'penPal')),
+        link.penPals.map((penPal: any) => getParentOrSelf(penPal, "penPal", { comment: link.internalLink }))
       ),
       ...data.comments.map((comment: any) => ({
         id: comment.id,
         label: comment.comment,
-        group: 'comment',
+        group: "comment",
         image: comment.image,
         title: comment.title,
         author: comment.author,
         comments: comment.penPals,
       })),
       ...data.comments.flatMap((comment: any) =>
-        comment.penPals.map((penPal: any) => getParentOrSelf(penPal, 'penPal')),
+        comment.penPals.map((penPal: any) => getParentOrSelf(penPal, "penPal", comment))
       ),
       ...data.expansion.flatMap((expansion: any) =>
         expansion.children.map((child: any) => ({
           id: child.id,
           root: expansion.parent,
           label: child.data,
-          group: 'expansionChild',
+          group: "expansionChild",
           image: child.image,
           title: child.title,
           author: child.author,
           comments: child.comments,
           similarity: child.similarity,
-        })),
+          sourceLabel: expansion.comment,
+        }))
       ),
     ];
 
@@ -407,7 +409,7 @@ const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
 
     // deduplicate
     const uniqueNodes = Array.from(
-      new Map(reorderedNodes.map((node) => [node.id, node])).values(),
+      new Map(reorderedNodes.map((node) => [node.id, node])).values()
     );
 
     // build links
@@ -432,21 +434,21 @@ const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
           source: expansion.parent,
           target: child.id,
           similarity: child.similarity,
-        })),
+        }))
       ),
       ...data.internalLinks.flatMap((link: any, idx: number) =>
         link.penPals.map((penPal: any) => ({
           source: `internalLink-${idx}`,
           target: penPal.parent ? penPal.parent.id : penPal.id,
           similarity: penPal.similarity,
-        })),
+        }))
       ),
       ...data.comments.flatMap((comment: any) =>
         comment.penPals.map((penPal: any) => ({
           source: comment.id,
           target: penPal.parent ? penPal.parent.id : penPal.id,
           similarity: penPal.similarity,
-        })),
+        }))
       ),
     ];
 
@@ -464,42 +466,42 @@ const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
     const simulation = d3
       .forceSimulation(uniqueNodes)
       .force(
-        'link',
+        "link",
         d3
           .forceLink(uniqueLinks)
           .id((d: any) => d.id)
-          .distance((d: any) => 150 - (d.similarity || 0) * 80),
+          .distance((d: any) => 150 - (d.similarity || 0) * 80)
       )
-      .force('charge', d3.forceManyBody().strength(-300))
-      .force('collision', d3.forceCollide().radius(20))
-      .force('center', d3.forceCenter(width / 2, height / 2));
+      .force("charge", d3.forceManyBody().strength(-300))
+      .force("collision", d3.forceCollide().radius(20))
+      .force("center", d3.forceCenter(width / 2, height / 2));
 
-    const g = svg.append('g');
+    const g = svg.append("g");
 
     // links
     const link = g
-      .append('g')
-      .selectAll('line')
+      .append("g")
+      .selectAll("line")
       .data(uniqueLinks)
-      .join('line')
-      .attr('stroke-width', 1.5)
-      .attr('stroke', '#aaa')
-      .attr('marker-end', 'url(#arrowhead)');
+      .join("line")
+      .attr("stroke-width", 1.5)
+      .attr("stroke", "#aaa")
+      .attr("marker-end", "url(#arrowhead)");
 
     // dragging
     function drag(sim: any) {
       return d3
         .drag<SVGCircleElement, any>()
-        .on('start', (event, d) => {
+        .on("start", (event, d) => {
           if (!event.active) sim.alphaTarget(0.3).restart();
           d.fx = d.x;
           d.fy = d.y;
         })
-        .on('drag', (event, d) => {
+        .on("drag", (event, d) => {
           d.fx = event.x;
           d.fy = event.y;
         })
-        .on('end', (event, d) => {
+        .on("end", (event, d) => {
           if (!event.active) sim.alphaTarget(0);
           d.fx = null;
           d.fy = null;
@@ -508,13 +510,13 @@ const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
 
     // nodes
     const node = g
-      .append('g')
-      .selectAll('circle')
+      .append("g")
+      .selectAll("circle")
       .data(uniqueNodes)
-      .join('circle')
-      .attr('r', 10)
-      .attr('fill', (d) => getNodeColor(d))
-      .on('click', (_, d) =>
+      .join("circle")
+      .attr("r", 10)
+      .attr("fill", (d) => getNodeColor(d))
+      .on("click", (_, d) =>
         openModal(
           d.label,
           d.id,
@@ -523,21 +525,21 @@ const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
           d.author,
           d.group,
           d.comments,
-          d.matchedCommentId,
-        ),
+          d.matchedCommentId
+        )
       )
       .call(drag(simulation as any) as any);
 
     // labels
     const labels = g
-      .append('g')
-      .selectAll('foreignObject')
+      .append("g")
+      .selectAll("foreignObject")
       .data(uniqueNodes)
-      .join('foreignObject')
-      .attr('width', 150)
-      .attr('height', 20)
-      .attr('x', (d) => d.x)
-      .attr('y', (d) => d.y)
+      .join("foreignObject")
+      .attr("width", 150)
+      .attr("height", 20)
+      .attr("x", (d) => d.x)
+      .attr("y", (d) => d.y)
       .html((d) => {
         if (d.image) {
           return `<img src="${d.image}" alt="thumbnail" style="width: 20px; height: 20px;" />`;
@@ -548,73 +550,147 @@ const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
       });
 
     // minimap init
+    // function updateMiniMap(nodes: any[], links: any[]) {
+    //   if (!miniMapRef.current) return;
+    //   const mmWidth = 150;
+    //   const mmHeight = 150;
+
+    //   const miniSvg = d3.select(miniMapRef.current);
+    //   miniSvg.selectAll("*").remove();
+
+    //   const xValues = nodes.map((n) => n.x);
+    //   const yValues = nodes.map((n) => n.y);
+    //   const minX = d3.min(xValues) || 0;
+    //   const maxX = d3.max(xValues) || 1;
+    //   const minY = d3.min(yValues) || 0;
+    //   const maxY = d3.max(yValues) || 1;
+
+    //   const scaleX = d3.scaleLinear().domain([minX, maxX]).range([0, mmWidth - (mmWidth * 0.5)]);
+    //   const scaleY = d3.scaleLinear().domain([minY, maxY]).range([0, mmHeight - (mmHeight * 0.5)]);
+
+    //   // translate the minimap to the center
+    //   miniSvg.attr('transform', `translate(${mmWidth * 0.25}, ${mmHeight * 0.25})`);
+
+    //   const mmG = miniSvg.append("g");
+
+    //   // draw links
+    //   mmG
+    //     .selectAll("line")
+    //     .data(links)
+    //     .join("line")
+    //     .attr("x1", (d) => scaleX(d.source.x))
+    //     .attr("y1", (d) => scaleY(d.source.y))
+    //     .attr("x2", (d) => scaleX(d.target.x))
+    //     .attr("y2", (d) => scaleY(d.target.y))
+    //     .attr("stroke", "#aaa")
+    //     .attr("stroke-width", 1);
+
+    //   // draw nodes
+    //   mmG
+    //     .selectAll("circle")
+    //     .data(nodes)
+    //     .join("circle")
+    //     .attr("cx", (d) => scaleX(d.x))
+    //     .attr("cy", (d) => scaleY(d.y))
+    //     .attr("r", 3)
+    //     .attr("fill", (d) => getNodeColor(d));
+
+    //   // highlight current node
+    //   if (currentIndex !== null) {
+    //     const highlightedNode = nodes[currentIndex];
+    //     if (highlightedNode) {
+    //       mmG
+    //         .append("circle")
+    //         .attr("cx", scaleX(highlightedNode.x))
+    //         .attr("cy", scaleY(highlightedNode.y))
+    //         .attr("r", 6)
+    //         .attr("stroke", "purple")
+    //         .attr("stroke-width", 2)
+    //         .attr("fill", "none");
+    //     }
+    //   }
+    // }
+
     function updateMiniMap(nodes: any[], links: any[]) {
       if (!miniMapRef.current) return;
-      const mmWidth = 150;
-      const mmHeight = 150;
-
+    
+      const width = 150;
+      const height = 150;
+      const shrink = 0.5; // how much to shrink
+    
       const miniSvg = d3.select(miniMapRef.current);
-      miniSvg.selectAll('*').remove();
-
-      const xValues = nodes.map((n) => n.x);
-      const yValues = nodes.map((n) => n.y);
-      const minX = d3.min(xValues) || 0;
-      const maxX = d3.max(xValues) || 1;
-      const minY = d3.min(yValues) || 0;
-      const maxY = d3.max(yValues) || 1;
-
-      const scaleX = d3.scaleLinear().domain([minX, maxX]).range([0, mmWidth]);
-      const scaleY = d3.scaleLinear().domain([minY, maxY]).range([0, mmHeight]);
-
-      const mmG = miniSvg.append('g');
-
+      miniSvg.selectAll("*").remove();
+    
+      // find data bounds
+      const xVals = nodes.map(d => d.x);
+      const yVals = nodes.map(d => d.y);
+      const minX = d3.min(xVals) || 0;
+      const maxX = d3.max(xVals) || 1;
+      const minY = d3.min(yVals) || 0;
+      const maxY = d3.max(yVals) || 1;
+    
+      // size of the drawing
+      const scaledW = width * shrink;
+      const scaledH = height * shrink;
+    
+      const scaleX = d3.scaleLinear()
+        .domain([minX, maxX])
+        .range([0, scaledW]);
+    
+      const scaleY = d3.scaleLinear()
+        .domain([minY, maxY])
+        .range([0, scaledH]);
+    
+      // put everything in a group that's centered
+      const mmG = miniSvg.append("g")
+        .attr("transform", `translate(${(width - scaledW) / 2}, ${(height - scaledH) / 2})`);
+    
       // draw links
-      mmG
-        .selectAll('line')
+      mmG.selectAll("line")
         .data(links)
-        .join('line')
-        .attr('x1', (d) => scaleX(d.source.x))
-        .attr('y1', (d) => scaleY(d.source.y))
-        .attr('x2', (d) => scaleX(d.target.x))
-        .attr('y2', (d) => scaleY(d.target.y))
-        .attr('stroke', '#aaa')
-        .attr('stroke-width', 1);
-
+        .join("line")
+        .attr("x1", d => scaleX(d.source.x))
+        .attr("y1", d => scaleY(d.source.y))
+        .attr("x2", d => scaleX(d.target.x))
+        .attr("y2", d => scaleY(d.target.y))
+        .attr("stroke", "#aaa")
+        .attr("stroke-width", 1);
+    
       // draw nodes
-      mmG
-        .selectAll('circle')
+      mmG.selectAll("circle")
         .data(nodes)
-        .join('circle')
-        .attr('cx', (d) => scaleX(d.x))
-        .attr('cy', (d) => scaleY(d.y))
-        .attr('r', 3)
-        .attr('fill', (d) => getNodeColor(d));
-
-      // highlight current node
-      if (currentIndex !== null) {
-        const highlightedNode = nodes[currentIndex];
-        if (highlightedNode) {
-          mmG
-            .append('circle')
-            .attr('cx', scaleX(highlightedNode.x))
-            .attr('cy', scaleY(highlightedNode.y))
-            .attr('r', 6)
-            .attr('stroke', 'purple')
-            .attr('stroke-width', 2)
-            .attr('fill', 'none');
+        .join("circle")
+        .attr("cx", d => scaleX(d.x))
+        .attr("cy", d => scaleY(d.y))
+        .attr("r", 3)
+        .attr("fill", d => getNodeColor(d));
+    
+      // highlight current node if needed
+      if (currentIndex != null) {
+        const highlight = nodes[currentIndex];
+        if (highlight) {
+          mmG.append("circle")
+            .attr("cx", scaleX(highlight.x))
+            .attr("cy", scaleY(highlight.y))
+            .attr("r", 6)
+            .attr("stroke", "purple")
+            .attr("stroke-width", 2)
+            .attr("fill", "none");
         }
       }
     }
+    
+    
 
     // tick updates
-    simulation.on('tick', () => {
+    simulation.on("tick", () => {
       link
-        .attr('x1', (d) => d.source.x)
-        .attr('y1', (d) => d.source.y)
-        .attr('x2', (d) => d.target.x)
-        .attr('y2', (d) => d.target.y);
-      node.attr('cx', (d) => d.x).attr('cy', (d) => d.y);
-      labels.attr('x', (d) => d.x).attr('y', (d) => d.y);
+        .attr("x1", (d) => d.source.x)
+        .attr("y1", (d) => d.source.y)
+        .attr("x2", (d) => d.target.x)
+        .attr("y2", (d) => d.target.y);
+      node.attr("cx", (d) => d.x).attr("cy", (d) => d.y);
+      labels.attr("x", (d) => d.x).attr("y", (d) => d.y);
 
       // also update minimap
       updateMiniMap(uniqueNodes, uniqueLinks);
@@ -625,9 +701,9 @@ const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
       d3
         .zoom<SVGSVGElement, unknown>()
         .scaleExtent([0.5, 3])
-        .on('zoom', (event) => {
-          g.attr('transform', event.transform);
-        }),
+        .on("zoom", (event) => {
+          g.attr("transform", event.transform);
+        })
     );
 
     setGraphNodes(uniqueNodes);
@@ -636,7 +712,7 @@ const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
   return (
     <div
       ref={containerRef}
-      style={{ width: '100%', margin: '0 auto', position: 'relative' }}
+      style={{ width: "100%", margin: "0 auto", position: "relative" }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
@@ -645,13 +721,13 @@ const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
       {/* minimap container */}
       <div
         style={{
-          position: 'fixed',
+          position: "fixed",
           bottom: 10,
           left: 10,
-          width: '150px',
-          height: '150px',
-          border: '1px solid #ccc',
-          backgroundColor: '#fff',
+          width: "150px",
+          height: "150px",
+          border: "1px solid #ccc",
+          backgroundColor: "#fff",
           zIndex: 999,
         }}
       >
@@ -677,7 +753,7 @@ const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
                 selectedNode.author,
                 selectedNode.group,
                 selectedNode.comments,
-                selectedNode.matchedCommentId,
+                selectedNode.matchedCommentId
               );
             } else {
               // open modal with the first node
@@ -690,7 +766,7 @@ const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
                 firstNode.author,
                 firstNode.group,
                 firstNode.comments,
-                firstNode.matchedCommentId,
+                firstNode.matchedCommentId
               );
             }
           }}
@@ -703,40 +779,62 @@ const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
         contentLabel="Node Content"
         ariaHideApp={false}
       >
-        <div style={{ position: 'relative' }}>
+        <div style={{ position: "relative" }}>
           {currentIndex !== null &&
             currentIndex >= 0 &&
             currentIndex < graphNodes.length && (
               <>
                 <div
                   style={{
-                    padding: '4px 8px',
-                    backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                    borderRadius: '4px',
+                    padding: "4px 8px",
+                    backgroundColor: "rgba(255, 255, 255, 0.9)",
+                    borderRadius: "4px",
                     color: getNodeColor(graphNodes[currentIndex]),
                     zIndex: 9999,
-                    fontWeight: 'bold',
-                    marginBottom: '10px',
+                    fontWeight: "bold",
+                    marginBottom: "10px",
                   }}
                 >
                   {`< ${currentIndex + 1} / ${graphNodes.length} >`}
                 </div>
                 <div
+                style={{
+                  position: "absolute",
+                  top: "10px",
+                  right: "47%",
+                  backgroundColor: "rgba(255, 255, 255, 0.9)",
+                  borderRadius: "4px",
+                  color: getNodeColor(graphNodes[currentIndex]),
+                  zIndex: 9999,
+                  fontWeight: "bold",
+                  marginBottom: "10px",
+                }}
+                >{modalContent.group !== "comment" &&
+                  modalContent.group !== "main" && (
+                    <Link
+                      href={`/dashboard/entry/${modalContent.id}`}
+                    >
+                      view entry
+                    </Link>
+                  )}</div>
+                <div
                   style={{
-                    position: 'absolute',
-                    top: '10px',
-                    right: '10px',
-                    backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                    borderRadius: '4px',
+                    position: "absolute",
+                    top: "10px",
+                    right: "10px",
+                    backgroundColor: "rgba(255, 255, 255, 0.9)",
+                    borderRadius: "4px",
                     color: getNodeColor(graphNodes[currentIndex]),
                     zIndex: 9999,
-                    fontWeight: 'bold',
-                    marginBottom: '10px',
+                    fontWeight: "bold",
+                    marginBottom: "10px",
                   }}
+                  title={`Source: ${graphNodes[currentIndex].sourceLabel}`} // Add this line for tooltip
+
                 >
                   {graphNodes[currentIndex].similarity
                     ? `similarity: ${Math.round(graphNodes[currentIndex].similarity * 100)}%`
-                    : ''}
+                    : ""}
                 </div>
               </>
             )}
@@ -746,13 +844,13 @@ const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
               <img
                 src={modalContent.image}
                 alt="thumbnail"
-                style={{ width: '80%' }}
+                style={{ width: "80%" }}
               />
             )}
 
             {/* youtube */}
             {modalContent.author &&
-              modalContent.author.includes('youtube.com') && (
+              modalContent.author.includes("youtube.com") && (
                 <LiteYouTubeEmbed
                   id={getYTId(modalContent.author)}
                   title="YouTube video"
@@ -761,20 +859,20 @@ const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
 
             {/* twitter */}
             {modalContent.author &&
-              (modalContent.author.includes('twitter.com') ||
+              (modalContent.author.includes("twitter.com") ||
                 /^https:\/\/(www\.)?x\.com/.test(modalContent.author)) && (
                 <Tweet id={getTwitterId(modalContent.author)} />
               )}
 
             {/* instagram */}
             {modalContent.author &&
-              modalContent.author.includes('instagram.com') && (
+              modalContent.author.includes("instagram.com") && (
                 <InstagramEmbed url={modalContent.author} />
               )}
 
             {/* spotify */}
             {modalContent.author &&
-              modalContent.author.includes('open.spotify.com') && (
+              modalContent.author.includes("open.spotify.com") && (
                 <Spotify link={modalContent.author} wide />
               )}
 
@@ -787,7 +885,8 @@ const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
             <br />
 
             {/* show comments if not a "comment" node */}
-            {modalContent.group !== 'comment' && modalContent.group !== 'main' &&
+            {/* {modalContent.group !== "comment" &&
+              modalContent.group !== "main" &&
               modalContent.comments &&
               modalContent.comments.map((comment: any) => (
                 <div
@@ -801,8 +900,8 @@ const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
                           style={{
                             fontWeight:
                               comment.id === modalContent.matchedCommentId
-                                ? 'bold'
-                                : 'normal',
+                                ? "bold"
+                                : "normal",
                           }}
                         >
                           {comment.data}
@@ -813,60 +912,96 @@ const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
                       created: {new Date(comment.createdAt).toLocaleString()}
                       {comment.createdAt !== comment.updatedAt && (
                         <>
-                          {' '}
-                          | last updated:{' '}
-                          {new Date(comment.updatedAt).toLocaleString()}{' '}
+                          {" "}
+                          | last updated:{" "}
+                          {new Date(comment.updatedAt).toLocaleString()}{" "}
                         </>
                       )}
                     </div>
                   </div>
                 </div>
+              ))} */}
+
+{modalContent.group !== "comment" &&
+              modalContent.group !== "main" &&
+              modalContent.comments &&
+              modalContent.comments.map((comment: any) => (
+                <div
+                  key={comment.id}
+                  className="mx-2 mb-4 flex items-center justify-between"
+                >
+                  <div className="grow">
+                    <div className="block text-gray-900 no-underline">
+                      <div className="relative">
+                        <span
+                          style={{
+                            fontWeight:
+                              comment.id === modalContent.matchedCommentId
+                                ? "bold"
+                                : "normal",
+                          }}
+                        >
+                          {comment.data}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="text-sm text-gray-500">
+                      created: {new Date(comment.createdAt).toLocaleString()}
+                      {comment.createdAt !== comment.updatedAt && (
+                        <>
+                          {" "}
+                          | last updated:{" "}
+                          {new Date(comment.updatedAt).toLocaleString()}{" "}
+                        </>
+                      )}
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => onExpand(modalContent.id, comment.data)}
+                    className="ml-2 rounded bg-blue-500 px-2 py-1 text-white hover:bg-blue-700"
+                  >
+                    Expand
+                  </button>
+                </div>
               ))}
 
             {/* add comment if not "comment" node */}
-            {modalContent.group !== 'comment' && modalContent.group !== 'main' && (
-              <div>
-                <input
-                  type="text"
-                  className="w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-gray-900 focus:border-blue-500 focus:ring-blue-500"
-                  placeholder="add a comment..."
-                  id={`alias-input-${modalContent.id}`}
-                />
-                <button
-                  type="button"
-                  onClick={() => {
-                    const aliasInput = document.getElementById(
-                      `alias-input-${modalContent.id}`,
-                    );
-                    if (!aliasInput) return;
-                    const alias = (aliasInput as HTMLInputElement).value;
-                    handleAddComment(alias, modalContent);
-                    (aliasInput as HTMLInputElement).value = '';
-                    if (!modalContent.comments) {
-                      modalContent.comments = [];
-                    }
-                    modalContent.comments.push({
-                      id: `temp-${Math.random() * 1000} - ${new Date().toISOString()}`,
-                      data: alias,
-                      createdAt: new Date().toISOString(),
-                      updatedAt: new Date().toISOString(),
-                    });
-                    setModalContent({ ...modalContent });
-                  }}
-                  className="mb-2 me-2 mt-4 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4 focus:ring-gray-300"
-                >
-                  add comment
-                </button>
-              </div>
-            )}
-
-            <br />
-
-            {modalContent.group !== 'comment' && modalContent.group !== 'main' && <Link href={`/dashboard/entry/${modalContent.id}`} className="mt-4">
-              view entry
-            </Link>}
-            <br />
-
+            {modalContent.group !== "comment" &&
+              modalContent.group !== "main" && (
+                <div>
+                  <input
+                    type="text"
+                    className="w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-gray-900 focus:border-blue-500 focus:ring-blue-500"
+                    placeholder="add a comment..."
+                    id={`alias-input-${modalContent.id}`}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const aliasInput = document.getElementById(
+                        `alias-input-${modalContent.id}`
+                      );
+                      if (!aliasInput) return;
+                      const alias = (aliasInput as HTMLInputElement).value;
+                      handleAddComment(alias, modalContent);
+                      (aliasInput as HTMLInputElement).value = "";
+                      if (!modalContent.comments) {
+                        modalContent.comments = [];
+                      }
+                      modalContent.comments.push({
+                        id: `temp-${Math.random() * 1000} - ${new Date().toISOString()}`,
+                        data: alias,
+                        createdAt: new Date().toISOString(),
+                        updatedAt: new Date().toISOString(),
+                      });
+                      setModalContent({ ...modalContent });
+                    }}
+                    className="mb-2 me-2 mt-4 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4 focus:ring-gray-300"
+                  >
+                    add comment
+                  </button>
+                </div>
+              )}
             {/* <button
               onClick={() => {
                 onExpand(modalContent.id);
