@@ -66,6 +66,7 @@
     "react-lite-youtube-embed": "^2.4.0",
     "react-markdown": "^9.0.1",
     "react-modal": "^3.16.1",
+    "react-qr-code": "^2.0.15",
     "react-scroll-to-top": "^3.0.0",
     "react-social-media-embed": "^2.5.13",
     "react-spotify-embed": "^2.0.4",

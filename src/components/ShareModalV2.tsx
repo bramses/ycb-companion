@@ -6,6 +6,7 @@
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
 import Modal from "react-modal";
+import QRCode from "react-qr-code";
 
 const replaceImagesWithBase64 = async (entry: any, comments: any[] = []) => {
   const modifiedJsonWithImages: { entry: any; comments: any[] }  = {
@@ -68,7 +69,7 @@ export default function Share({
   // a btn that checks url https://share-ycbs.onrender.com/p/{entryid} and if not a 404 does not show the button
   useEffect(() => {
     if (entryId) {
-      fetch(`http://localhost:3002/ping?entryid=${entryId}`)
+      fetch(`http://localhost:3002/api/ping?entryid=${entryId}`)
         .then((response) => {
           if (!response.ok) {
             // If the response is not OK (e.g., 404, 500), hide the button
@@ -158,7 +159,9 @@ export default function Share({
         contentLabel="Share Modal"
         ariaHideApp={false}
       >
-        <input
+        
+        {!showShareButton && (
+          <><input
           type="checkbox"
           checked={includeComments}
           onChange={(e) => setIncludeComments(e.target.checked)}
@@ -166,18 +169,23 @@ export default function Share({
         <label htmlFor="includeComments">include comments?</label>
         <br />
         <br />
-        {!showShareButton && (
           <button type="button" onClick={handleDownload}>
             share
-          </button>
+          </button></>
         )}
         {showShareButton && (
+          <><QRCode
+            value={`http://localhost:3002/p/${entryId}`}
+            size={256}
+            bgColor="#ffffff"
+            fgColor="#000000"
+          />
           <Link
             target="_blank"
             href={`http://localhost:3002/p/${entryId}`}
           >
-            share
-          </Link>
+            open on shareycb
+          </Link></>
         )}
         <button
           type="button"

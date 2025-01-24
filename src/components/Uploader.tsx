@@ -21,6 +21,7 @@ const Uploader = ({ closeModal }: { closeModal: () => void }) => {
 
   const apiKey = process.env.NEXT_PUBLIC_API_KEY_CF_IMG;
   const [loading, setLoading] = useState(false);
+  const [shareYCBLoadingPct, setShareYCBLoadingPct] = useState(0);
 
   // useEffect(() => {
   //   if (!isLoaded) return;
@@ -90,137 +91,130 @@ const Uploader = ({ closeModal }: { closeModal: () => void }) => {
     // }
   };
 
-  const uploadFromShareYCB = async (id: string) => {
+//   const uploadFromShareYCB = async (id: string) => {
+//     setShareYCBLoadingPct(1);
 
-    // decode the base64 string
-    const decoded = atob(id); // { ids: string[], from: string }
-    // turn to json
-    const json = JSON.parse(decoded);
-    const { ids, from } = json;
-    console.log(ids, from);
+//     // decode the base64 string
+//     const decoded = atob(id); // { ids: string[], from: string }
+//     // turn to json
+//     const json = JSON.parse(decoded);
+//     const { ids } = json;
 
-    for (let i = 0; i < ids.length; i++) {
-      const id = ids[i];
-      const response = await fetch(
-        `https://share-ycbs.onrender.com/api/get-upload?id=${id}`,
-      );
-      const respData = await response.json();
-      if (respData.error) {
-        throw new Error(respData.error);
-      }
-      const { data } = respData;
-      console.log(`data for id: ${id}`, data);
-      // // add data using /api/add
-      /* {
-    "id": 7,
-    "created_at": "2025-01-23T05:26:19.989819+00:00",
-    "updated_at": "2025-01-23T05:26:19.989819+00:00",
-    "json": {
-        "entry": {
-            "data": "He’s like how do we stop this demon and willem Defoe hit him with the I don’t know",
-            "metadata": {
-                "title": "thought",
-                "author": "https://ycb-companion.onrender.com/dashboard"
-            }
-        },
-        "comments": [
-            {
-                "data": "from Nosferatu, 2024",
-                "metadata": {
-                    "title": "thought",
-                    "author": "https://ycb-companion.onrender.com/dashboard"
-                }
-            },
-            {
-                "data": "call it nosfera2",
-                "metadata": {
-                    "title": "thought",
-                    "author": "https://ycb-companion.onrender.com/dashboard"
-                }
-            }
-        ],
-        "username": "bram"
-    },
-    "creator": "bram"
-}
-    */
-   // add entry first and then add comments youll need to add the entry id to the comments and then after all comments are added, update the parent entry with the new comments ids
-    const yresponse = await fetch('/api/add', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        data: data.json.entry.data,
-        metadata: data.json.entry.metadata,
-      }),
-    });
-    const addrData = await yresponse.json();
-    const parentId = addrData.respData.id;
-    console.log('addrData:', addrData);
-    // add comments
-    const aliasIDs = [];
-    for (let i = 0; i < data.json.comments.length; i++) {
-      const comment = data.json.comments[i];
-      const response = await fetch('/api/add', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          data: comment.data,
-          metadata: {
-            ...comment.metadata,
-            parent_id: parentId,
-          },
-        }),
-      });
-      const addrData = await response.json();
-      console.log('comment addrData:', addrData);
-      aliasIDs.push(addrData.respData.id);
-    }
-    // update parent entry with new comments ids
-    const zresponse = await fetch('/api/update', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        id: addrData.respData.id,
-        data: data.json.entry.data,
-        metadata: {
-          ...data.json.entry.metadata,
-          alias_ids: aliasIDs,
-        },
-      }),
-    });
-    const zaddrData = await zresponse.json();
-    console.log('zaddrData:', zaddrData);
-    return addrData;
-  }
-    // const response = await fetch(
-    //   `https://share-ycbs.onrender.com/api/get-upload?id=${id}`,
-    // );
-    // const respData = await response.json();
-    // if (respData.error) {
-    //   throw new Error(respData.error);
-    // }
-    // const { data } = respData;
-    // // add data using /api/add
-    // const addresponse = await fetch('/api/add', {
-    //   method: 'POST',
-    //   headers: {
-    //     'Content-Type': 'application/json',
-    //   },
-    //   body: JSON.stringify({
-    //     data: data.json.data,
-    //     metadata: JSON.parse(data.json.metadata),
-    //   }),
-    // });
-    // const addrData = await addresponse.json();
-    // console.log('addrData:', addrData);
-    // return addrData;
-  };
+//     for (let i = 0; i < ids.length; i++) {
+//       const id = ids[i];
+//       const response = await fetch(
+//         `https://share-ycbs.onrender.com/api/get-upload?id=${id}`,
+//       );
+//       const respData = await response.json();
+//       if (respData.error) {
+//         throw new Error(respData.error);
+//       }
+//       const { data } = respData;
+//       console.log(`data for id: ${id}`, data);
+//       // // add data using /api/add
+//       /* {
+//     "id": 7,
+//     "created_at": "2025-01-23T05:26:19.989819+00:00",
+//     "updated_at": "2025-01-23T05:26:19.989819+00:00",
+//     "json": {
+//         "entry": {
+//             "data": "He’s like how do we stop this demon and willem Defoe hit him with the I don’t know",
+//             "metadata": {
+//                 "title": "thought",
+//                 "author": "https://ycb-companion.onrender.com/dashboard"
+//             }
+//         },
+//         "comments": [
+//             {
+//                 "data": "from Nosferatu, 2024",
+//                 "metadata": {
+//                     "title": "thought",
+//                     "author": "https://ycb-companion.onrender.com/dashboard"
+//                 }
+//             },
+//             {
+//                 "data": "call it nosfera2",
+//                 "metadata": {
+//                     "title": "thought",
+//                     "author": "https://ycb-companion.onrender.com/dashboard"
+//                 }
+//             }
+//         ],
+//         "username": "bram"
+//     },
+//     "creator": "bram"
+// }
+//     */
+//    // add entry first and then add comments youll need to add the entry id to the comments and then after all comments are added, update the parent entry with the new comments ids
+
+//    // append (from ycb/[creator]) to the metadata.title
+
+//    const numEntries = data.json.comments.length + 2;
+   
+//     const yresponse = await fetch('/api/add', {
+//       method: 'POST',
+//       headers: {
+//         'Content-Type': 'application/json',
+//       },
+//       body: JSON.stringify({
+//         data: data.json.entry.data,
+//         metadata: {
+//           ...data.json.entry.metadata,
+//           title: `${data.json.entry.metadata.title} (from ycb/${data.creator})`, // Append creator to title
+//         }
+//       }),
+//     });
+//     const addrData = await yresponse.json();
+    
+//     // one entry done
+//     setShareYCBLoadingPct(shareYCBLoadingPct + Math.round((1 / numEntries) * 100));
+
+//     const parentId = addrData.respData.id;
+//     console.log('addrData:', addrData);
+//     // add comments
+//     const aliasIDs = [];
+//     for (let i = 0; i < data.json.comments.length; i++) {
+//       const comment = data.json.comments[i];
+//       const response = await fetch('/api/add', {
+//         method: 'POST',
+//         headers: {
+//           'Content-Type': 'application/json',
+//         },
+//         body: JSON.stringify({
+//           data: comment.data,
+//           metadata: {
+//             ...comment.metadata,
+//             title: `${comment.metadata.title} (from ycb/${data.creator})`, // Append creator to title
+//             parent_id: parentId,
+//           },
+//         }),
+//       });
+//       const addrData = await response.json();
+//       aliasIDs.push(addrData.respData.id);
+//       setShareYCBLoadingPct(shareYCBLoadingPct + Math.round((1 / numEntries) * 100));
+//     }
+//     // update parent entry with new comments ids
+//     const zresponse = await fetch('/api/update', {
+//       method: 'POST',
+//       headers: {
+//         'Content-Type': 'application/json',
+//       },
+//       body: JSON.stringify({
+//         id: addrData.respData.id,
+//         data: data.json.entry.data,
+//         metadata: {
+//           ...data.json.entry.metadata,
+//           title: `${data.json.entry.metadata.title} (from ycb/${data.creator})`, // Append creator to title
+//           alias_ids: aliasIDs,
+//         },
+//       }),
+//     });
+//     const zaddrData = await zresponse.json();
+//     console.log('zaddrData:', zaddrData);
+//     setShareYCBLoadingPct(100);
+//     return addrData;
+//   }
+//   };
 
   // const uploadAudio = async () => {
   //   const fileInput = document.getElementById('file-input-audio');
@@ -280,6 +274,89 @@ const Uploader = ({ closeModal }: { closeModal: () => void }) => {
   //     // reader.readAsArrayBuffer(file);
   //   });
   // };
+
+  const uploadFromShareYCB = async (id: string) => {
+    setShareYCBLoadingPct(1);
+
+    // Decode the base64 string
+    const decoded = atob(id); // { ids: string[], from: string }
+    const json = JSON.parse(decoded);
+    const { ids } = json;
+
+    const processId = async (id: string) => {
+      const response = await fetch(
+        `https://share-ycbs.onrender.com/api/get-upload?id=${id}`,
+      );
+      const respData = await response.json();
+      if (respData.error) {
+        throw new Error(respData.error);
+      }
+      const { data } = respData;
+
+      const yresponse = await fetch('/api/add', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          data: data.json.entry.data,
+          metadata: {
+            ...data.json.entry.metadata,
+            title: `${data.json.entry.metadata.title} (from ycb/${data.creator})`,
+          },
+        }),
+      });
+      const addrData = await yresponse.json();
+      const parentId = addrData.respData.id;
+      console.log('addrData:', addrData);
+
+      const aliasIDs = [];
+      for (let i = 0; i < data.json.comments.length; i++) {
+        const comment = data.json.comments[i];
+        const response = await fetch('/api/add', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            data: comment.data,
+            metadata: {
+              ...comment.metadata,
+              title: `${comment.metadata.title} (from ycb/${data.creator})`,
+              parent_id: parentId,
+            },
+          }),
+        });
+        const addrData = await response.json();
+        aliasIDs.push(addrData.respData.id);
+      }
+
+      const zresponse = await fetch('/api/update', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          id: addrData.respData.id,
+          data: data.json.entry.data,
+          metadata: {
+            ...data.json.entry.metadata,
+            title: `${data.json.entry.metadata.title} (from ycb/${data.creator})`,
+            alias_ids: aliasIDs,
+          },
+        }),
+      });
+      const zaddrData = await zresponse.json();
+      console.log('zaddrData:', zaddrData);
+    };
+
+    for (let i = 0; i < ids.length; i++) {
+      await processId(ids[i]);
+      setShareYCBLoadingPct(Math.round(((i + 1) / ids.length) * 100));
+    }
+
+    setShareYCBLoadingPct(100);
+  };
 
   const uploadImage = async () => {
     const fileInput = document.getElementById('file-input-modal');
@@ -435,19 +512,25 @@ const Uploader = ({ closeModal }: { closeModal: () => void }) => {
           const url = prompt('Enter the URL of the entry you want to upload');
           if (url) {
             setLoading(true);
-            const responseEntry = await uploadFromShareYCB(url);
+            await uploadFromShareYCB(url);
             // console.log('responseEntry:', responseEntry);
             // if (responseEntry.respData) {
             //   router.push(`/dashboard/entry/${responseEntry.respData.id}`);
             //   closeModal();
             // }
             setLoading(false);
+            setShareYCBLoadingPct(0);
+            // redirect to dashboard
+            router.push(`/dashboard`);
           }
         }}
       >
         Upload from Share yCb
       </button>
       {loading && <p>Loading...</p>}
+      {shareYCBLoadingPct !== 0 && <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
+  <div className="bg-blue-600 h-2.5 rounded-full" style={{"width": `${shareYCBLoadingPct}%`}}></div>
+</div>}
     </div>
   );
 };
