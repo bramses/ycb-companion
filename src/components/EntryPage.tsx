@@ -40,8 +40,9 @@ import ForceDirectedGraph from './ForceDirectedGraph';
 // import LinksModal from './LinksModal';
 import Loading from './Loading';
 import SearchModalBeta from './SearchModalBetaV1';
-import ShareModal from './ShareModal';
+import ShareModal from './ShareModalV2';
 import UrlSVG from './UrlSVG';
+import type { comment } from 'postcss';
 
 const EntryPage = () => {
   // fetch data from the server at id on load
@@ -1953,7 +1954,24 @@ const EntryPage = () => {
           </button>
           {openShareModal && (
             <ShareModal
-              originalData={fData}
+              entry={{
+                data: data.data,
+                image: data.metadata.author === 'imagedelivery.net' ? data.metadata.author : null,
+                metadata: {
+                  title: data.metadata.title,
+                  author: data.metadata.author,
+                },
+              }}
+              comments={data.metadata.aliasData.map((comment: any) => {
+                return {
+                  data: comment.aliasData,
+                  image: comment.aliasMetadata.author === 'imagedelivery.net' ? comment.metadata.author : null,
+                  metadata: {
+                    title: comment.aliasMetadata.title,
+                    author: comment.aliasMetadata.author,
+                  },
+                };
+              })}
               isOpen={openShareModal}
               entryId={data.id}
               closeModalFn={() => setOpenShareModal(false)}
