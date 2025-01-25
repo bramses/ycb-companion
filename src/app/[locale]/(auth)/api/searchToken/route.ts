@@ -3,27 +3,17 @@ import { NextResponse } from 'next/server';
 
 import { logger } from '@/libs/Logger';
 
-import { GET } from '../getCBPath/route';
+export const POST = async () => {
+  const { CLOUD_URL, TOKEN } = process.env;
 
-export const POST = async (request: Request) => {
-  const { CLOUD_URL } = process.env;
-
-  const dbRes = await GET(request);
-  if (!dbRes) {
-    return NextResponse.json({}, { status: 500 });
-  }
-  const { DATABASE_URL, API_KEY } = await dbRes.json();
 
   try {
     const resp = await fetch(`${CLOUD_URL}/token`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        Authorization: `Bearer ${TOKEN}`,
       },
-      body: JSON.stringify({
-        dbPath: DATABASE_URL,
-        apiKey: API_KEY,
-      }),
     });
 
     if (!resp.ok) {

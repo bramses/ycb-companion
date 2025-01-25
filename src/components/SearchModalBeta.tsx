@@ -45,6 +45,7 @@ const CustomSearchBox = ({ setSemanticSearchResults }: any) => {
 };
 
 const CustomHit = ({ hit, closeModalFn }: any) => {
+  console.log('hit:', hit);
   return (
     <div key={hit.id}>
       <div className="mx-2 mb-4 flex items-center justify-between">
@@ -158,77 +159,77 @@ const SearchModalBeta = ({
   const [isSearchClient, setSearchClient] = useState<SearchClient | null>(null);
     // todo fix token
 
-  // const [meliToken, setMeliToken] = useState<{
-  //   token: string;
-  //   expiresAt: string;
-  // } | null>(null);
+  const [meliToken, setMeliToken] = useState<{
+    token: string;
+    expiresAt: string;
+  } | null>(null);
 
-  // const fetchToken = async () => {
-  //   try {
-  //     const token = await fetch('/api/searchToken', {
-  //       method: 'POST',
-  //       headers: {
-  //         'Content-Type': 'application/json',
-  //       },
-  //     });
-  //     const tokenData = await token.json();
+  const fetchToken = async () => {
+    try {
+      const token = await fetch('/api/searchToken', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      const tokenData = await token.json();
 
-  //     if (tokenData.error) {
-  //       throw new Error(tokenData.error);
-  //     }
-  //     if (Object.keys(tokenData).length === 0) {
-  //       throw new Error('No token data returned from the API');
-  //     }
+      if (tokenData.error) {
+        throw new Error(tokenData.error);
+      }
+      if (Object.keys(tokenData).length === 0) {
+        throw new Error('No token data returned from the API');
+      }
 
-  //     // expires 10s after the token is created
-  //     setMeliToken({
-  //       token: tokenData.token.token,
-  //       expiresAt: new Date(Date.now() + 10 * 60 * 1000 - 2000).toISOString(),
-  //     });
+      // expires 10s after the token is created
+      setMeliToken({
+        token: tokenData.token.token,
+        expiresAt: new Date(Date.now() + 10 * 60 * 1000 - 2000).toISOString(),
+      });
 
-  //     const { searchClient } = instantMeiliSearch(
-  //       process.env.NEXT_PUBLIC_MEILI_HOST!, // Host
-  //       tokenData.token.token, // API key,
-  //       {
-  //         placeholderSearch: true, // default: true.
-  //       },
-  //     );
+      const { searchClient } = instantMeiliSearch(
+        process.env.NEXT_PUBLIC_MEILI_HOST!, // Host
+        tokenData.token.token, // API key,
+        {
+          placeholderSearch: true, // default: true.
+        },
+      );
 
-  //     setSearchClient(searchClient);
-  //   } catch (err) {
-  //     console.error('Error fetching search token:', err);
-  //   }
-  // };
+      setSearchClient(searchClient);
+    } catch (err) {
+      console.error('Error fetching search token:', err);
+    }
+  };
 
-  // useEffect(() => {
-  //   const interval = setInterval(() => {
-  //     if (meliToken && new Date(meliToken.expiresAt) < new Date()) {
-  //       console.log('Token expired, fetching a new token...');
-  //       fetchToken();
-  //     }
-  //   }, 1000);
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (meliToken && new Date(meliToken.expiresAt) < new Date()) {
+        console.log('Token expired, fetching a new token...');
+        fetchToken();
+      }
+    }, 1000);
 
-  //   return () => {
-  //     clearInterval(interval);
-  //   };
-  // }, [meliToken]);
+    return () => {
+      clearInterval(interval);
+    };
+  }, [meliToken]);
 
-  // useEffect(() => {
-  //   const initializeSearchClient = async () => {
-  //     try {
-  //       await fetchToken();
-  //     } catch (error: any) {
-  //       if (error.message.includes('Tenant token expired')) {
-  //         console.warn('Tenant token expired, fetching a new token...');
-  //         fetchToken(); // Re-fetch the token
-  //       } else {
-  //         console.error('Search error:', error);
-  //       }
-  //     }
-  //   };
+  useEffect(() => {
+    const initializeSearchClient = async () => {
+      try {
+        await fetchToken();
+      } catch (error: any) {
+        if (error.message.includes('Tenant token expired')) {
+          console.warn('Tenant token expired, fetching a new token...');
+          fetchToken(); // Re-fetch the token
+        } else {
+          console.error('Search error:', error);
+        }
+      }
+    };
 
-  //   initializeSearchClient();
-  // }, []);
+    initializeSearchClient();
+  }, []);
 
   // on open focus on the input
   useEffect(() => {
@@ -378,7 +379,7 @@ const SearchModalBeta = ({
       {isSearchClient ? (
         <InstantSearch
           searchClient={isSearchClient}
-          indexName="commonbase_prod"
+          indexName="ycb_fts_staging"
         >
           <button onClick={closeModalFn} type="button">
             (close)

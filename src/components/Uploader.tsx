@@ -285,9 +285,10 @@ const Uploader = ({ closeModal }: { closeModal: () => void }) => {
 
     const processId = async (id: string) => {
       const response = await fetch(
-        `https://share-ycbs.onrender.com/api/get-upload?id=${id}`,
+        `http://localhost:3002/api/get-upload?id=${id}`,
       );
       const respData = await response.json();
+      console.log('respData:', respData);
       if (respData.error) {
         throw new Error(respData.error);
       }

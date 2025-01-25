@@ -59,7 +59,7 @@ export default function Share({
   const [includeComments, setIncludeComments] = useState(false);
 
   const [modalOpen, setModalOpen] = useState(true);
-  const [showShareButton, setShowShareButton] = useState(true);
+  const [showShareButton, setShowShareButton] = useState(false);
 
   useEffect(() => {
     console.log(modalOpen);
@@ -147,7 +147,9 @@ export default function Share({
       },
     })
       .then((response) => response.json())
-      .then((data) => console.log(data))
+      .then(() => {
+        setShowShareButton(true)
+  })
       .catch((error) => console.error("Error:", error));
   };
 

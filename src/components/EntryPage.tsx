@@ -1962,7 +1962,7 @@ const EntryPage = () => {
                   author: data.metadata.author,
                 },
               }}
-              comments={data.metadata.aliasData.map((comment: any) => {
+              comments={data.metadata && data.metadata.aliasData ? data.metadata.aliasData.map((comment: any) => {
                 return {
                   data: comment.aliasData,
                   image: comment.aliasMetadata.author === 'imagedelivery.net' ? comment.metadata.author : null,
@@ -1971,7 +1971,7 @@ const EntryPage = () => {
                     author: comment.aliasMetadata.author,
                   },
                 };
-              })}
+              }): []}
               isOpen={openShareModal}
               entryId={data.id}
               closeModalFn={() => setOpenShareModal(false)}
