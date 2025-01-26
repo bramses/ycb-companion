@@ -25,7 +25,6 @@ const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
   onAddComment,
   isGraphLoading,
 }) => {
-  console.log("fdata:", data);
   const svgRef = useRef<SVGSVGElement | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -957,7 +956,7 @@ const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
                     </div>
                   </div>
                   <button
-                    onClick={() => onExpand(modalContent.id, comment.data)}
+                    onClick={() => onExpand(modalContent.id, comment.id)}
                     className="ml-2 rounded bg-blue-500 px-2 py-1 text-white hover:bg-blue-700"
                   >
                     Expand

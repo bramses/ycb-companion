@@ -182,10 +182,10 @@ const SearchModalBeta = ({
       }
 
       // expires 10s after the token is created
-      setMeliToken({
+      sessionStorage.setItem('meliToken', JSON.stringify({
         token: tokenData.token.token,
         expiresAt: new Date(Date.now() + 10 * 60 * 1000 - 2000).toISOString(),
-      });
+      }));
 
       const { searchClient } = instantMeiliSearch(
         process.env.NEXT_PUBLIC_MEILI_HOST!, // Host
@@ -203,8 +203,14 @@ const SearchModalBeta = ({
 
   useEffect(() => {
     const interval = setInterval(() => {
-      if (meliToken && new Date(meliToken.expiresAt) < new Date()) {
-        console.log('Token expired, fetching a new token...');
+      const storedToken = sessionStorage.getItem('meliToken');
+      if (storedToken) {
+        const { expiresAt } = JSON.parse(storedToken);
+        if (new Date(expiresAt) < new Date()) {
+          console.log('Token expired, fetching a new token...');
+          fetchToken();
+        }
+      } else {
         fetchToken();
       }
     }, 1000);

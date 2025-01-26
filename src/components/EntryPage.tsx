@@ -42,7 +42,6 @@ import Loading from './Loading';
 import SearchModalBeta from './SearchModalBetaV1';
 import ShareModal from './ShareModalV2';
 import UrlSVG from './UrlSVG';
-import type { comment } from 'postcss';
 
 const EntryPage = () => {
   // fetch data from the server at id on load
@@ -453,56 +452,56 @@ const EntryPage = () => {
 
   // Transaction Handlers
 
-  // Handle Edit Entry
-  const handleEditEntry = (newData: string, newMetadata: any) => {
-    if (!transactionManager || !data) return;
+  // // Handle Edit Entry
+  // const handleEditEntry = (newData: string, newMetadata: any) => {
+  //   if (!transactionManager || !data) return;
 
-    console.log('newMetadata:', newMetadata);
+  //   console.log('newMetadata:', newMetadata);
 
-    // Update the draft state
-    const draftState = transactionManager.getDraftState();
-    draftState.data = newData;
-    draftState.metadata = newMetadata;
+  //   // Update the draft state
+  //   const draftState = transactionManager.getDraftState();
+  //   draftState.data = newData;
+  //   draftState.metadata = newMetadata;
 
-    // Update UI immediately
-    setIsInDraftState(true);
-    setData({ ...draftState });
+  //   // Update UI immediately
+  //   setIsInDraftState(true);
+  //   setData({ ...draftState });
 
-    // Add transaction
-    const editEntryTx: Transaction = async () => {
-      await apiUpdateEntry(data.id, newData, newMetadata);
-    };
+  //   // Add transaction
+  //   const editEntryTx: Transaction = async () => {
+  //     await apiUpdateEntry(data.id, newData, newMetadata);
+  //   };
 
-    // should happen last
-    transactionManager.addTransaction(editEntryTx, { dependencies: tempIds });
-  };
+  //   // should happen last
+  //   transactionManager.addTransaction(editEntryTx, { dependencies: tempIds });
+  // };
 
-  // Handle Delete Entry
-  const handleDeleteEntry = () => {
-    if (!transactionManager || !data) return;
+  // // Handle Delete Entry
+  // const handleDeleteEntry = () => {
+  //   if (!transactionManager || !data) return;
 
-    // Confirm deletion
-    const confirmDelete = window.confirm(
-      'Are you sure you want to delete this entry?',
-    );
-    if (!confirmDelete) return;
+  //   // Confirm deletion
+  //   const confirmDelete = window.confirm(
+  //     'Are you sure you want to delete this entry?',
+  //   );
+  //   if (!confirmDelete) return;
 
-    setIsInDraftState(true);
+  //   setIsInDraftState(true);
 
-    // Update the draft state
-    const draftState = transactionManager.getDraftState();
-    draftState.deleted = true;
+  //   // Update the draft state
+  //   const draftState = transactionManager.getDraftState();
+  //   draftState.deleted = true;
 
-    // Update UI immediately (navigate back to dashboard)
-    // router.push('/dashboard');
+  //   // Update UI immediately (navigate back to dashboard)
+  //   // router.push('/dashboard');
 
-    // Add transaction
-    const deleteEntryTx: Transaction = async () => {
-      await apiDeleteEntry(data.id);
-    };
+  //   // Add transaction
+  //   const deleteEntryTx: Transaction = async () => {
+  //     await apiDeleteEntry(data.id);
+  //   };
 
-    transactionManager.addTransaction(deleteEntryTx);
-  };
+  //   transactionManager.addTransaction(deleteEntryTx);
+  // };
 
   // Handle Add Comment
   // const handleAddComment = (aliasInput: string) => {
@@ -613,6 +612,43 @@ const EntryPage = () => {
   //   ]);
   // };
 
+  const checkForEmbeddings = async (entryId: string, aliasIDs: string[]) => {
+    const response = await fetch(`/api/checkForEmbed`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        id: entryId,
+      }),
+    });
+
+    const data = await response.json();
+    console.log('entry data:', data);
+    if (data.data.status !== 'completed')
+      return false;
+
+    for (const aliasID of aliasIDs) {
+      const response = await fetch(`/api/checkForEmbed`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          id: entryId,
+          aliasID,
+        }),
+      });
+      const data = await response.json();
+      console.log('for data:', data);
+      if (data.data.status !== 'completed')
+        return false;
+    }
+
+    console.log('all embeddings are complete'); 
+    return true;
+  };
+    
   const handleSaveComments = async () => {
     if (!transactionManager || !data) return;
 
@@ -1062,13 +1098,14 @@ const EntryPage = () => {
   //   return neighbors;
   // };
 
-  const searchNeighbors = async (query: string, skipIDS: string[] = []) => {
+  const searchNeighbors = async (platformId: string, skipIDS: string[] = []) => {
     const response = await fetch('/api/search', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ query, matchCount: 6 }),
+      body: JSON.stringify({ platformId, matchCount: 6 }),
     });
     const res = await response.json();
+    console.log('res:', res);
   
     const neighbors = await Promise.all(
       res.data.map(async (neighbor: any) => {
@@ -1115,127 +1152,16 @@ const EntryPage = () => {
     console.log('neighbors:', filteredNeighbors);
     return filteredNeighbors;
   };
-  
 
-  // const searchPenPals = async (query: string, skipIDS: string[] = []) => {
-  //   const response = await fetch('/api/search', {
-  //     method: 'POST',
-  //     headers: {
-  //       'Content-Type': 'application/json',
-  //     },
-  //     body: JSON.stringify({
-  //       query,
-  //       matchCount: 6,
-  //     }),
-  //   });
-  //   const res = await response.json();
-  //   console.log('penPals:', res);
-  //   const penPals = [];
-
-  //   // for pen pals if metadata.parent_id is not null, add it to the pen pals array fetch the parent entry and add it to the pen pal as a parent
-
-  //   for await (const penPal of res.data) {
-  //     if (skipIDS.includes(penPal.id)) {
-  //       console.log('skipping penPal:', penPal.id);
-  //     } else {
-  //       if (penPal.metadata.parent_id) {
-  //         console.log('penPal.metadata:', penPal.metadata.parent_id);
-  //         const parent = await fetchByID(penPal.metadata.parent_id);
-  //         penPal.parent = parent;
-
-  //         // if neighbor has alias_ids, fetch them and add them to the aliases array
-  //         if (parent.metadata.alias_ids) {
-  //           const commentIDs = parent.metadata.alias_ids;
-  //           // fetch each comment by id and add it to the comments array
-  //           penPal.parent.comments = [];
-  //           for await (const commentID of commentIDs) {
-  //             const comment = await fetchByID(commentID);
-  //             penPal.parent.comments.push(comment);
-  //           }
-  //         }
-  //       }
-
-  //       // if neighbor has alias_ids, fetch them and add them to the aliases array
-  //       if (penPal.metadata.alias_ids) {
-  //         const commentIDs = penPal.metadata.alias_ids;
-  //         // fetch each comment by id and add it to the comments array
-  //         penPal.comments = [];
-  //         for await (const commentID of commentIDs) {
-  //           const comment = await fetchByID(commentID);
-  //           penPal.comments.push(comment);
-  //         }
-  //       }
-
-  //       if (penPal.metadata.author) {
-  //         if (penPal.metadata.author.includes('imagedelivery.net')) {
-  //           penPal.image = penPal.metadata.author;
-  //         }
-  //         penPal.author = penPal.metadata.author;
-  //       }
-  //       if (penPal.metadata.title) {
-  //         penPal.title = penPal.metadata.title;
-  //       }
-  //       penPals.push(penPal);
-  //     }
-  //   }
-
-  //   return penPals;
-  // };
-
-  // const searchInternalLinks = async (query: string, skipIDS: string[] = []) => {
-  //   const response = await fetch('/api/search', {
-  //     method: 'POST',
-  //     headers: {
-  //       'Content-Type': 'application/json',
-  //     },
-  //     body: JSON.stringify({
-  //       query,
-  //       matchCount: 6,
-  //     }),
-  //   });
-  //   const res = await response.json();
-  //   console.log('internalLinks:', res);
-  //   const internalLinks = [];
-
-  //   // for internal links if metadata.parent_id is not null, add it to the internalLinks array fetch the parent entry and add it to the internalLinks as a parent
-
-  //   for await (const internalLink of res.data) {
-  //     if (skipIDS.includes(internalLink.id)) {
-  //       console.log('skipping internalLink:', internalLink.id);
-  //     } else if (internalLink.similarity === 1.01) {
-  //       console.log('skipping internalLink kw match:', internalLink.id);
-  //     } else {
-  //       if (internalLink.metadata.parent_id) {
-  //         console.log(
-  //           'internalLink.metadata:',
-  //           internalLink.metadata.parent_id,
-  //         );
-  //         const parent = await fetchByID(internalLink.metadata.parent_id);
-  //         internalLink.parent = parent;
-  //       }
-  //       if (internalLink.metadata.author) {
-  //         if (internalLink.metadata.author.includes('imagedelivery.net')) {
-  //           internalLink.image = internalLink.metadata.author;
-  //         }
-  //         internalLink.author = internalLink.metadata.author;
-  //       }
-  //       if (internalLink.metadata.title) {
-  //         internalLink.title = internalLink.metadata.title;
-  //       }
-  //       internalLinks.push(internalLink);
-  //     }
-  //   }
-
-  //   return internalLinks;
-  // };
-
-  const searchPenPals = async (query: string, skipIDS: string[] = []) => {
+  const searchPenPals = async (platformId: string, skipIDS: string[] = []) => {
+    console.log('platformId:', platformId);
     const response = await fetch('/api/search', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ query, matchCount: 6 }),
+      body: JSON.stringify({ platformId, matchCount: 6 }),
     });
     const res = await response.json();
+    console.log('penPals:', res);
   
     const penPals = await Promise.all(
       res.data.map(async (penPal: any) => {
@@ -1429,65 +1355,159 @@ const EntryPage = () => {
   // };
 
   // Implement the 'expandFData' function to merge new data into 'fData'
-  const expandFData = async (entry: any, comments: any[] = [], searchData: string | null = null) => {
-    const commentIDs = comments.map((comment: any) => comment.aliasId).flat();
+  // const expandFDataOld = async (entry: any, comments: any[] = [], searchData: string | null = null) => {
+  //   const commentIDs = comments.map((comment: any) => comment.aliasId).flat();
+  //   const existingNodeIds = getAllNodeIds(fData);
+
+  //   // Fetch neighbors
+  //   const neighbors = await searchNeighbors(searchData || entry.data, [
+  //     entry.id,
+  //     ...commentIDs,
+  //     ...existingNodeIds,
+  //   ]);
+
+  //   // append entry.id to existingNodeIds
+  //   existingNodeIds.push({id: entry.id});
+  //   existingNodeIds.push(...commentIDs.map((id: string) => ({id})));
+
+  //   const newNeighbors = neighbors.filter(
+  //     (neighbor: any) => !existingNodeIds.includes(neighbor.id),
+  //   );
+
+  //   // Update 'fData' with new neighbors
+  //   setFData((prevData: any) => ({
+  //     ...prevData,
+  //     // neighbors: [...prevData.neighbors, ...newNeighbors],
+  //     expansion: [
+  //       ...prevData.expansion,
+  //       { parent: entry.id, children: newNeighbors, comment: entry.data },
+  //     ],
+  //   }));
+
+  //   // Process comments and internal links similarly...
+
+  //   // Return whether new data was added
+  //   const newDataAdded = newNeighbors.length > 0; // Add checks for comments and internal links if processed
+  //   return newDataAdded;
+  // };
+
+  const expandFData = async (entryId: any, commentId: any) => {
     const existingNodeIds = getAllNodeIds(fData);
 
-    // Fetch neighbors
-    const neighbors = await searchNeighbors(searchData || entry.data, [
-      entry.id,
-      ...commentIDs,
-      ...existingNodeIds,
-    ]);
-
-    // append entry.id to existingNodeIds
-    existingNodeIds.push({id: entry.id});
-    existingNodeIds.push(...commentIDs.map((id: string) => ({id})));
-
-    const newNeighbors = neighbors.filter(
-      (neighbor: any) => !existingNodeIds.includes(neighbor.id),
-    );
-
-    // Update 'fData' with new neighbors
-    setFData((prevData: any) => ({
-      ...prevData,
-      // neighbors: [...prevData.neighbors, ...newNeighbors],
-      expansion: [
-        ...prevData.expansion,
-        { parent: entry.id, children: newNeighbors, comment: entry.data },
-      ],
-    }));
-
-    // Process comments and internal links similarly...
-
-    // Return whether new data was added
-    const newDataAdded = newNeighbors.length > 0; // Add checks for comments and internal links if processed
-    return newDataAdded;
+    if(!commentId) {
+      // Fetch neighbors
+      const neighbors = await searchNeighbors(entryId, [
+        entryId,
+        ...existingNodeIds,
+      ]);
+  
+      // append entry.id to existingNodeIds
+  
+      const newNeighbors = neighbors.filter(
+        (neighbor: any) => !existingNodeIds.includes(neighbor.id),
+      );
+  
+      // Update 'fData' with new neighbors
+      setFData((prevData: any) => ({
+        ...prevData,
+        // neighbors: [...prevData.neighbors, ...newNeighbors],
+        expansion: [
+          ...prevData.expansion,
+          { parent: entryId, children: newNeighbors, comment: 'todo' },
+        ],
+      }));
+  
+      // Process comments and internal links similarly...
+  
+      // Return whether new data was added
+      const newDataAdded = newNeighbors.length > 0; // Add checks for comments and internal links if processed
+      return newDataAdded;
+    } else {
+      // Fetch neighbors
+      const neighbors = await searchNeighbors(commentId, [
+        entryId,
+        ...existingNodeIds,
+      ]);
+  
+      // append entry.id to existingNodeIds
+  
+      const newNeighbors = neighbors.filter(
+        (neighbor: any) => !existingNodeIds.includes(neighbor.id),
+      );
+  
+      // Update 'fData' with new neighbors
+      setFData((prevData: any) => ({
+        ...prevData,
+        // neighbors: [...prevData.neighbors, ...newNeighbors],
+        expansion: [
+          ...prevData.expansion,
+          { parent: entryId, children: newNeighbors, comment: 'todo' },
+        ],
+      }));
+  
+      // Process comments and internal links similarly...
+  
+      // Return whether new data was added
+      const newDataAdded = newNeighbors.length > 0; // Add checks for comments and internal links if processed
+      return newDataAdded;
+    }
   };
 
-  const handleExpand = async (nodeId: string, initNodeData: string | null = null) => {
+
+  // const handleExpandOld = async (nodeId: string, initNodeData: string | null = null) => {
+  //   setIsGraphLoading(true);
+
+  //   if (!initNodeData) {
+  //     const nodeData = await fetchByID(nodeId);
+
+  //     if (!nodeData) {
+  //       alert(`Cannot fetch data for node with id ${nodeId}`);
+  //       setIsGraphLoading(false);
+  //       return;
+  //     }
+
+  //     if (!nodeData.metadata) {
+  //       alert(`Cannot fetch data for node with id ${nodeId}`);
+  //       setIsGraphLoading(false);
+  //       return;
+  //     }
+
+
+  //     // Expand the graph with the new data
+  //     const newDataAdded = await expandFData(
+  //       nodeData,
+  //       nodeData.metadata.aliasData,
+  //     );
+
+  //     if (!newDataAdded) {
+  //       alert('Area is fully explored');
+  //     }
+  //     setIsGraphLoading(false);
+  //     return;
+  //   } else {
+  //     const nodeData = await fetchByID(nodeId);
+  //     // Expand the graph with the new data
+  //     const newDataAdded = await expandFData(
+  //       nodeData,
+  //       nodeData.metadata.aliasData,
+  //       initNodeData
+  //     );
+
+  //     if (!newDataAdded) {
+  //       alert('Area is fully explored');
+  //     }
+  //     setIsGraphLoading(false);
+  //     return;
+  //   }
+  // };
+
+  const handleExpand = async (nodeId: string, initNodeDataID: string | null = null) => {
     setIsGraphLoading(true);
 
-    if (!initNodeData) {
-      const nodeData = await fetchByID(nodeId);
-
-      if (!nodeData) {
-        alert(`Cannot fetch data for node with id ${nodeId}`);
-        setIsGraphLoading(false);
-        return;
-      }
-
-      if (!nodeData.metadata) {
-        alert(`Cannot fetch data for node with id ${nodeId}`);
-        setIsGraphLoading(false);
-        return;
-      }
-
-
+    if (!initNodeDataID) {
       // Expand the graph with the new data
       const newDataAdded = await expandFData(
-        nodeData,
-        nodeData.metadata.aliasData,
+        nodeId, null
       );
 
       if (!newDataAdded) {
@@ -1496,12 +1516,11 @@ const EntryPage = () => {
       setIsGraphLoading(false);
       return;
     } else {
-      const nodeData = await fetchByID(nodeId);
+      
       // Expand the graph with the new data
       const newDataAdded = await expandFData(
-        nodeData,
-        nodeData.metadata.aliasData,
-        initNodeData
+        nodeId,
+        initNodeDataID
       );
 
       if (!newDataAdded) {
@@ -1570,18 +1589,28 @@ const EntryPage = () => {
   const generateFData = async (entry: any, comments: any[] = []) => {
     setIsGraphLoading(true);
 
+    // check that all embeddings are completed
+    let allEmbeddingsComplete = await checkForEmbeddings(entry.id, comments.map((comment: any) => comment.aliasId));
+    let tries = 0;
+    while (!allEmbeddingsComplete && tries < 10) {
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      allEmbeddingsComplete = await checkForEmbeddings(entry.id, comments.map((comment: any) => comment.aliasId));
+      tries++;
+    }
+
     const commentIDs = comments.map((comment: any) => comment.aliasId);
 
     // console.log(entry)
 
     // Create a promise for neighbors
-    const neighborsPromise = searchNeighbors(entry.data, [
+    // TODO im rolling over to a platform_id search
+    const neighborsPromise = searchNeighbors(entry.id, [
       entry.id,
       ...commentIDs,
     ]);
 
     const commentsPromises = comments.map(async (comment: any) => {
-      const penPals = await searchPenPals(comment.aliasData, [
+      const penPals = await searchPenPals(comment.aliasId, [
         entry.id,
         ...commentIDs,
       ]);
@@ -1663,9 +1692,17 @@ const EntryPage = () => {
     const addedCommentData = addedCommentRespData.respData;
     console.log('addedCommentData [v2]:', addedCommentData);
 
+    let allEmbeddingsComplete = await checkForEmbeddings(addedCommentData.id, []);
+    let tries = 0;
+    while (!allEmbeddingsComplete && tries < 10) {
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      allEmbeddingsComplete = await checkForEmbeddings(addedCommentData.id, []);
+      tries++;
+    }
+
     // extend the force directed graph with the new comment
     // get pen pals
-    const penPals = await searchPenPals(aliasInput, [
+    const penPals = await searchPenPals(addedCommentData.id, [
       parent.id,
       addedCommentData.id,
     ]);
