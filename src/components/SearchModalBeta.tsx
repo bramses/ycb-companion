@@ -238,12 +238,16 @@ const SearchModalBeta = ({
   }, []);
 
   // on open focus on the input
-  useEffect(() => {
-    const input = document.getElementById('modal-beta-search');
-    if (input) {
-      input.focus();
-    }
-  }, []);
+  // useEffect(() => {
+  //   const input = document.getElementById('modal-beta-search');
+  //   if (input) {
+  //     input.focus();
+  //   }
+  //   if (input && isOpen) {
+  //     console.log('focus on input');
+  //     input!.focus();
+  //   }
+  // }, [isOpen]);
 
   useEffect(() => {
     if (!isLoaded) return;

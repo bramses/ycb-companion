@@ -11,12 +11,22 @@ import Modal from "react-modal";
 import { InstagramEmbed } from "react-social-media-embed";
 import { Spotify } from "react-spotify-embed";
 import { Tweet } from "react-tweet";
+import { Dispatch, SetStateAction } from "react";
+import UrlSVG from './UrlSVG';
+
+
 
 interface ForceDirectedGraphProps {
   data: any;
   onExpand: (id: string, initNodeData: string | null) => void;
   onAddComment: (comment: string, parent: any) => void;
   isGraphLoading: boolean;
+  graphNodes: any[];
+  setGraphNodes: Dispatch<SetStateAction<any[]>>;
+  currentIndex: number | null;
+  setCurrentIndex: Dispatch<SetStateAction<number | null>>;
+  showModal: boolean;
+  setShowModal: Dispatch<SetStateAction<boolean>>;
 }
 
 const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
@@ -24,6 +34,12 @@ const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
   onExpand,
   onAddComment,
   isGraphLoading,
+  graphNodes,
+  setGraphNodes,
+  currentIndex,
+  setCurrentIndex,
+  showModal,
+  setShowModal,
 }) => {
   const svgRef = useRef<SVGSVGElement | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -32,16 +48,16 @@ const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
   const miniMapRef = useRef<SVGSVGElement | null>(null);
 
   // modal open/close
-  const [showModal, setShowModal] = useState(false);
+  // const [showModal, setShowModal] = useState(false);
 
   // hovered over main graph
   const [hovered, setHovered] = useState(false);
 
   // all node objects
-  const [graphNodes, setGraphNodes] = useState<any[]>([]);
+  // const [graphNodes, setGraphNodes] = useState<any[]>([]);
 
   // which index is currently selected
-  const [currentIndex, setCurrentIndex] = useState<number | null>(null);
+  // const [currentIndex, setCurrentIndex] = useState<number | null>(null);
 
   // modal content
   const [modalContent, setModalContent] = useState<any>({
@@ -51,9 +67,11 @@ const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
     title: "",
     author: "",
     group: "",
+    createdAt: "",
     comments: [],
     matchedCommentId: "",
   });
+  // const [favicon, setFavicon] = useState('/favicon.ico');
 
   // utility for pastel color
   function getNodeColor(node: any) {
@@ -81,6 +99,7 @@ const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
     image: any,
     title: any,
     author: any,
+    createdAt: any,
     group: any,
     comments: any,
     matchedCommentId: any
@@ -91,10 +110,14 @@ const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
       image,
       title,
       author,
+      createdAt,
       group,
       comments,
       matchedCommentId,
     });
+    // fetchFavicon(author).then((res) => {
+    //   setFavicon(res.favicon);
+    // });
     setShowModal(true);
   };
   const closeModal = () => setShowModal(false);
@@ -111,17 +134,17 @@ const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
       if (!hovered || graphNodes.length === 0) return;
 
       // arrow navigation
-      if (event.key === "ArrowRight") {
-        setCurrentIndex((prevIndex) => {
-          if (prevIndex === null) return 0;
-          return (prevIndex + 1) % graphNodes.length;
-        });
-      } else if (event.key === "ArrowLeft") {
-        setCurrentIndex((prevIndex) => {
-          if (prevIndex === null) return graphNodes.length - 1;
-          return (prevIndex - 1 + graphNodes.length) % graphNodes.length;
-        });
-      }
+      // if (event.key === "ArrowRight") {
+      //   setCurrentIndex((prevIndex) => {
+      //     if (prevIndex === null) return 0;
+      //     return (prevIndex + 1) % graphNodes.length;
+      //   });
+      // } else if (event.key === "ArrowLeft") {
+      //   setCurrentIndex((prevIndex) => {
+      //     if (prevIndex === null) return graphNodes.length - 1;
+      //     return (prevIndex - 1 + graphNodes.length) % graphNodes.length;
+      //   });
+      // }
 
       // space bar => expand selected node && user is not writing a comment in the input field
       if (
@@ -150,17 +173,6 @@ const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
         event.preventDefault();
         closeModal();
       }
-
-      // c => focus on comment input
-      // if (event.key === 'c') {
-      //   event.preventDefault();
-      //   const commentInput = document.getElementById(
-      //     `alias-input-${modalContent.id}`,
-      //   );
-      //   if (commentInput) {
-      //     commentInput.focus();
-      //   }
-      // }
     }
 
     window.addEventListener("keydown", handleKeyDown);
@@ -169,73 +181,73 @@ const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
     };
   }, [hovered, graphNodes, currentIndex, onExpand]);
 
-  // mobile swipe
-  useEffect(() => {
-    let startX: number | null = null;
-    function handleTouchStart(e: TouchEvent) {
-      if (!showModal || window.innerWidth >= 768) return;
-      if (e.touches.length > 0) startX = e.touches[0]!.clientX;
-    }
-    function handleTouchEnd(e: TouchEvent) {
-      if (!showModal || window.innerWidth >= 768) return;
-      if (startX === null) return;
-      if (e.changedTouches.length > 0) {
-        const endX = e.changedTouches[0]!.clientX;
-        const deltaX = endX - startX;
-        if (Math.abs(deltaX) > 50) {
-          if (deltaX < 0) {
-            // swipe left => arrowRight
-            setCurrentIndex((prevIndex) => {
-              if (prevIndex === null) return 0;
-              return (prevIndex + 1) % graphNodes.length;
-            });
-          } else {
-            // swipe right => arrowLeft
-            setCurrentIndex((prevIndex) => {
-              if (prevIndex === null) return graphNodes.length - 1;
-              return (prevIndex - 1 + graphNodes.length) % graphNodes.length;
-            });
-          }
-        }
-      }
-      startX = null;
-    }
+  // // mobile swipe
+  // useEffect(() => {
+  //   let startX: number | null = null;
+  //   function handleTouchStart(e: TouchEvent) {
+  //     if (!showModal || window.innerWidth >= 768) return;
+  //     if (e.touches.length > 0) startX = e.touches[0]!.clientX;
+  //   }
+  //   function handleTouchEnd(e: TouchEvent) {
+  //     if (!showModal || window.innerWidth >= 768) return;
+  //     if (startX === null) return;
+  //     if (e.changedTouches.length > 0) {
+  //       const endX = e.changedTouches[0]!.clientX;
+  //       const deltaX = endX - startX;
+  //       if (Math.abs(deltaX) > 50) {
+  //         if (deltaX < 0) {
+  //           // swipe left => arrowRight
+  //           setCurrentIndex((prevIndex) => {
+  //             if (prevIndex === null) return 0;
+  //             return (prevIndex + 1) % graphNodes.length;
+  //           });
+  //         } else {
+  //           // swipe right => arrowLeft
+  //           setCurrentIndex((prevIndex) => {
+  //             if (prevIndex === null) return graphNodes.length - 1;
+  //             return (prevIndex - 1 + graphNodes.length) % graphNodes.length;
+  //           });
+  //         }
+  //       }
+  //     }
+  //     startX = null;
+  //   }
 
-    let tapCount = 0;
-    let tapTimeout: NodeJS.Timeout | null = null;
+  //   let tapCount = 0;
+  //   let tapTimeout: NodeJS.Timeout | null = null;
 
-    function handleTripleTap(e: TouchEvent) {
-      if (!hovered || graphNodes.length === 0) return;
+  //   function handleTripleTap(e: TouchEvent) {
+  //     if (!hovered || graphNodes.length === 0) return;
 
-      if (e.touches.length > 1) return;
+  //     if (e.touches.length > 1) return;
 
-      tapCount += 1;
+  //     tapCount += 1;
 
-      if (tapCount === 3) {
-        tapCount = 0;
-        if (currentIndex !== null) {
-          const selectedNode = graphNodes[currentIndex];
-          if (selectedNode) {
-            onExpand(selectedNode.id, null);
-          }
-        }
-      }
+  //     if (tapCount === 3) {
+  //       tapCount = 0;
+  //       if (currentIndex !== null) {
+  //         const selectedNode = graphNodes[currentIndex];
+  //         if (selectedNode) {
+  //           onExpand(selectedNode.id, null);
+  //         }
+  //       }
+  //     }
 
-      if (tapTimeout) clearTimeout(tapTimeout);
-      tapTimeout = setTimeout(() => {
-        tapCount = 0;
-      }, 300); // reset tap count after 300ms
-    }
+  //     if (tapTimeout) clearTimeout(tapTimeout);
+  //     tapTimeout = setTimeout(() => {
+  //       tapCount = 0;
+  //     }, 300); // reset tap count after 300ms
+  //   }
 
-    window.addEventListener("touchstart", handleTouchStart, { passive: false });
-    window.addEventListener("touchend", handleTouchEnd, { passive: false });
-    window.addEventListener("touchend", handleTripleTap, { passive: false });
-    return () => {
-      window.removeEventListener("touchstart", handleTouchStart);
-      window.removeEventListener("touchend", handleTouchEnd);
-      window.removeEventListener("touchend", handleTripleTap);
-    };
-  }, [showModal, graphNodes]);
+  //   window.addEventListener("touchstart", handleTouchStart, { passive: false });
+  //   window.addEventListener("touchend", handleTouchEnd, { passive: false });
+  //   window.addEventListener("touchend", handleTripleTap, { passive: false });
+  //   return () => {
+  //     window.removeEventListener("touchstart", handleTouchStart);
+  //     window.removeEventListener("touchend", handleTouchEnd);
+  //     window.removeEventListener("touchend", handleTripleTap);
+  //   };
+  // }, [showModal, graphNodes]);
 
   // open selected node's modal on index change
   useEffect(() => {
@@ -248,6 +260,7 @@ const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
       selectedNode.image,
       selectedNode.title,
       selectedNode.author,
+      selectedNode.createdAt,
       selectedNode.group,
       selectedNode.comments,
       selectedNode.matchedCommentId
@@ -270,6 +283,29 @@ const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
     return url.split("v=")[1]?.split("&")[0]!;
   };
 
+  function timeAgo(date: Date): string {
+    const now = new Date();
+    const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+  
+    const intervals: { [key: string]: number } = {
+      year: 31536000,
+      month: 2592000,
+      week: 604800,
+      day: 86400,
+      hour: 3600,
+      minute: 60,
+    };
+  
+    for (const [key, value] of Object.entries(intervals)) {
+      const interval = Math.floor(seconds / value);
+      if (interval >= 1) {
+        return `${interval} ${key}${interval > 1 ? 's' : ''} ago`;
+      }
+    }
+  
+    return 'just now';
+  }
+
   // parse twitter
   const getTwitterId = (url: string): string => {
     if (!url) return "";
@@ -290,6 +326,7 @@ const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
         image: item.image,
         title: item.parent.title,
         author: item.parent.author,
+        createdAt: item.parent.createdAt,
         comments: item.parent.comments,
         matchedCommentId: item.id,
         similarity: item.similarity,
@@ -303,6 +340,7 @@ const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
       image: item.image,
       title: item.title,
       author: item.author,
+      createdAt: item.createdAt,
       comments: item.comments,
       similarity: item.similarity,
       sourceLabel: root ? root.comment : item.data,
@@ -353,6 +391,7 @@ const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
         group: "main",
         image: data.image,
         comments: data.comments,
+        createdAt: data.createdAt,
       },
       ...data.neighbors.map((n: any) => getParentOrSelf(n, "neighbor", { comment: data.entry.data })),
       ...data.internalLinks.map((link: any, idx: number) => ({
@@ -362,6 +401,7 @@ const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
         image: link.image,
         title: link.title,
         author: link.author,
+        createdAt: link.createdAt,
       })),
       ...data.internalLinks.flatMap((link: any) =>
         link.penPals.map((penPal: any) => getParentOrSelf(penPal, "penPal", { comment: link.internalLink }))
@@ -373,6 +413,7 @@ const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
         image: comment.image,
         title: comment.title,
         author: comment.author,
+        createdAt: comment.createdAt,
         comments: comment.penPals,
       })),
       ...data.comments.flatMap((comment: any) =>
@@ -387,6 +428,7 @@ const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
           image: child.image,
           title: child.title,
           author: child.author,
+          createdAt: child.createdAt,
           comments: child.comments,
           similarity: child.similarity,
           sourceLabel: expansion.comment,
@@ -522,6 +564,7 @@ const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
           d.image,
           d.title,
           d.author,
+          d.createdAt,
           d.group,
           d.comments,
           d.matchedCommentId
@@ -727,7 +770,7 @@ const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
           height: "150px",
           border: "1px solid #ccc",
           backgroundColor: "#fff",
-          zIndex: 999,
+          zIndex: 9999,
         }}
       >
         <svg
@@ -750,6 +793,7 @@ const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
                 selectedNode.image,
                 selectedNode.title,
                 selectedNode.author,
+                selectedNode.createdAt,
                 selectedNode.group,
                 selectedNode.comments,
                 selectedNode.matchedCommentId
@@ -763,6 +807,7 @@ const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
                 firstNode.image,
                 firstNode.title,
                 firstNode.author,
+                firstNode.createdAt,
                 firstNode.group,
                 firstNode.comments,
                 firstNode.matchedCommentId
@@ -777,6 +822,7 @@ const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
         onRequestClose={closeModal}
         contentLabel="Node Content"
         ariaHideApp={false}
+        style={{ overlay: { zIndex: 9998 } }}
       >
         <div style={{ position: "relative" }}>
           {currentIndex !== null &&
@@ -877,11 +923,28 @@ const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
 
             {/* main content */}
             <ReactMarkdown>{modalContent.content}</ReactMarkdown>
-            <p className="text-sm text-gray-500">{modalContent.title}</p>
-            <p className="text-sm text-gray-500">{modalContent.author}</p>
-            <p className="text-sm text-gray-500">{modalContent.date}</p>
-
+            
+            {modalContent.author && (<><div className='justify-end my-2'><Link
+              href={modalContent.author}
+              className=" inline-flex items-center font-medium text-brand hover:underline"
+              target="_blank"
+            >
+              {/* <img src={favicon} alt="favicon" className="h-6 w-6 mr-2" /> */}
+              {modalContent.title}
+              <UrlSVG />
+            </Link>
             <br />
+            <a
+              href={`/dashboard/garden?date=${new Date(modalContent.createdAt)
+                .toLocaleDateString()
+                .split('/')
+                .map((d) => (d.length === 1 ? `0${d}` : d))
+                .join('-')}
+                `}
+              className="inline-flex items-center font-medium text-brand hover:underline"
+            >
+              {timeAgo(new Date(modalContent.createdAt))}
+            </a><br /><br /></div></>)}
 
             {/* show comments if not a "comment" node */}
             {/* {modalContent.group !== "comment" &&
@@ -921,7 +984,7 @@ const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
                 </div>
               ))} */}
 
-{modalContent.group !== "comment" &&
+            {modalContent.group !== "comment" &&
               modalContent.group !== "main" &&
               modalContent.comments &&
               modalContent.comments.map((comment: any) => (

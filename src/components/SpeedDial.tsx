@@ -26,7 +26,7 @@ const SpeedDial = ({
       {isOpen && <div className="overlay" />}
       <div
         data-dial-init
-        className="speed-dial group fixed bottom-6 end-6 z-50"
+        className="speed-dial group fixed bottom-6 end-6"
       >
         <div
           id="speed-dial-menu-text-outside-button"

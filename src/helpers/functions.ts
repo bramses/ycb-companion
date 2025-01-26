@@ -35,6 +35,11 @@ export async function fetchFavicon(url: string) {
   try {
     const response = await fetch(`/api/favicon?url=${url}`);
     const data = await response.json();
+
+    if (!data.favicon) {
+      return { favicon: '/favicon.ico' };
+    }
+
     return data;
   } catch (err) {
     return { favicon: '/favicon.ico' };

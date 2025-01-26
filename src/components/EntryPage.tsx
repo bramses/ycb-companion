@@ -19,6 +19,7 @@ import SyntaxHighlighter from 'react-syntax-highlighter';
 import { docco } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 import { Tweet } from 'react-tweet';
 import { v4 as uuidv4 } from 'uuid';
+import { fetchFavicon } from '@/helpers/functions';
 
 import {
   addEntry,
@@ -100,6 +101,76 @@ const EntryPage = () => {
   const [tempCommentIDs, setTempCommentIDs] = useState<any[]>([]);
   const [cachedFData, setCachedFData] = useState<any>(null);
   const [isInDraftState, setIsInDraftState] = useState(false);
+  const [favicon, setFavicon] = useState('/favicon.ico');
+
+  const [graphNodes, setGraphNodes] = useState<any[]>([]);
+  const [currentIndex, setCurrentIndex] = useState<number | null>(null);
+  const [showModal, setShowModal] = useState(false);
+
+  useEffect(() => {
+    function handleKeyDown(event: KeyboardEvent) {
+      if (graphNodes.length === 0) return;
+
+      if (event.key === "ArrowRight") {
+        setCurrentIndex((prevIndex) => {
+          if (prevIndex === null) return 0;
+          return (prevIndex + 1) % graphNodes.length;
+        });
+      } else if (event.key === "ArrowLeft") {
+        setCurrentIndex((prevIndex) => {
+          if (prevIndex === null) return graphNodes.length - 1;
+          return (prevIndex - 1 + graphNodes.length) % graphNodes.length;
+        });
+      }
+
+      if (event.key === "Escape") {
+        event.preventDefault();
+        setShowModal(false);
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [graphNodes]);
+
+  useEffect(() => {
+    let startX: number | null = null;
+    function handleTouchStart(e: TouchEvent) {
+      if (!showModal || window.innerWidth >= 768) return;
+      if (e.touches.length > 0) startX = e.touches[0]!.clientX;
+    }
+    function handleTouchEnd(e: TouchEvent) {
+      if (!showModal || window.innerWidth >= 768) return;
+      if (startX === null) return;
+      if (e.changedTouches.length > 0) {
+        const endX = e.changedTouches[0]!.clientX;
+        const deltaX = endX - startX;
+        if (Math.abs(deltaX) > 50) {
+          if (deltaX < 0) {
+            setCurrentIndex((prevIndex) => {
+              if (prevIndex === null) return 0;
+              return (prevIndex + 1) % graphNodes.length;
+            });
+          } else {
+            setCurrentIndex((prevIndex) => {
+              if (prevIndex === null) return graphNodes.length - 1;
+              return (prevIndex - 1 + graphNodes.length) % graphNodes.length;
+            });
+          }
+        }
+      }
+      startX = null;
+    }
+
+    window.addEventListener("touchstart", handleTouchStart, { passive: false });
+    window.addEventListener("touchend", handleTouchEnd, { passive: false });
+    return () => {
+      window.removeEventListener("touchstart", handleTouchStart);
+      window.removeEventListener("touchend", handleTouchEnd);
+    };
+  }, [showModal, graphNodes]);
 
   const openModal = (key: string) =>
     setModalStates((prev) => ({ ...prev, [key]: true }));
@@ -218,6 +289,14 @@ const EntryPage = () => {
       fn_setHasR2Dev(true);
     }
   };
+
+  useEffect(() => {
+    if (data?.metadata?.author) {
+      fetchFavicon(data.metadata.author).then((res) => {
+        setFavicon(res.favicon);
+      });
+    }
+  }, [data]);
 
   // const handleSearchHelper = async (entryData: string) => {
   //   const parsedEntries = await fetchSearchEntries(
@@ -1143,18 +1222,20 @@ const EntryPage = () => {
         if (neighbor.metadata.title) {
           neighbor.title = neighbor.metadata.title;
         }
+
+        if (neighbor.createdAt) {
+          neighbor.createdAt = new Date(neighbor.createdAt).toISOString();
+        }
   
         return neighbor;
       })
     );
   
     const filteredNeighbors = neighbors.filter(Boolean);
-    console.log('neighbors:', filteredNeighbors);
     return filteredNeighbors;
   };
 
   const searchPenPals = async (platformId: string, skipIDS: string[] = []) => {
-    console.log('platformId:', platformId);
     const response = await fetch('/api/search', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
@@ -1197,6 +1278,10 @@ const EntryPage = () => {
         if (penPal.metadata.title) {
           penPal.title = penPal.metadata.title;
         }
+
+        if (penPal.createdAt) {
+          penPal.createdAt = new Date(penPal.createdAt).toISOString();
+        }
   
         return penPal;
       })
@@ -1231,6 +1316,10 @@ const EntryPage = () => {
         }
         if (link.metadata.title) {
           link.title = link.metadata.title;
+        }
+
+        if (link.createdAt) {
+          link.createdAt = new Date(link.createdAt).toISOString();
         }
   
         return link;
@@ -1737,7 +1826,6 @@ const EntryPage = () => {
     setIsSaving(false);
   };
 
-  // src/utils/timeAgo.ts
   function timeAgo(date: Date): string {
   const now = new Date();
   const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
@@ -1965,6 +2053,7 @@ const EntryPage = () => {
               className=" inline-flex items-center font-medium text-brand hover:underline"
               target="_blank"
             >
+              <img src={favicon} alt="favicon" className="h-6 w-6 mr-2" />
               {data.metadata.title}
               <UrlSVG />
             </Link>
@@ -2073,6 +2162,12 @@ again:
                   onExpand={handleExpand}
                   isGraphLoading={isGraphLoading}
                   onAddComment={handleAddCommentGraph}
+                  graphNodes={graphNodes}
+                  setGraphNodes={setGraphNodes}
+                  currentIndex={currentIndex}
+                  setCurrentIndex={setCurrentIndex}
+                  showModal={showModal}
+                  setShowModal={setShowModal}
                 />
                 <p className="text-sm text-gray-500">
                   Use left/right arrow keys to navigate, swipe left/right on

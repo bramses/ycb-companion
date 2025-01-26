@@ -31,8 +31,22 @@ export default function DashboardLayout(props: { children: React.ReactNode }) {
   const onOpenModal = (which: string) => {
     if (which === 'upload') {
       openFastEntryModal();
+      const intervalId = setInterval(() => {
+        const input = document.getElementById('modal-message');
+        if (input) {
+          input.focus();
+          clearInterval(intervalId); // Stop the interval once the input is focused
+        }
+      }, 100);
     } else if (which === 'search') {
       openSearchModalBeta();
+      const intervalId = setInterval(() => {
+        const input = document.getElementById('modal-beta-search');
+        if (input) {
+          input.focus();
+          clearInterval(intervalId); // Stop the interval once the input is focused
+        }
+      }, 100);
     }
   };
 
@@ -47,6 +61,13 @@ export default function DashboardLayout(props: { children: React.ReactNode }) {
       if (event.metaKey && event.key === 'u') {
         // cmd-u for Mac users
         openFastEntryModal();
+        const intervalId = setInterval(() => {
+          const input = document.getElementById('modal-message');
+          if (input) {
+            input.focus();
+            clearInterval(intervalId); // Stop the interval once the input is focused
+          }
+        }, 100);
       }
     };
 
@@ -62,6 +83,13 @@ export default function DashboardLayout(props: { children: React.ReactNode }) {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
         openSearchModalBeta();
+        const intervalId = setInterval(() => {
+          const input = document.getElementById('modal-beta-search');
+          if (input) {
+            input.focus();
+            clearInterval(intervalId); // Stop the interval once the input is focused
+          }
+        }, 100);
       }
     };
 
