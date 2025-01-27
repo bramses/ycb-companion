@@ -361,19 +361,19 @@ const SearchModalBeta = ({
   }, [inputQuery]);
 
   // enter key press event handler
-  const handleEnterKeyPress = (event: KeyboardEvent) => {
-    if (event.key === 'Enter') {
-      handleSearch(inputValue, '');
-    }
-  };
+  // const handleEnterKeyPress = (event: KeyboardEvent) => {
+  //   if (event.key === 'Enter') {
+  //     handleSearch(inputValue, '');
+  //   }
+  // };
 
-  useEffect(() => {
-    window.addEventListener('keydown', handleEnterKeyPress);
+  // useEffect(() => {
+  //   window.addEventListener('keydown', handleEnterKeyPress);
 
-    return () => {
-      window.removeEventListener('keydown', handleEnterKeyPress);
-    };
-  }, []);
+  //   return () => {
+  //     window.removeEventListener('keydown', handleEnterKeyPress);
+  //   };
+  // }, []);
 
   const setSemanticSearchResults = () => {
     setSearchResults([]);

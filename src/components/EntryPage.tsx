@@ -40,7 +40,7 @@ import EditModal from './EditModal';
 import ForceDirectedGraph from './ForceDirectedGraph';
 // import LinksModal from './LinksModal';
 import Loading from './Loading';
-import SearchModalBeta from './SearchModalBetaV1';
+import SearchModalBeta from './SearchModalBeta';
 import ShareModal from './ShareModalV2';
 import UrlSVG from './UrlSVG';
 
@@ -1781,28 +1781,6 @@ const EntryPage = () => {
     const addedCommentData = addedCommentRespData.respData;
     console.log('addedCommentData [v2]:', addedCommentData);
 
-    let allEmbeddingsComplete = await checkForEmbeddings(addedCommentData.id, []);
-    let tries = 0;
-    while (!allEmbeddingsComplete && tries < 10) {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      allEmbeddingsComplete = await checkForEmbeddings(addedCommentData.id, []);
-      tries++;
-    }
-
-    // extend the force directed graph with the new comment
-    // get pen pals
-    const penPals = await searchPenPals(addedCommentData.id, [
-      parent.id,
-      addedCommentData.id,
-    ]);
-    setFData((prevData: any) => ({
-      ...prevData,
-      comments: [
-        ...(prevData.comments || []),
-        { comment: aliasInput, penPals },
-      ],
-    }));
-
     const parentRes = await fetchByID(parent.id);
     console.log('parentRes:', parentRes);
     let parentResMetadata = parentRes.metadata;
@@ -1824,6 +1802,33 @@ const EntryPage = () => {
       ...parentResMetadata,
     });
     setIsSaving(false);
+
+    setIsGraphLoading(true);
+
+    let allEmbeddingsComplete = await checkForEmbeddings(addedCommentData.id, []);
+    let tries = 0;
+    while (!allEmbeddingsComplete && tries < 10) {
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      allEmbeddingsComplete = await checkForEmbeddings(addedCommentData.id, []);
+      tries++;
+    }
+
+    // extend the force directed graph with the new comment
+    // get pen pals
+    // todo the switch of the order of update and fetchByID is causing the graph to not update correctly
+    const penPals = await searchPenPals(addedCommentData.id, [
+      parent.id,
+      addedCommentData.id,
+    ]);
+    setFData((prevData: any) => ({
+      ...prevData,
+      comments: [
+        ...(prevData.comments || []),
+        { comment: aliasInput, penPals },
+      ],
+    }));
+
+    setIsGraphLoading(false);
   };
 
   function timeAgo(date: Date): string {
@@ -2197,6 +2202,30 @@ again:
           style={{ fontSize: '17px' }}
           className="mb-4 w-full bg-white text-neutral-dark border border-neutral-dark py-2 px-4 rounded hover:bg-neutral-light transition"
           placeholder="Add a comment..."
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              const aliasInput = document.getElementById(
+                `alias-input-${renderedData?.id}`,
+              );
+              if (!aliasInput) return;
+              // Cast to HTMLInputElement to access value property
+              const alias = (aliasInput as HTMLInputElement).value;
+              // if empty alias, do not add
+              if (!alias || alias.trim() === '') {
+                console.log('empty alias');
+                return;
+              }
+              // handleAddComment(alias);
+              addCommentV2(alias, {
+                id: renderedData.id,
+                data: renderedData.data,
+                metadata: renderedData.metadata,
+              });
+              // clear input field
+              (aliasInput as HTMLInputElement).value = '';
+            }
+            
+          }}
           id={`alias-input-${renderedData?.id}`}
         />
         <button
