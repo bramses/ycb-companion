@@ -41,6 +41,7 @@ const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
   showModal,
   setShowModal,
 }) => {
+  console.log('fd in graph data:', data);
   const svgRef = useRef<SVGSVGElement | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -265,7 +266,7 @@ const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
       selectedNode.comments,
       selectedNode.matchedCommentId
     );
-  }, [currentIndex, graphNodes]);
+  }, [currentIndex]);
 
   // add comment
   const handleAddComment = async (comment: string, parent: any) => {

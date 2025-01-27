@@ -43,6 +43,7 @@ import Loading from './Loading';
 import SearchModalBeta from './SearchModalBeta';
 import ShareModal from './ShareModalV2';
 import UrlSVG from './UrlSVG';
+import { interval } from 'd3';
 
 const EntryPage = () => {
   // fetch data from the server at id on load
@@ -1801,6 +1802,7 @@ const EntryPage = () => {
     await apiUpdateEntry(parent.id, parent.data, {
       ...parentResMetadata,
     });
+    
     setIsSaving(false);
 
     setIsGraphLoading(true);
@@ -1824,9 +1826,11 @@ const EntryPage = () => {
       ...prevData,
       comments: [
         ...(prevData.comments || []),
-        { comment: aliasInput, penPals },
+        { comment: aliasInput, penPals, id: addedCommentData.id },
       ],
     }));
+
+    
 
     setIsGraphLoading(false);
   };
@@ -2204,10 +2208,11 @@ again:
           placeholder="Add a comment..."
           onKeyDown={(e) => {
             if (e.key === 'Enter') {
+              e.preventDefault();
               const aliasInput = document.getElementById(
                 `alias-input-${renderedData?.id}`,
               );
-              if (!aliasInput) return;
+              if (!aliasInput || (aliasInput as HTMLInputElement).value.trim() === '') return;
               // Cast to HTMLInputElement to access value property
               const alias = (aliasInput as HTMLInputElement).value;
               // if empty alias, do not add
@@ -2222,7 +2227,7 @@ again:
                 metadata: renderedData.metadata,
               });
               // clear input field
-              (aliasInput as HTMLInputElement).value = '';
+              (aliasInput as HTMLInputElement).value = ''.trim();
             }
             
           }}

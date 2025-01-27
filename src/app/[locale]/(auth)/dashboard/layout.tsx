@@ -180,14 +180,14 @@ export default function DashboardLayout(props: { children: React.ReactNode }) {
               {t('garden_link')}
             </Link>
           </li>
-          <li>
+          {/* <li>
             <Link
               href="/dashboard/grid/"
               className="border-none text-gray-700 hover:text-gray-900"
             >
               {t('grid_link')}
             </Link>
-          </li>
+          </li> */}
           {/* <li>
             <Link
               href="/dashboard/user-profile/"
