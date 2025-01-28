@@ -24,10 +24,7 @@ const SpeedDial = ({
   return (
     <div>
       {isOpen && <div className="overlay" />}
-      <div
-        data-dial-init
-        className="speed-dial group fixed bottom-6 end-6"
-      >
+      <div data-dial-init className="speed-dial group fixed bottom-6 end-6">
         <div
           id="speed-dial-menu-text-outside-button"
           className={`flex flex-col items-center ${isOpen ? 'flex' : 'hidden'} mb-4 space-y-2`}

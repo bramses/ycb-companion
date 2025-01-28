@@ -7,7 +7,6 @@ import { logger } from '@/libs/Logger';
 export const POST = async () => {
   const { CLOUD_URL, TOKEN } = process.env;
 
-
   const resp = await fetch(`${CLOUD_URL}/count`, {
     method: 'POST',
     headers: {
@@ -21,9 +20,7 @@ export const POST = async () => {
   try {
     logger.info(`A new count has been created ${JSON.stringify(data)}`);
 
-    return NextResponse.json(
-      data,
-    );
+    return NextResponse.json(data);
   } catch (error) {
     logger.error(error, 'An error occurred while creating a count');
 

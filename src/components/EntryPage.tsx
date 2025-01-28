@@ -1,5 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 /* eslint-disable jsx-a11y/img-redundant-alt */
+/* eslint-disable react-hooks/exhaustive-deps */
+/* eslint-disable no-param-reassign */
 
 // EntryPage.tsx
 
@@ -19,19 +21,20 @@ import SyntaxHighlighter from 'react-syntax-highlighter';
 import { docco } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 import { Tweet } from 'react-tweet';
 import { v4 as uuidv4 } from 'uuid';
-import { fetchFavicon } from '@/helpers/functions';
 
 import {
   addEntry,
   // createAmalgam,
   deleteEntry as apiDeleteEntry,
   fetchByID,
+  fetchFavicon,
   // fetchSearchEntries,
   // fetchSearchEntriesHelper,
   formatDate,
   // splitIntoWords,
   updateEntry as apiUpdateEntry,
-} from '../helpers/functions';
+} from '@/helpers/functions';
+
 import { createEntryTransaction } from '../helpers/transactionFunctions';
 import type { Transaction } from '../helpers/transactionManager';
 import { TransactionManager } from '../helpers/transactionManager';
@@ -43,7 +46,6 @@ import Loading from './Loading';
 import SearchModalBeta from './SearchModalBeta';
 import ShareModal from './ShareModalV2';
 import UrlSVG from './UrlSVG';
-import { interval } from 'd3';
 
 const EntryPage = () => {
   // fetch data from the server at id on load
@@ -98,9 +100,8 @@ const EntryPage = () => {
 
   const [transactionManager, setTransactionManager] =
     useState<TransactionManager | null>(null);
-  const [tempIds] = useState<string[]>([]);
   const [tempCommentIDs, setTempCommentIDs] = useState<any[]>([]);
-  const [cachedFData, setCachedFData] = useState<any>(null);
+  const [cachedFData] = useState<any>(null);
   const [isInDraftState, setIsInDraftState] = useState(false);
   const [favicon, setFavicon] = useState('/favicon.ico');
 
@@ -112,27 +113,27 @@ const EntryPage = () => {
     function handleKeyDown(event: KeyboardEvent) {
       if (graphNodes.length === 0) return;
 
-      if (event.key === "ArrowRight") {
+      if (event.key === 'ArrowRight') {
         setCurrentIndex((prevIndex) => {
           if (prevIndex === null) return 0;
           return (prevIndex + 1) % graphNodes.length;
         });
-      } else if (event.key === "ArrowLeft") {
+      } else if (event.key === 'ArrowLeft') {
         setCurrentIndex((prevIndex) => {
           if (prevIndex === null) return graphNodes.length - 1;
           return (prevIndex - 1 + graphNodes.length) % graphNodes.length;
         });
       }
 
-      if (event.key === "Escape") {
+      if (event.key === 'Escape') {
         event.preventDefault();
         setShowModal(false);
       }
     }
 
-    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener('keydown', handleKeyDown);
     return () => {
-      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener('keydown', handleKeyDown);
     };
   }, [graphNodes]);
 
@@ -165,11 +166,11 @@ const EntryPage = () => {
       startX = null;
     }
 
-    window.addEventListener("touchstart", handleTouchStart, { passive: false });
-    window.addEventListener("touchend", handleTouchEnd, { passive: false });
+    window.addEventListener('touchstart', handleTouchStart, { passive: false });
+    window.addEventListener('touchend', handleTouchEnd, { passive: false });
     return () => {
-      window.removeEventListener("touchstart", handleTouchStart);
-      window.removeEventListener("touchend", handleTouchEnd);
+      window.removeEventListener('touchstart', handleTouchStart);
+      window.removeEventListener('touchend', handleTouchEnd);
     };
   }, [showModal, graphNodes]);
 
@@ -177,57 +178,6 @@ const EntryPage = () => {
     setModalStates((prev) => ({ ...prev, [key]: true }));
   const closeModal = (key: string) =>
     setModalStates((prev) => ({ ...prev, [key]: false }));
-
-  // const toHostname = (url: string) => {
-  //   try {
-  //     return new URL(url).hostname;
-  //   } catch (err) {
-  //     return url;
-  //   }
-  // };
-
-  // const renderResultData = (result: any) => {
-  //   if (
-  //     result.metadata &&
-  //     result.metadata.author &&
-  //     result.metadata.author.includes('imagedelivery.net')
-  //   ) {
-  //     return <img src={result.metadata.author} alt="Image" />;
-  //   }
-
-  //   if (result.metadata && result.metadata.code) {
-  //     return (
-  //       <SyntaxHighlighter
-  //         language={
-  //           result.metadata.language === 'typescriptreact'
-  //             ? 'tsx'
-  //             : result.metadata.language
-  //         }
-  //         style={docco}
-  //         wrapLines
-  //         wrapLongLines
-  //         customStyle={{ height: '200px', overflow: 'scroll' }}
-  //       >
-  //         {result.metadata.code}
-  //       </SyntaxHighlighter>
-  //     );
-  //   }
-
-  //   if (result.parentData) {
-  //     return result.parentData.data;
-  //   }
-  //   if (result.data.split(' ').length > 2200) {
-  //     return (
-  //       <>
-  //         {splitIntoWords(result.data, 22, 0)}...
-  //         <span className="mt-1 block text-sm text-gray-500">
-  //           ...{splitIntoWords(result.data, 22, 22)}...
-  //         </span>
-  //       </>
-  //     );
-  //   }
-  //   return result.data;
-  // };
 
   const checkEmbeds = (
     res: { data: any; metadata: any },
@@ -299,47 +249,6 @@ const EntryPage = () => {
     }
   }, [data]);
 
-  // const handleSearchHelper = async (entryData: string) => {
-  //   const parsedEntries = await fetchSearchEntries(
-  //     entryData,
-  //     setSearchResults,
-  //     null,
-  //   );
-  //   return parsedEntries;
-  // };
-
-  // const handleSearchLinksModal = async (entryData: string) => {
-  //   const parsedEntries = await fetchSearchEntriesHelper(entryData);
-  //   return parsedEntries;
-  // };
-
-  // const handleSearch = async (entryData: string, _: string) => {
-  //   const parsedEntries = await handleSearchHelper(entryData);
-  //   // add ids of parsed entries to uniqueRelationships
-  //   // parsedEntries.forEach((entry: any) => {
-  //   //   const { id } = entry;
-  //   //   if (id) {
-  //   //     setUniqueRelationships((prev: any) => new Set([...prev, id]));
-  //   //   }
-  //   //   // console.log('uniqueRelationships:', uniqueRelationships);
-  //   // });
-  //   setSearchResults(parsedEntries);
-  // };
-
-  // useEffect(() => {
-  //   if (data?.metadata?.aliasData) {
-  //     data.metadata.aliasData.forEach(async (alias: any) => {
-  //       const parsedEntries = await handleSearchHelper(alias.aliasData);
-  //       parsedEntries.forEach((entry: any) => {
-  //         const { id } = entry;
-  //         if (id) {
-  //           setUniqueRelationships((prev: any) => new Set([...prev, id]));
-  //         }
-  //       });
-  //     });
-  //   }
-  // }, [data?.metadata?.aliasData]);
-
   useEffect(() => {
     if (!data) {
       const asyncFn = async () => {
@@ -358,7 +267,7 @@ const EntryPage = () => {
             // remove current page from the history stack so user doesnt back to it for loop
             window.history.pushState({}, '', window.location.pathname);
             // Redirect to a 404 page
-            window.location.href = '/404';
+            window.location.href = '/404'; // todo a react toast instead
           }
           // Handle other errors
           console.error(error);
@@ -421,22 +330,6 @@ const EntryPage = () => {
 
         // set author to the URL
         setAuthor(res.metadata.author);
-
-        // search for related entries
-        // handleSearch(res.data, res.id);
-        // if (res) {
-        //   const amalgam = await createAmalgam(
-        //     res,
-        //     res.metadata.aliasData,
-        //     [],
-        //     [],
-        //     {
-        //       disableAliasKeysInMetadata: true,
-        //       disableAliasKeysInComments: true,
-        //     },
-        //   );
-        //   console.log('Amalgam:', amalgam);
-        // }
       };
       asyncFn();
     }
@@ -505,85 +398,11 @@ const EntryPage = () => {
     };
   }, [isInDraftState]);
 
-  // useEffect(() => {
-  //   const handleKeyDown = (event: KeyboardEvent) => {
-  //     if (event.key === 'k') {
-  //       const selectedText = window.getSelection()?.toString();
-  //       if (selectedText) {
-  //         // open search modal beta
-  //         setModalStates((prev) => ({ ...prev, searchModalBeta: true }));
-  //         setSearchBetaModalQuery(selectedText);
-  //       }
-  //     }
-  //   };
-
-  //   window.addEventListener('keydown', handleKeyDown);
-
-  //   return () => {
-  //     window.removeEventListener('keydown', handleKeyDown);
-  //   };
-  // }, []);
-
   useEffect(() => {
     if (data) {
       document.title = data.data;
     }
   }, [data]);
-
-  // Transaction Handlers
-
-  // // Handle Edit Entry
-  // const handleEditEntry = (newData: string, newMetadata: any) => {
-  //   if (!transactionManager || !data) return;
-
-  //   console.log('newMetadata:', newMetadata);
-
-  //   // Update the draft state
-  //   const draftState = transactionManager.getDraftState();
-  //   draftState.data = newData;
-  //   draftState.metadata = newMetadata;
-
-  //   // Update UI immediately
-  //   setIsInDraftState(true);
-  //   setData({ ...draftState });
-
-  //   // Add transaction
-  //   const editEntryTx: Transaction = async () => {
-  //     await apiUpdateEntry(data.id, newData, newMetadata);
-  //   };
-
-  //   // should happen last
-  //   transactionManager.addTransaction(editEntryTx, { dependencies: tempIds });
-  // };
-
-  // // Handle Delete Entry
-  // const handleDeleteEntry = () => {
-  //   if (!transactionManager || !data) return;
-
-  //   // Confirm deletion
-  //   const confirmDelete = window.confirm(
-  //     'Are you sure you want to delete this entry?',
-  //   );
-  //   if (!confirmDelete) return;
-
-  //   setIsInDraftState(true);
-
-  //   // Update the draft state
-  //   const draftState = transactionManager.getDraftState();
-  //   draftState.deleted = true;
-
-  //   // Update UI immediately (navigate back to dashboard)
-  //   // router.push('/dashboard');
-
-  //   // Add transaction
-  //   const deleteEntryTx: Transaction = async () => {
-  //     await apiDeleteEntry(data.id);
-  //   };
-
-  //   transactionManager.addTransaction(deleteEntryTx);
-  // };
-
-  // Handle Add Comment
   // const handleAddComment = (aliasInput: string) => {
   //   if (!transactionManager || !data) return;
   //   console.log('alias:', aliasInput);
@@ -703,13 +522,11 @@ const EntryPage = () => {
       }),
     });
 
-    const data = await response.json();
-    console.log('entry data:', data);
-    if (data.data.status !== 'completed')
-      return false;
+    const adata = await response.json();
+    if (adata.data.status !== 'completed') return false;
 
-    for (const aliasID of aliasIDs) {
-      const response = await fetch(`/api/checkForEmbed`, {
+    for await (const aliasID of aliasIDs) {
+      const cresponse = await fetch(`/api/checkForEmbed`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -719,16 +536,13 @@ const EntryPage = () => {
           aliasID,
         }),
       });
-      const data = await response.json();
-      console.log('for data:', data);
-      if (data.data.status !== 'completed')
-        return false;
+      const cdata = await cresponse.json();
+      if (cdata.data.status !== 'completed') return false;
     }
 
-    console.log('all embeddings are complete'); 
     return true;
   };
-    
+
   const handleSaveComments = async () => {
     if (!transactionManager || !data) return;
 
@@ -922,60 +736,6 @@ const EntryPage = () => {
     }
   };
 
-  // // Handle Add Link
-  // const handleAddLink = (name: string, url: string) => {
-  //   if (!transactionManager || !data) return;
-
-  //   // Update the draft state
-  //   const draftState = transactionManager.getDraftState();
-  //   const newLink = { name, url };
-  //   draftState.metadata.links = [...(draftState.metadata.links || []), newLink];
-
-  //   // Update UI immediately
-  //   setIsInDraftState(true);
-  //   setData({ ...draftState });
-
-  //   const addLinkTxName = `addLinkTx-${uuidv4()}`;
-
-  //   // Add transaction to update the entry
-  //   const addLinkTx: Transaction = async () => {
-  //     await apiUpdateEntry(data.id, data.data, draftState.metadata);
-  //   };
-
-  //   // add the new link to the tempIds array
-  //   setTempIds((prev) => [...prev, newLink.name]);
-
-  //   transactionManager.addTransaction(addLinkTx, {
-  //     name: addLinkTxName,
-  //   });
-  // };
-
-  // // Handle Delete Link
-  // const handleDeleteLink = (index: number) => {
-  //   if (!transactionManager || !data) return;
-
-  //   // Update the draft state
-  //   const draftState = transactionManager.getDraftState();
-  //   if (draftState.metadata.links && draftState.metadata.links[index]) {
-  //     draftState.metadata.links.splice(index, 1);
-  //   }
-
-  //   // Update UI immediately
-  //   setIsInDraftState(true);
-  //   setData({ ...draftState });
-
-  //   // Add transaction to update the entry
-  //   const deleteLinkTx: Transaction = async () => {
-  //     await apiUpdateEntry(data.id, data.data, draftState.metadata);
-  //   };
-
-  //   // add the new link to the tempIds array
-  //   const tempDeleteLinkId = `temp-delete-link-${uuidv4()}`;
-  //   setTempIds((prev) => [...prev, tempDeleteLinkId]);
-
-  //   transactionManager.addTransaction(deleteLinkTx);
-  // };
-
   // Handle Save All Transactions
   const handleSaveAll = async () => {
     if (!transactionManager) return;
@@ -1117,102 +877,56 @@ const EntryPage = () => {
     return elements;
   };
 
-  // const searchNeighbors = async (query: string, skipIDS: string[] = []) => {
-  //   const response = await fetch('/api/search', {
-  //     method: 'POST',
-  //     headers: {
-  //       'Content-Type': 'application/json',
-  //     },
-  //     body: JSON.stringify({
-  //       query,
-  //       matchCount: 6,
-  //     }),
-  //   });
-  //   const res = await response.json();
-  //   const neighbors = [];
-  //   for await (const neighbor of res.data) {
-  //     if (skipIDS.includes(neighbor.id)) {
-  //     } else {
-  //       if (neighbor.metadata.parent_id) {
-  //         const parent = await fetchByID(neighbor.metadata.parent_id);
-  //         neighbor.parent = parent;
-
-  //         // if neighbor has alias_ids, fetch them and add them to the aliases array
-  //         if (parent.metadata.alias_ids) {
-  //           const commentIDs = parent.metadata.alias_ids;
-  //           // fetch each comment by id and add it to the comments array
-  //           neighbor.parent.comments = [];
-  //           for await (const commentID of commentIDs) {
-  //             const comment = await fetchByID(commentID);
-  //             neighbor.parent.comments.push(comment);
-  //           }
-  //         }
-  //       }
-
-  //       // if neighbor has alias_ids, fetch them and add them to the aliases array
-  //       if (neighbor.metadata.alias_ids) {
-  //         const commentIDs = neighbor.metadata.alias_ids;
-  //         // fetch each comment by id and add it to the comments array
-  //         neighbor.comments = [];
-  //         for await (const commentID of commentIDs) {
-  //           const comment = await fetchByID(commentID);
-  //           neighbor.comments.push(comment);
-  //         }
-  //       }
-
-  //       // if metadata.author includes imagedelivery.net, add it to the thumbnails array
-  //       if (neighbor.metadata.author) {
-  //         if (neighbor.metadata.author.includes('imagedelivery.net')) {
-  //           neighbor.image = neighbor.metadata.author;
-  //         }
-  //         neighbor.author = neighbor.metadata.author;
-  //       }
-  //       if (neighbor.metadata.title) {
-  //         neighbor.title = neighbor.metadata.title;
-  //       }
-  //       neighbors.push(neighbor);
-  //     }
-  //   }
-    
-  //   console.log('neighbors:', neighbors);
-  //   return neighbors;
-  // };
-
-  const searchNeighbors = async (platformId: string, skipIDS: string[] = []) => {
+  const searchNeighbors = async (
+    platformId: string,
+    skipIDS: string[] = [],
+  ) => {
     const response = await fetch('/api/search', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ platformId, matchCount: 6 }),
     });
     const res = await response.json();
-    console.log('res:', res);
-  
+
     const neighbors = await Promise.all(
       res.data.map(async (neighbor: any) => {
         if (skipIDS.includes(neighbor.id)) return null;
-  
+
         // parent fetch in parallel with neighbor's alias fetch
         const parentId = neighbor.metadata.parent_id;
         const aliasIds = neighbor.metadata.alias_ids || [];
-  
+
         const [parentData, neighborAliases] = await Promise.all([
           parentId ? fetchByID(parentId) : Promise.resolve(null),
           Promise.all(aliasIds.map((id: string) => fetchByID(id))),
         ]);
-  
+
         if (parentData) {
           neighbor.parent = parentData;
           if (parentData.metadata.alias_ids) {
-            neighbor.parent.comments = await Promise.all(
-              parentData.metadata.alias_ids.map((id: string) => fetchByID(id))
+            // neighbor.parent.comments = await Promise.all(
+            //   parentData.metadata.alias_ids.map((id: string) => fetchByID(id))
+            // );
+
+            const aliasCommentsPromise = Promise.all(
+              parentData.metadata.alias_ids.map((id: string) => fetchByID(id)),
             );
+
+            // Optionally handle the alias comments when they are ready
+            aliasCommentsPromise
+              .then((comments) => {
+                neighbor.parent.comments = comments;
+              })
+              .catch((error) => {
+                console.error('Error fetching alias comments:', error);
+              });
           }
         }
-  
+
         if (neighborAliases.length) {
           neighbor.comments = neighborAliases;
         }
-  
+
         // handle metadata
         if (neighbor.metadata.author) {
           if (neighbor.metadata.author.includes('imagedelivery.net')) {
@@ -1227,11 +941,11 @@ const EntryPage = () => {
         if (neighbor.createdAt) {
           neighbor.createdAt = new Date(neighbor.createdAt).toISOString();
         }
-  
+
         return neighbor;
-      })
+      }),
     );
-  
+
     const filteredNeighbors = neighbors.filter(Boolean);
     return filteredNeighbors;
   };
@@ -1243,33 +957,45 @@ const EntryPage = () => {
       body: JSON.stringify({ platformId, matchCount: 6 }),
     });
     const res = await response.json();
-    console.log('penPals:', res);
-  
+
     const penPals = await Promise.all(
       res.data.map(async (penPal: any) => {
         if (skipIDS.includes(penPal.id)) return null;
-  
+
         const parentId = penPal.metadata.parent_id;
         const aliasIds = penPal.metadata.alias_ids || [];
-  
+
         const [parentData, penPalAliases] = await Promise.all([
           parentId ? fetchByID(parentId) : null,
           Promise.all(aliasIds.map((id: string) => fetchByID(id))),
         ]);
-  
+
         if (parentData) {
           penPal.parent = parentData;
           if (parentData.metadata.alias_ids) {
-            penPal.parent.comments = await Promise.all(
-              parentData.metadata.alias_ids.map((id: string) => fetchByID(id))
+            // penPal.parent.comments = await Promise.all(
+            //   parentData.metadata.alias_ids.map((id: string) => fetchByID(id))
+            // );
+
+            const aliasCommentsPromise = Promise.all(
+              parentData.metadata.alias_ids.map((id: string) => fetchByID(id)),
             );
+
+            // Optionally handle the alias comments when they are ready
+            aliasCommentsPromise
+              .then((comments) => {
+                penPal.parent.comments = comments;
+              })
+              .catch((error) => {
+                console.error('Error fetching alias comments:', error);
+              });
           }
         }
-  
+
         if (penPalAliases.length) {
           penPal.comments = penPalAliases;
         }
-  
+
         if (penPal.metadata.author) {
           if (penPal.metadata.author.includes('imagedelivery.net')) {
             penPal.image = penPal.metadata.author;
@@ -1283,14 +1009,14 @@ const EntryPage = () => {
         if (penPal.createdAt) {
           penPal.createdAt = new Date(penPal.createdAt).toISOString();
         }
-  
+
         return penPal;
-      })
+      }),
     );
-  
+
     return penPals.filter(Boolean);
   };
-  
+
   const searchInternalLinks = async (query: string, skipIDS: string[] = []) => {
     const response = await fetch('/api/search', {
       method: 'POST',
@@ -1298,17 +1024,17 @@ const EntryPage = () => {
       body: JSON.stringify({ query, matchCount: 6 }),
     });
     const res = await response.json();
-  
+
     const internalLinks = await Promise.all(
       res.data.map(async (link: any) => {
         if (skipIDS.includes(link.id) || link.similarity === 1.01) return null;
-  
+
         const parentId = link.metadata.parent_id;
         if (parentId) {
           const parentData = await fetchByID(parentId);
           link.parent = parentData;
         }
-  
+
         if (link.metadata.author) {
           if (link.metadata.author.includes('imagedelivery.net')) {
             link.image = link.metadata.author;
@@ -1322,20 +1048,17 @@ const EntryPage = () => {
         if (link.createdAt) {
           link.createdAt = new Date(link.createdAt).toISOString();
         }
-  
+
         return link;
-      })
+      }),
     );
-  
+
     return internalLinks.filter(Boolean);
   };
-  
 
   // add a comment to the specified parent and update it
   const handleAddCommentGraph = async (comment: string, parent: any) => {
     // add the comment to the parent's aliasData
-
-    console.log(`[handleAdd] ${comment} ${JSON.stringify(parent)}`);
 
     const commentRes = await addEntry(comment, {
       author: parent.author,
@@ -1344,7 +1067,6 @@ const EntryPage = () => {
     });
 
     const addedComment = commentRes.respData;
-    console.log('addedComment:', addedComment);
 
     // update parent aliasIds and aliasData
     const parentRes = await fetchByID(parent.id);
@@ -1392,8 +1114,6 @@ const EntryPage = () => {
       expansion.children.map((child: any) => child.id),
     );
 
-    console.log(' inputFData.entry', inputFData.entry);
-
     return [
       inputFData.entry?.id,
       ...neighborIds,
@@ -1405,98 +1125,22 @@ const EntryPage = () => {
     ].filter(Boolean);
   };
 
-  // const handleExpand = async (nodeId: string) => {
-  //   // Fetch the node's data and metadata
-  //   const nodeData = await fetchByID(nodeId);
-  //   if (!nodeData) {
-  //     console.error(`Cannot fetch data for node with id ${nodeId}`);
-  //     return;
-  //   }
-
-  //   const comments = nodeData.metadata.aliasData || [];
-  //   const commentIDs = comments.map((comment: any) => comment.aliasId);
-
-  //   // Get all existing node IDs to avoid duplicates
-  //   const existingNodeIds = getAllNodeIds(fData);
-
-  //   // Fetch neighbors, excluding already existing nodes
-  //   const neighbors = await searchNeighbors(nodeData.data, [
-  //     nodeId,
-  //     ...commentIDs,
-  //     ...existingNodeIds,
-  //   ]);
-
-  //   const newNeighbors = neighbors.filter(
-  //     (neighbor: any) => !existingNodeIds.includes(neighbor.id),
-  //   );
-
-  //   // Update fData with new neighbors
-  //   setFData((prevData: any) => ({
-  //     ...prevData,
-  //     neighbors: [...prevData.neighbors, ...newNeighbors],
-  //   }));
-
-  //   // Process comments and internal links similarly...
-
-  //   // Check if new data was added
-  //   if (newNeighbors.length === 0 /* && other checks */) {
-  //     alert('Area is fully explored');
-  //   }
-  // };
-
-  // Implement the 'expandFData' function to merge new data into 'fData'
-  // const expandFDataOld = async (entry: any, comments: any[] = [], searchData: string | null = null) => {
-  //   const commentIDs = comments.map((comment: any) => comment.aliasId).flat();
-  //   const existingNodeIds = getAllNodeIds(fData);
-
-  //   // Fetch neighbors
-  //   const neighbors = await searchNeighbors(searchData || entry.data, [
-  //     entry.id,
-  //     ...commentIDs,
-  //     ...existingNodeIds,
-  //   ]);
-
-  //   // append entry.id to existingNodeIds
-  //   existingNodeIds.push({id: entry.id});
-  //   existingNodeIds.push(...commentIDs.map((id: string) => ({id})));
-
-  //   const newNeighbors = neighbors.filter(
-  //     (neighbor: any) => !existingNodeIds.includes(neighbor.id),
-  //   );
-
-  //   // Update 'fData' with new neighbors
-  //   setFData((prevData: any) => ({
-  //     ...prevData,
-  //     // neighbors: [...prevData.neighbors, ...newNeighbors],
-  //     expansion: [
-  //       ...prevData.expansion,
-  //       { parent: entry.id, children: newNeighbors, comment: entry.data },
-  //     ],
-  //   }));
-
-  //   // Process comments and internal links similarly...
-
-  //   // Return whether new data was added
-  //   const newDataAdded = newNeighbors.length > 0; // Add checks for comments and internal links if processed
-  //   return newDataAdded;
-  // };
-
   const expandFData = async (entryId: any, commentId: any) => {
     const existingNodeIds = getAllNodeIds(fData);
 
-    if(!commentId) {
+    if (!commentId) {
       // Fetch neighbors
       const neighbors = await searchNeighbors(entryId, [
         entryId,
         ...existingNodeIds,
       ]);
-  
+
       // append entry.id to existingNodeIds
-  
+
       const newNeighbors = neighbors.filter(
         (neighbor: any) => !existingNodeIds.includes(neighbor.id),
       );
-  
+
       // Update 'fData' with new neighbors
       setFData((prevData: any) => ({
         ...prevData,
@@ -1506,186 +1150,94 @@ const EntryPage = () => {
           { parent: entryId, children: newNeighbors, comment: 'todo' },
         ],
       }));
-  
+
       // Process comments and internal links similarly...
-  
-      // Return whether new data was added
-      const newDataAdded = newNeighbors.length > 0; // Add checks for comments and internal links if processed
-      return newDataAdded;
-    } else {
-      // Fetch neighbors
-      const neighbors = await searchNeighbors(commentId, [
-        entryId,
-        ...existingNodeIds,
-      ]);
-  
-      // append entry.id to existingNodeIds
-  
-      const newNeighbors = neighbors.filter(
-        (neighbor: any) => !existingNodeIds.includes(neighbor.id),
-      );
-  
-      // Update 'fData' with new neighbors
-      setFData((prevData: any) => ({
-        ...prevData,
-        // neighbors: [...prevData.neighbors, ...newNeighbors],
-        expansion: [
-          ...prevData.expansion,
-          { parent: entryId, children: newNeighbors, comment: 'todo' },
-        ],
-      }));
-  
-      // Process comments and internal links similarly...
-  
+
       // Return whether new data was added
       const newDataAdded = newNeighbors.length > 0; // Add checks for comments and internal links if processed
       return newDataAdded;
     }
+    // Fetch neighbors
+    const neighbors = await searchNeighbors(commentId, [
+      entryId,
+      ...existingNodeIds,
+    ]);
+
+    // append entry.id to existingNodeIds
+
+    const newNeighbors = neighbors.filter(
+      (neighbor: any) => !existingNodeIds.includes(neighbor.id),
+    );
+
+    // Update 'fData' with new neighbors
+    setFData((prevData: any) => ({
+      ...prevData,
+      // neighbors: [...prevData.neighbors, ...newNeighbors],
+      expansion: [
+        ...prevData.expansion,
+        { parent: entryId, children: newNeighbors, comment: 'todo' },
+      ],
+    }));
+
+    // Process comments and internal links similarly...
+
+    // Return whether new data was added
+    const newDataAdded = newNeighbors.length > 0; // Add checks for comments and internal links if processed
+    return newDataAdded;
   };
 
-
-  // const handleExpandOld = async (nodeId: string, initNodeData: string | null = null) => {
-  //   setIsGraphLoading(true);
-
-  //   if (!initNodeData) {
-  //     const nodeData = await fetchByID(nodeId);
-
-  //     if (!nodeData) {
-  //       alert(`Cannot fetch data for node with id ${nodeId}`);
-  //       setIsGraphLoading(false);
-  //       return;
-  //     }
-
-  //     if (!nodeData.metadata) {
-  //       alert(`Cannot fetch data for node with id ${nodeId}`);
-  //       setIsGraphLoading(false);
-  //       return;
-  //     }
-
-
-  //     // Expand the graph with the new data
-  //     const newDataAdded = await expandFData(
-  //       nodeData,
-  //       nodeData.metadata.aliasData,
-  //     );
-
-  //     if (!newDataAdded) {
-  //       alert('Area is fully explored');
-  //     }
-  //     setIsGraphLoading(false);
-  //     return;
-  //   } else {
-  //     const nodeData = await fetchByID(nodeId);
-  //     // Expand the graph with the new data
-  //     const newDataAdded = await expandFData(
-  //       nodeData,
-  //       nodeData.metadata.aliasData,
-  //       initNodeData
-  //     );
-
-  //     if (!newDataAdded) {
-  //       alert('Area is fully explored');
-  //     }
-  //     setIsGraphLoading(false);
-  //     return;
-  //   }
-  // };
-
-  const handleExpand = async (nodeId: string, initNodeDataID: string | null = null) => {
+  const handleExpand = async (
+    nodeId: string,
+    initNodeDataID: string | null = null,
+  ) => {
     setIsGraphLoading(true);
 
     if (!initNodeDataID) {
       // Expand the graph with the new data
-      const newDataAdded = await expandFData(
-        nodeId, null
-      );
+      const newDataAdded = await expandFData(nodeId, null);
 
       if (!newDataAdded) {
         alert('Area is fully explored');
       }
       setIsGraphLoading(false);
-      return;
     } else {
-      
       // Expand the graph with the new data
-      const newDataAdded = await expandFData(
-        nodeId,
-        initNodeDataID
-      );
+      const newDataAdded = await expandFData(nodeId, initNodeDataID);
 
       if (!newDataAdded) {
         alert('Area is fully explored');
       }
       setIsGraphLoading(false);
-      return;
     }
   };
 
-  // const generateFData = async (entry: any, comments: any[] = []) => {
-  //   setIsGraphLoading(true);
-  //   const commentIDs = comments.map((comment: any) => comment.aliasId);
-
-  //   // Fetch neighbors and update state incrementally
-  //   const neighbors = await searchNeighbors(entry.data, [
-  //     entry.id,
-  //     ...commentIDs,
-  //   ]);
-  //   setFData((prevData: any) => ({
-  //     ...prevData,
-  //     neighbors,
-  //   }));
-
-  //   const neighborIDs = neighbors.map((neighbor: any) => neighbor.id);
-
-  //   // Process comments and update state incrementally
-  //   for await (const comment of comments) {
-  //     const penPals = await searchPenPals(comment.aliasData, [
-  //       ...neighborIDs,
-  //       entry.id,
-  //       ...commentIDs,
-  //     ]);
-  //     setFData((prevData: any) => ({
-  //       ...prevData,
-  //       comments: [
-  //         ...(prevData.comments || []),
-  //         { comment: comment.aliasData, penPals },
-  //       ],
-  //     }));
-  //   }
-
-  //   // Extract and process internal links, updating state incrementally
-  //   const dataLinks = entry.data.match(/\[\[(.*?)\]\]/g) || [];
-  //   for await (const link of dataLinks) {
-  //     const linkData = link.replace('[[', '').replace(']]', '');
-  //     const linkParts = linkData.split('|');
-  //     const internalLink = linkParts.length === 2 ? linkParts[0] : linkData;
-  //     const penPals = await searchInternalLinks(internalLink, [
-  //       ...neighborIDs,
-  //       entry.id,
-  //       ...commentIDs,
-  //     ]);
-  //     setFData((prevData: any) => ({
-  //       ...prevData,
-  //       internalLinks: [
-  //         ...(prevData.internalLinks || []),
-  //         { internalLink, penPals },
-  //       ],
-  //     }));
-  //   }
-
-  //   setIsGraphLoading(false);
-  // };
-
   const generateFData = async (entry: any, comments: any[] = []) => {
+    console.time('generateFData');
     setIsGraphLoading(true);
 
     // check that all embeddings are completed
-    let allEmbeddingsComplete = await checkForEmbeddings(entry.id, comments.map((comment: any) => comment.aliasId));
-    let tries = 0;
-    while (!allEmbeddingsComplete && tries < 10) {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      allEmbeddingsComplete = await checkForEmbeddings(entry.id, comments.map((comment: any) => comment.aliasId));
-      tries++;
+    // ... existing code ...
+    const checkEmbeddingsWithDelay = async (
+      entryId: string,
+      maxTries: number,
+      currentTry = 0,
+    ): Promise<boolean> => {
+      if (currentTry >= maxTries) return false;
+      const allEmbeddingsComplete = await checkForEmbeddings(entryId, []);
+      if (allEmbeddingsComplete) return true;
+      await new Promise<void>((resolve) => {
+        setTimeout(resolve, 1000);
+      });
+      return checkEmbeddingsWithDelay(entryId, maxTries, currentTry + 1);
+    };
+
+    const allEmbeddingsComplete = await checkEmbeddingsWithDelay(entry.id, 10);
+
+    if (!allEmbeddingsComplete) {
+      console.log('Embeddings not complete after 10 tries -- try again later');
+      alert('Failed to complete embeddings. Please try again later.');
+      // Optionally, you can redirect the user or take other actions
+      return;
     }
 
     const commentIDs = comments.map((comment: any) => comment.aliasId);
@@ -1734,6 +1286,7 @@ const EntryPage = () => {
       internalLinks: processedInternalLinks,
     }));
     setIsGraphLoading(false);
+    console.timeEnd('generateFData');
   };
 
   const addCommentV2 = async (
@@ -1780,10 +1333,8 @@ const EntryPage = () => {
 
     const addedCommentRespData = await addedComment.json();
     const addedCommentData = addedCommentRespData.respData;
-    console.log('addedCommentData [v2]:', addedCommentData);
 
     const parentRes = await fetchByID(parent.id);
-    console.log('parentRes:', parentRes);
     let parentResMetadata = parentRes.metadata;
     try {
       parentResMetadata = parentRes.metadata;
@@ -1802,17 +1353,35 @@ const EntryPage = () => {
     await apiUpdateEntry(parent.id, parent.data, {
       ...parentResMetadata,
     });
-    
+
     setIsSaving(false);
 
     setIsGraphLoading(true);
 
-    let allEmbeddingsComplete = await checkForEmbeddings(addedCommentData.id, []);
-    let tries = 0;
-    while (!allEmbeddingsComplete && tries < 10) {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      allEmbeddingsComplete = await checkForEmbeddings(addedCommentData.id, []);
-      tries++;
+    const checkEmbeddingsWithDelay = async (
+      entryId: string,
+      maxTries: number,
+      currentTry = 0,
+    ): Promise<boolean> => {
+      if (currentTry >= maxTries) return false;
+      const allEmbeddingsComplete = await checkForEmbeddings(entryId, []);
+      if (allEmbeddingsComplete) return true;
+      await new Promise<void>((resolve) => {
+        setTimeout(resolve, 1000);
+      });
+      return checkEmbeddingsWithDelay(entryId, maxTries, currentTry + 1);
+    };
+
+    const allEmbeddingsComplete = await checkEmbeddingsWithDelay(
+      addedCommentData.id,
+      10,
+    );
+
+    if (!allEmbeddingsComplete) {
+      console.log('Embeddings not complete after 10 tries -- try again later');
+      alert('Failed to complete embeddings. Please try again later.');
+      // Optionally, you can redirect the user or take other actions
+      return;
     }
 
     // extend the force directed graph with the new comment
@@ -1830,33 +1399,31 @@ const EntryPage = () => {
       ],
     }));
 
-    
-
     setIsGraphLoading(false);
   };
 
   function timeAgo(date: Date): string {
-  const now = new Date();
-  const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+    const now = new Date();
+    const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
 
-  const intervals: { [key: string]: number } = {
-    year: 31536000,
-    month: 2592000,
-    week: 604800,
-    day: 86400,
-    hour: 3600,
-    minute: 60,
-  };
+    const intervals: { [key: string]: number } = {
+      year: 31536000,
+      month: 2592000,
+      week: 604800,
+      day: 86400,
+      hour: 3600,
+      minute: 60,
+    };
 
-  for (const [key, value] of Object.entries(intervals)) {
-    const interval = Math.floor(seconds / value);
-    if (interval >= 1) {
-      return `${interval} ${key}${interval > 1 ? 's' : ''} ago`;
+    for (const [key, value] of Object.entries(intervals)) {
+      const interval = Math.floor(seconds / value);
+      if (interval >= 1) {
+        return `${interval} ${key}${interval > 1 ? 's' : ''} ago`;
+      }
     }
-  }
 
-  return 'just now';
-}
+    return 'just now';
+  }
 
   const handleDeleteEntryV2 = async () => {
     if (!data) return;
@@ -1893,6 +1460,71 @@ const EntryPage = () => {
       console.error('Error deleting entry:', error);
     }
   };
+
+  // const handleDeleteCommentV2 = async (aliasId: string) => {
+  //   if (!data) return;
+
+  //   // Confirm deletion
+  //   const confirmDelete = window.confirm(
+  //     'Are you sure you want to delete this comment?',
+  //   );
+  //   if (!confirmDelete) return;
+  //   setIsSaving(true);
+
+  //   const entryToBeDeleted = await fetchByID(aliasId);
+
+  //   // update the parent entry to remove the deleted comment
+  //   const parentEntry = await fetchByID(entryToBeDeleted.metadata.parent_id);
+  //   if (!parentEntry) return;
+
+  //   try {
+  //     // Attempt to delete the comment via API
+  //     const response = await fetch(`/api/delete`, {
+  //       method: 'POST',
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //       },
+  //       body: JSON.stringify({ id: aliasId }),
+  //     });
+
+  //     await apiUpdateEntry(parentEntry.id, parentEntry.data, {
+  //       ...parentEntry.metadata,
+  //       alias_ids: parentEntry.metadata.alias_ids.filter(
+  //         (id: string) => id !== aliasId
+  //       ),
+  //     });
+
+  //     setIsSaving(false);
+
+  //     // if (response.ok) {
+  //     //   // Update the local state to remove the deleted comment
+  //     //   setData((prevData) => {
+  //     //     if (!prevData) return null;
+  //     //     const updatedAliasData = prevData.metadata.aliasData.filter(
+  //     //       (alias: any) => alias.aliasId !== aliasId
+  //     //     );
+  //     //     const updatedAliasIds = prevData.metadata.alias_ids.filter(
+  //     //       (id: string) => id !== aliasId
+  //     //     );
+
+  //     //     return {
+  //     //       ...prevData,
+  //     //       metadata: {
+  //     //         ...prevData.metadata,
+  //     //         aliasData: updatedAliasData,
+  //     //         alias_ids: updatedAliasIds,
+  //     //       },
+  //     //     };
+  //     //   });
+  //     //   alert('Comment deleted successfully.');
+  //     // } else {
+  //     //   throw new Error('Failed to delete comment');
+  //     // }
+  //   } catch (error) {
+  //     alert('Failed to delete comment. Please try again.');
+  //     console.error('Error deleting comment:', error);
+  //   }
+  // };
 
   const handleEditEntryV2 = async (newData: string, newMetadata: any) => {
     if (!data) return;
@@ -1972,7 +1604,6 @@ const EntryPage = () => {
 
       if (cachedFData) {
         setFData(cachedFData);
-        console.log('using cached fdata:', cachedFData);
         return;
       }
       await generateFData(data, data.metadata.aliasData);
@@ -1988,7 +1619,7 @@ const EntryPage = () => {
     : data;
 
   return renderedData ? (
-    <div className="min-w-full max-w-full min-h-screen py-4 px-5">
+    <div className="min-h-screen min-w-full max-w-full px-5 py-4">
       {hasYouTubeEmbed && (
         <LiteYouTubeEmbed
           id={youtubeId}
@@ -2054,36 +1685,38 @@ const EntryPage = () => {
                 editModal: true,
               }));
             }}
-            className='[&_p]:my-6 text-neutral-dark mt-2'
+            className="mt-2 text-neutral-dark [&_p]:my-6"
           >
             {processCustomMarkdown(data.data)}
-            <div className='float-right'><Link
-              href={data.metadata.author}
-              className=" inline-flex items-center font-medium text-brand hover:underline"
-              target="_blank"
-            >
-              <img src={favicon} alt="favicon" className="h-6 w-6 mr-2" />
-              {data.metadata.title}
-              <UrlSVG />
-            </Link>
-            <br />
-            <a
-              href={`/dashboard/garden?date=${new Date(data.createdAt)
-                .toLocaleDateString()
-                .split('/')
-                .map((d) => (d.length === 1 ? `0${d}` : d))
-                .join('-')}
+            <div className="float-right">
+              <Link
+                href={data.metadata.author}
+                className=" inline-flex items-center font-medium text-brand hover:underline"
+                target="_blank"
+              >
+                <img src={favicon} alt="favicon" className="mr-2 size-6" />
+                {data.metadata.title}
+                <UrlSVG />
+              </Link>
+              <br />
+              <a
+                href={`/dashboard/garden?date=${new Date(data.createdAt)
+                  .toLocaleDateString()
+                  .split('/')
+                  .map((d) => (d.length === 1 ? `0${d}` : d))
+                  .join('-')}
                 `}
-              className="inline-flex items-center font-medium text-brand hover:underline"
-            >
-              {timeAgo(new Date(data.createdAt))}
-            </a></div>
+                className="inline-flex items-center font-medium text-brand hover:underline"
+              >
+                {timeAgo(new Date(data.createdAt))}
+              </a>
+            </div>
           </div>
 
           <button
             onClick={() => setOpenShareModal(true)}
             type="button"
-            className="w-full rounded border border-neutral-light bg-neutral-light p-2 text-neutral-dark focus:border-brand focus:ring-brand mt-2"
+            className="mt-2 w-full rounded border border-neutral-light bg-neutral-light p-2 text-neutral-dark focus:border-brand focus:ring-brand"
           >
             Share
           </button>
@@ -2091,29 +1724,39 @@ const EntryPage = () => {
             <ShareModal
               entry={{
                 data: data.data,
-                image: data.metadata.author === 'imagedelivery.net' ? data.metadata.author : null,
+                image:
+                  data.metadata.author === 'imagedelivery.net'
+                    ? data.metadata.author
+                    : null,
                 metadata: {
                   title: data.metadata.title,
                   author: data.metadata.author,
                 },
               }}
-              comments={data.metadata && data.metadata.aliasData ? data.metadata.aliasData.map((comment: any) => {
-                return {
-                  data: comment.aliasData,
-                  image: comment.aliasMetadata.author === 'imagedelivery.net' ? comment.metadata.author : null,
-                  metadata: {
-                    title: comment.aliasMetadata.title,
-                    author: comment.aliasMetadata.author,
-                  },
-                };
-              }): []}
+              comments={
+                data.metadata && data.metadata.aliasData
+                  ? data.metadata.aliasData.map((comment: any) => {
+                      return {
+                        data: comment.aliasData,
+                        image:
+                          comment.aliasMetadata.author === 'imagedelivery.net'
+                            ? comment.metadata.author
+                            : null,
+                        metadata: {
+                          title: comment.aliasMetadata.title,
+                          author: comment.aliasMetadata.author,
+                        },
+                      };
+                    })
+                  : []
+              }
               isOpen={openShareModal}
               entryId={data.id}
               closeModalFn={() => setOpenShareModal(false)}
             />
           )}
 
-          {/* todo chatycb */ }
+          {/* todo chatycb */}
           {/* <hr className="my-4" />
           {fData && (
             <Chat
@@ -2164,33 +1807,33 @@ again:
         'Loading...'
       )}
       {fData ? (
-            <div className="relative">
-              <div className="relative">
-                <ForceDirectedGraph
-                  data={fData}
-                  onExpand={handleExpand}
-                  isGraphLoading={isGraphLoading}
-                  onAddComment={handleAddCommentGraph}
-                  graphNodes={graphNodes}
-                  setGraphNodes={setGraphNodes}
-                  currentIndex={currentIndex}
-                  setCurrentIndex={setCurrentIndex}
-                  showModal={showModal}
-                  setShowModal={setShowModal}
-                />
-                <p className="text-sm text-gray-500">
-                  Use left/right arrow keys to navigate, swipe left/right on
-                  mobile to cycle through entries (open an entry first).
-                  <br />
-                </p>
-                {isGraphLoading && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-75">
-                    <span className="text-lg font-bold">Loading...</span>
-                  </div>
-                )}
+        <div className="relative">
+          <div className="relative">
+            <ForceDirectedGraph
+              data={fData}
+              onExpand={handleExpand}
+              isGraphLoading={isGraphLoading}
+              onAddComment={handleAddCommentGraph}
+              graphNodes={graphNodes}
+              setGraphNodes={setGraphNodes}
+              currentIndex={currentIndex}
+              setCurrentIndex={setCurrentIndex}
+              showModal={showModal}
+              setShowModal={setShowModal}
+            />
+            <p className="text-sm text-gray-500">
+              Use left/right arrow keys to navigate, swipe left/right on mobile
+              to cycle through entries (open an entry first).
+              <br />
+            </p>
+            {isGraphLoading && (
+              <div className="absolute inset-0 flex items-center justify-center bg-white/75">
+                <span className="text-lg font-bold">Loading...</span>
               </div>
-            </div>
-          ) : null}
+            )}
+          </div>
+        </div>
+      ) : null}
       {isInDraftState && (
         <button
           type="button"
@@ -2204,7 +1847,7 @@ again:
         <textarea
           rows={3}
           style={{ fontSize: '17px' }}
-          className="mb-4 w-full bg-white text-neutral-dark border border-neutral-dark py-2 px-4 rounded hover:bg-neutral-light transition"
+          className="mb-4 w-full rounded border border-neutral-dark bg-white px-4 py-2 text-neutral-dark transition hover:bg-neutral-light"
           placeholder="Add a comment..."
           onKeyDown={(e) => {
             if (e.key === 'Enter') {
@@ -2212,7 +1855,11 @@ again:
               const aliasInput = document.getElementById(
                 `alias-input-${renderedData?.id}`,
               );
-              if (!aliasInput || (aliasInput as HTMLInputElement).value.trim() === '') return;
+              if (
+                !aliasInput ||
+                (aliasInput as HTMLInputElement).value.trim() === ''
+              )
+                return;
               // Cast to HTMLInputElement to access value property
               const alias = (aliasInput as HTMLInputElement).value;
               // if empty alias, do not add
@@ -2229,7 +1876,6 @@ again:
               // clear input field
               (aliasInput as HTMLInputElement).value = ''.trim();
             }
-            
           }}
           id={`alias-input-${renderedData?.id}`}
         />
@@ -2483,137 +2129,6 @@ again:
           entry.
         </div>
       )}
-
-      {/* <h2 className="my-4 text-4xl font-extrabold">Add Links</h2>
-      <button
-        type="button"
-        className="my-4 w-full rounded-lg bg-blue-700 px-5 py-2.5 text-sm font-medium text-white hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300"
-        onClick={() => setIsLinkModalOpen(true)}
-      >
-        Add Link
-      </button>
-      {isLinkModalOpen && (
-        <LinksModal
-          isOpen={isLinkModalOpen}
-          closeModalFn={() => setIsLinkModalOpen(false)}
-          onSave={(name, url) => {
-            handleAddLink(name, url);
-            setIsLinkModalOpen(false);
-          }}
-          onSearch={handleSearchLinksModal}
-        />
-      )}
-      {renderedData.metadata.links &&
-        renderedData.metadata.links.length > 0 && (
-          <>
-            <h2 className="my-4 text-4xl font-extrabold">Links</h2>
-            <div>
-              {renderedData.metadata.links.map((link: any, index: number) => (
-                <div
-                  key={`${link.name}-${uuidv4()}`}
-                  className="flex items-center"
-                >
-                  <Link
-                    href={link.url}
-                    target="_blank"
-                    className="text-blue-600 hover:underline"
-                  >
-                    {link.name}
-                  </Link>
-                  <button
-                    type="button"
-                    className="ml-2 text-red-500 hover:underline"
-                    onClick={() => handleDeleteLink(index)}
-                  >
-                    Delete
-                  </button>
-                </div>
-              ))}
-            </div>
-          </>
-        )} */}
-      {/* <h2 className="my-4 text-4xl font-extrabold">{relatedText}</h2>
-      {searchResults.map((result) => (
-        <div key={result.id}>
-          <div
-            key={result.id}
-            className="mx-2 mb-4 flex items-center justify-between"
-          >
-            <div className="grow">
-              <Link
-                href={{
-                  pathname: `/dashboard/entry/${result.id}`,
-                }}
-                className="block text-gray-900 no-underline"
-              >
-                <div className="relative">
-                  <Image
-                    src={result.favicon}
-                    alt="favicon"
-                    width={16}
-                    height={16}
-                    className="float-left mr-2"
-                  />
-                  <span className="font-normal">
-                    {renderResultData(result)}
-                  </span>
-                </div>
-                <div className="ml-6 flex items-center">
-                  {result.parentData ? (
-                    <>
-                      <div className="mr-2 flex size-6 shrink-0 items-center justify-center rounded-full bg-gray-300 text-xs font-bold text-white">
-                        {firstLastName.firstName && firstLastName.lastName ? (
-                          <>
-                            {firstLastName.firstName[0]}
-                            {firstLastName.lastName[0]}
-                          </>
-                        ) : (
-                          'yCb'
-                        )}
-                      </div>
-                      <span className="font-normal">{result.data}</span>
-                    </>
-                  ) : null}
-                </div>
-              </Link>
-              <div className="text-sm text-gray-500">
-                Created: {new Date(result.createdAt).toLocaleString()}
-                {result.createdAt !== result.updatedAt && (
-                  <>
-                    {' '}
-                    | Last Updated:{' '}
-                    {new Date(result.updatedAt).toLocaleString()}{' '}
-                  </>
-                )}
-              </div>
-              <a
-                target="_blank"
-                href={result.metadata.author}
-                rel="noopener noreferrer"
-                className="inline-flex items-center font-medium text-blue-600 hover:underline"
-              >
-                {toHostname(result.metadata.author)}
-                <svg
-                  className="ms-2.5 size-3 rtl:rotate-[270deg]"
-                  aria-hidden="true"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 18 18"
-                >
-                  <path
-                    stroke="currentColor"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M15 11v4.833A1.166 1.166 0 0 1 13.833 17H2.167A1.167 1.167 0 0 1 1 15.833V4.167A1.166 1.166 0 0 1 2.167 3h4.618m4.447-2H17v5.768M9.111 8.889l7.778-7.778"
-                  />
-                </svg>
-              </a>
-            </div>
-          </div>
-          <hr className="my-4" />
-        </div>
-      ))} */}
     </div>
   ) : (
     <Loading />

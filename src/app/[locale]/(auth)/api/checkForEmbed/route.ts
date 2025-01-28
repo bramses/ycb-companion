@@ -16,7 +16,7 @@ export const POST = async (request: Request) => {
     },
     body: JSON.stringify({
       platformId: id.toString(),
-      checkForState: true
+      checkForState: true,
     }),
   });
   const data = await resp.json();

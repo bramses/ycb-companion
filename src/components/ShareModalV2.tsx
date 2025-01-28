@@ -1,15 +1,15 @@
 /* eslint-disable jsx-a11y/label-has-associated-control */
 /* eslint-disable no-param-reassign */
 
-"use client";
+'use client';
 
-import Link from "next/link";
-import React, { useEffect, useState } from "react";
-import Modal from "react-modal";
-import QRCode from "react-qr-code";
+import Link from 'next/link';
+import React, { useEffect, useState } from 'react';
+import Modal from 'react-modal';
+import QRCode from 'react-qr-code';
 
 const replaceImagesWithBase64 = async (entry: any, comments: any[] = []) => {
-  const modifiedJsonWithImages: { entry: any; comments: any[] }  = {
+  const modifiedJsonWithImages: { entry: any; comments: any[] } = {
     entry,
     comments,
   };
@@ -39,13 +39,11 @@ const replaceImagesWithBase64 = async (entry: any, comments: any[] = []) => {
 
   // Process comments
   if (Array.isArray(comments)) {
-    comments = await Promise.all(
-      comments.map(convertImageDataToBase64)
-    );
+    comments = await Promise.all(comments.map(convertImageDataToBase64));
     modifiedJsonWithImages.comments = comments;
   }
 
-  console.log("modifiedJsonWithImages:", modifiedJsonWithImages);
+  console.log('modifiedJsonWithImages:', modifiedJsonWithImages);
   return modifiedJsonWithImages;
 };
 
@@ -65,7 +63,6 @@ export default function Share({
     console.log(modalOpen);
   }, [modalOpen]);
 
-
   // a btn that checks url https://share-ycbs.onrender.com/p/{entryid} and if not a 404 does not show the button
   useEffect(() => {
     if (entryId) {
@@ -80,7 +77,7 @@ export default function Share({
           }
         })
         .catch((error) => {
-          console.error("Error fetching entry:", error);
+          console.error('Error fetching entry:', error);
           setShowShareButton(false);
         });
     }
@@ -88,7 +85,11 @@ export default function Share({
 
   const handleDownload = async () => {
     // replace any images in json with b64 strings
-    const modifiedJsonWithImages = await replaceImagesWithBase64(entry, comments);
+    console.log('comments:', comments);
+    const modifiedJsonWithImages = await replaceImagesWithBase64(
+      entry,
+      comments,
+    );
 
     /*
 
@@ -123,7 +124,7 @@ export default function Share({
 
     const body: { entry: any; username: string; comments: any[] } = {
       entry: modifiedJsonWithImages.entry,
-      username: "bram",
+      username: 'bram',
       comments: [],
     };
 
@@ -131,26 +132,25 @@ export default function Share({
       body.comments = modifiedJsonWithImages.comments;
     }
 
-    console.log("body:", body);
+    console.log('body:', body);
 
-
-
-    fetch("http://localhost:3002/api/add", { // todo https://share-ycbs.onrender.com
-      method: "POST",
+    fetch('http://localhost:3002/api/add', {
+      // todo https://share-ycbs.onrender.com
+      method: 'POST',
       body: JSON.stringify({
         entryid: entryId,
         json: body,
-        username: "bram", // todo: change to username on rollover from clerk to self hosted auth
+        username: 'bram', // todo: change to username on rollover from clerk to self hosted auth
       }),
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
       },
     })
       .then((response) => response.json())
       .then(() => {
-        setShowShareButton(true)
-  })
-      .catch((error) => console.error("Error:", error));
+        setShowShareButton(true);
+      })
+      .catch((error) => console.error('Error:', error));
   };
 
   return (
@@ -161,38 +161,45 @@ export default function Share({
         contentLabel="Share Modal"
         ariaHideApp={false}
       >
-        
-        {!showShareButton && (
-          <><input
+        <input
           type="checkbox"
           checked={includeComments}
           onChange={(e) => setIncludeComments(e.target.checked)}
         />
         <label htmlFor="includeComments">include comments?</label>
-        <br />
-        <br />
-          <button type="button" onClick={handleDownload}>
-            share
-          </button></>
+        {!showShareButton && (
+          <>
+            <br />
+            <br />
+            <button type="button" onClick={handleDownload}>
+              share
+            </button>
+          </>
         )}
         {showShareButton && (
-          <><QRCode
-            value={`http://localhost:3002/p/${entryId}`}
-            size={256}
-            bgColor="#ffffff"
-            fgColor="#000000"
-          />
-          <Link
-            target="_blank"
-            href={`http://localhost:3002/p/${entryId}`}
-          >
-            open on shareycb
-          </Link></>
+          <>
+            <QRCode
+              value={`http://localhost:3002/p/${entryId}`}
+              size={256}
+              bgColor="#ffffff"
+              fgColor="#000000"
+            />
+            <Link target="_blank" href={`http://localhost:3002/p/${entryId}`}>
+              open on shareycb
+            </Link>
+            <button
+              type="button"
+              onClick={handleDownload}
+              style={{ marginLeft: '8px' }}
+            >
+              update
+            </button>
+          </>
         )}
         <button
           type="button"
           onClick={() => setModalOpen(false)}
-          style={{ marginLeft: "8px" }}
+          style={{ marginLeft: '8px' }}
         >
           close
         </button>

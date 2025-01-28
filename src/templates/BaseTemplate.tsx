@@ -11,7 +11,14 @@ const BaseTemplate = (props: {
         <header className="border-b border-gray-300">
           <div className="pb-8 pt-16">
             <h1 className="text-3xl font-bold text-gray-900">
-              <img src="/favicon.ico" className='inline-block mr-2' width={28} height={28}></img>{AppConfig.name}
+              <img
+                src="/favicon.ico"
+                className="mr-2 inline-block"
+                width={28}
+                height={28}
+                alt="favicon"
+              />
+              {AppConfig.name}
             </h1>
             {/* <h2 className="text-xl">{t('description')}</h2> */}
           </div>

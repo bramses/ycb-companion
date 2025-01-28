@@ -98,12 +98,12 @@ const CustomHit = ({ hit, closeModalFn }: any) => {
             </>
           )}
 
-          <div className="text-sm text-gray-500">
+          {/* <div className="text-sm text-gray-500">
             Created: {new Date(hit.created_at).toLocaleString()}
             {hit.createdat !== hit.updated_at && (
               <> | Last Updated: {new Date(hit.updated_at).toLocaleString()} </>
             )}
-          </div>
+          </div> */}
         </div>
       </div>
       <hr className="my-4" />
@@ -157,9 +157,9 @@ const SearchModalBeta = ({
   };
 
   const [isSearchClient, setSearchClient] = useState<SearchClient | null>(null);
-    // todo fix token
+  // todo fix token
 
-  const [meliToken, setMeliToken] = useState<{
+  const [meliToken] = useState<{
     token: string;
     expiresAt: string;
   } | null>(null);
@@ -182,10 +182,13 @@ const SearchModalBeta = ({
       }
 
       // expires 10s after the token is created
-      sessionStorage.setItem('meliToken', JSON.stringify({
-        token: tokenData.token.token,
-        expiresAt: new Date(Date.now() + 10 * 60 * 1000 - 2000).toISOString(),
-      }));
+      sessionStorage.setItem(
+        'meliToken',
+        JSON.stringify({
+          token: tokenData.token.token,
+          expiresAt: new Date(Date.now() + 10 * 60 * 1000 - 2000).toISOString(),
+        }),
+      );
 
       const { searchClient } = instantMeiliSearch(
         process.env.NEXT_PUBLIC_MEILI_HOST!, // Host

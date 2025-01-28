@@ -6,7 +6,6 @@ import { logger } from '@/libs/Logger';
 export const POST = async () => {
   const { CLOUD_URL, TOKEN } = process.env;
 
-
   try {
     const resp = await fetch(`${CLOUD_URL}/token`, {
       method: 'POST',
