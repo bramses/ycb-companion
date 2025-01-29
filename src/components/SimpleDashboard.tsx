@@ -368,15 +368,38 @@ const SimpleDashboard = () => {
     router.push(`/dashboard/entry/${entry.id}`);
   };
 
+  const [platformToken, setPlatformToken] = useState('');
+
+  useEffect(() => {
+    // Retrieve the token from cookies when the component mounts
+    const match = document.cookie.match(/(^| )platformToken=([^;]+)/);
+    if (match) {
+      setPlatformToken(match[2] || '');
+    }
+  }, []);
+
+  const handleTokenChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const newToken = event.target.value;
+    setPlatformToken(newToken);
+    // Save the token to cookies
+    document.cookie = `platformToken=${newToken}; path=/;`;
+  };
+
   return (
     <div>
       <h1 className="mx-2 mt-8 text-xl font-extrabold text-gray-900 md:text-xl lg:text-xl">
-        Welcome Back to{' '}
+        Welcome to the{' '}
         <span className="bg-gradient-to-r from-sky-400 to-emerald-600 bg-clip-text text-transparent">
-          Your Commonbase
+          Your Commonbase Launch Party!!
         </span>
-        , {firstLastName.firstName}!
       </h1>
+      <input
+        type="password"
+        placeholder="Paste your Launch Party Personal Access Token here"
+        className="w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500"
+        value={platformToken}
+        onChange={handleTokenChange}
+      />
       {totalEntries >= 0 && (
         <h2 className="mx-2 mt-8 text-xl font-extrabold text-gray-400 md:text-lg lg:text-lg">
           You have{' '}

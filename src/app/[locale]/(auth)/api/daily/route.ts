@@ -1,3 +1,4 @@
+import { cookies } from 'next/headers'; // Import the cookies utility
 import { NextResponse } from 'next/server';
 
 import { logger } from '@/libs/Logger';
@@ -6,10 +7,13 @@ import { logger } from '@/libs/Logger';
 
 export const POST = async (request: Request) => {
   const { date } = await request.json();
-  const { CLOUD_URL, TOKEN } = process.env;
-  logger.info(`REQUEST ${date}`);
-  logger.info(`CLOUD_URL ${CLOUD_URL}`);
-  logger.info(`TOKEN ${TOKEN}`);
+  const { CLOUD_URL } = process.env;
+
+  const TOKEN = cookies().get('platformToken')?.value; // Retrieve the token from cookies
+
+  if (!TOKEN) {
+    return NextResponse.json({ error: 'No token provided' }, { status: 401 });
+  }
 
   const resp = await fetch(`${CLOUD_URL}/entriesByDate`, {
     method: 'POST',

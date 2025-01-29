@@ -12,7 +12,7 @@ import 'react-lite-youtube-embed/dist/LiteYouTubeEmbed.css';
 import { useUser } from '@clerk/nextjs';
 // import Image from 'next/image';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { memo, useEffect, useState } from 'react';
 import LiteYouTubeEmbed from 'react-lite-youtube-embed';
 import { InstagramEmbed, TikTokEmbed } from 'react-social-media-embed';
@@ -109,6 +109,8 @@ const EntryPage = () => {
   const [currentIndex, setCurrentIndex] = useState<number | null>(null);
   const [showModal, setShowModal] = useState(false);
 
+  const router = useRouter();
+
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
       if (graphNodes.length === 0) return;
@@ -173,6 +175,45 @@ const EntryPage = () => {
       window.removeEventListener('touchend', handleTouchEnd);
     };
   }, [showModal, graphNodes]);
+
+  // add event listener to 'r' key to open random page
+  useEffect(() => {
+    const fetchRandomEntry = async () => {
+      const response = await fetch('/api/random', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      const randdata = await response.json();
+      return randdata.data[0];
+    };
+
+    const handleRandom = async () => {
+      // fetch a random entry and open it
+      const entry = await fetchRandomEntry();
+      router.push(`/dashboard/entry/${entry.id}`);
+    };
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      // should be ignored if in input or textarea
+      const target = event.target as HTMLElement;
+
+      if (
+        event.key === 'r' &&
+        !target.tagName.toLowerCase().includes('input') &&
+        !target.tagName.toLowerCase().includes('textarea') &&
+        !showModal
+      ) {
+        event.preventDefault();
+        handleRandom();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
 
   const openModal = (key: string) =>
     setModalStates((prev) => ({ ...prev, [key]: true }));

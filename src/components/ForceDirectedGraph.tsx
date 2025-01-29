@@ -6,6 +6,7 @@ import 'react-lite-youtube-embed/dist/LiteYouTubeEmbed.css';
 
 import * as d3 from 'd3';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import type { Dispatch, SetStateAction } from 'react';
 import React, { useEffect, useRef, useState } from 'react';
 import LiteYouTubeEmbed from 'react-lite-youtube-embed';
@@ -44,6 +45,7 @@ const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
 }) => {
   const svgRef = useRef<SVGSVGElement | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
 
   // minimap ref
   const miniMapRef = useRef<SVGSVGElement | null>(null);
@@ -171,7 +173,25 @@ const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
         }
       }
 
-      // triple tap on mobile => expand
+      // enter => open entry
+      else if (
+        event.key === 'Enter' &&
+        !event.shiftKey &&
+        document.activeElement &&
+        currentIndex !== null &&
+        currentIndex > 0 &&
+        showModal &&
+        document.activeElement &&
+        document.activeElement.tagName !== 'INPUT' &&
+        document.activeElement.tagName !== 'TEXTAREA' &&
+        modalContent.group !== 'comment' &&
+        modalContent.group !== 'main' &&
+        !document.activeElement.id.includes('alias-input')
+      ) {
+        event.preventDefault();
+        // /dashboard/entry/${modalContent.id}
+        router.push(`/dashboard/entry/${graphNodes[currentIndex].id}`);
+      }
 
       // escape => close modal
       if (event.key === 'Escape') {
@@ -185,6 +205,40 @@ const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
       window.removeEventListener('keydown', handleKeyDown);
     };
   }, [hovered, graphNodes, currentIndex, onExpand]);
+
+  // mobile swipe
+  useEffect(() => {
+    let tapCount = 0;
+    let tapTimeout: NodeJS.Timeout | null = null;
+
+    function handleTripleTap(e: TouchEvent) {
+      if (!hovered || graphNodes.length === 0) return;
+
+      if (e.touches.length > 1) return;
+
+      tapCount += 1;
+
+      if (tapCount === 3) {
+        tapCount = 0;
+        if (currentIndex !== null) {
+          const selectedNode = graphNodes[currentIndex];
+          if (selectedNode) {
+            onExpand(selectedNode.id, null);
+          }
+        }
+      }
+
+      if (tapTimeout) clearTimeout(tapTimeout);
+      tapTimeout = setTimeout(() => {
+        tapCount = 0;
+      }, 300); // reset tap count after 300ms
+    }
+
+    window.addEventListener('touchend', handleTripleTap, { passive: false });
+    return () => {
+      window.removeEventListener('touchend', handleTripleTap);
+    };
+  }, [showModal, graphNodes]);
 
   // // mobile swipe
   // useEffect(() => {

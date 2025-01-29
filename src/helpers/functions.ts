@@ -451,7 +451,7 @@ export const fetchRandomEntry = async () => {
   });
   const data = await response.json();
 
-  return data.data;
+  return data.data[0];
 };
 
 export const downloadCollection = (
