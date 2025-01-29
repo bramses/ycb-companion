@@ -295,18 +295,24 @@ const Uploader = ({ closeModal }: { closeModal: () => void }) => {
       }
       const { data } = respData;
 
+      const entryBody: { data: any; metadata: any; createdAt?: string } = {
+        data: data.json.entry.data,
+        metadata: {
+          ...data.json.entry.metadata,
+          title: `${data.json.entry.metadata.title} (from ycb/${data.creator})`,
+        },
+      };
+
+      if (data.force_created_at) {
+        entryBody.createdAt = data.created_at;
+      }
+
       const yresponse = await fetch('/api/add', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          data: data.json.entry.data,
-          metadata: {
-            ...data.json.entry.metadata,
-            title: `${data.json.entry.metadata.title} (from ycb/${data.creator})`,
-          },
-        }),
+        body: JSON.stringify(entryBody),
       });
       const addrData = await yresponse.json();
       const parentId = addrData.respData.id;
@@ -314,41 +320,48 @@ const Uploader = ({ closeModal }: { closeModal: () => void }) => {
 
       const aliasIDs = [];
       for await (const comment of data.json.comments) {
+        const commentBody: { data: any; metadata: any; createdAt?: string } = {
+          data: comment.data,
+          metadata: {
+            ...comment.metadata,
+            title: `${comment.metadata.title} (from ycb/${data.creator})`,
+            parent_id: parentId,
+          },
+        };
+
+        if (data.force_created_at) {
+          commentBody.createdAt = data.force_created_at;
+        }
         const cresponse = await fetch('/api/add', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({
-            data: comment.data,
-            metadata: {
-              ...comment.metadata,
-              title: `${comment.metadata.title} (from ycb/${data.creator})`,
-              parent_id: parentId,
-            },
-          }),
+          body: JSON.stringify(commentBody),
         });
         const caddrData = await cresponse.json();
         aliasIDs.push(caddrData.respData.id);
       }
 
-      const zresponse = await fetch('/api/update', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          id: addrData.respData.id,
-          data: data.json.entry.data,
-          metadata: {
-            ...data.json.entry.metadata,
-            title: `${data.json.entry.metadata.title} (from ycb/${data.creator})`,
-            alias_ids: aliasIDs,
+      if (aliasIDs.length > 0) {
+        const zresponse = await fetch('/api/update', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
           },
-        }),
-      });
-      const zaddrData = await zresponse.json();
-      console.log('zaddrData:', zaddrData);
+          body: JSON.stringify({
+            id: addrData.respData.id,
+            data: data.json.entry.data,
+            metadata: {
+              ...data.json.entry.metadata,
+              title: `${data.json.entry.metadata.title} (from ycb/${data.creator})`,
+              alias_ids: aliasIDs,
+            },
+          }),
+        });
+        const zaddrData = await zresponse.json();
+        console.log('zaddrData:', zaddrData);
+      }
     };
 
     let count = 0;
