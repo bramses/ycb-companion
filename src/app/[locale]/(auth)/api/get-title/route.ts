@@ -1,3 +1,4 @@
+import he from 'he'; // Import the 'he' library
 import { NextResponse } from 'next/server';
 import { parse } from 'node-html-parser';
 
@@ -43,7 +44,7 @@ export const GET = async (req: Request) => {
     const html = await response.text();
     const root = parse(html);
     const titleNode = root.querySelector('title');
-    const title = titleNode?.innerText.trim();
+    const title = he.decode(titleNode?.innerText.trim() || '');
 
     if (blank(title)) {
       const noTitleAttr = titleNode?.getAttribute('no-title');
@@ -63,7 +64,7 @@ export const GET = async (req: Request) => {
     const rawDesc = metaDesc?.getAttribute('content')?.trim();
     let description: string | null = null;
     if (notBlank(rawDesc) && rawDesc !== title) {
-      description = rawDesc ?? null;
+      description = he.decode(rawDesc ?? '');
     }
 
     return NextResponse.json({ title, description }, { status: 200 });

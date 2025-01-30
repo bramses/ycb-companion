@@ -131,6 +131,7 @@ const EntryPage = () => {
       }
 
       // if c for comment is pressed and !showModal, focus on the comment input
+      // todo: this breaks after the modal has been opened
       if (event.key === 'c' && !showModal) {
         event.preventDefault();
         const commentInput = document.getElementById(`alias-input-comment`);
@@ -1698,10 +1699,10 @@ const EntryPage = () => {
             className="mt-2 text-neutral-dark [&_p]:my-6"
           >
             {processCustomMarkdown(data.data)}
-            <div className="float-right">
+            <div className="float-right mb-2">
               <Link
                 href={data.metadata.author}
-                className=" inline-flex items-center font-medium text-brand hover:underline"
+                className=" float-right inline-flex items-center font-medium text-brand hover:underline"
                 target="_blank"
               >
                 <img src={favicon} alt="favicon" className="mr-2 size-6" />
@@ -1716,14 +1717,14 @@ const EntryPage = () => {
                   .map((d) => (d.length === 1 ? `0${d}` : d))
                   .join('-')}
                 `}
-                className="inline-flex items-center font-medium text-brand hover:underline"
+                className="float-right inline-flex items-center font-medium text-brand hover:underline"
               >
                 {timeAgo(new Date(data.createdAt))}
               </a>
             </div>
           </div>
 
-          <button
+          {/* <button
             onClick={() => setOpenShareModal(true)}
             type="button"
             className="mt-2 w-full rounded border border-neutral-light bg-neutral-light p-2 text-neutral-dark focus:border-brand focus:ring-brand"
@@ -1764,7 +1765,7 @@ const EntryPage = () => {
               entryId={data.id}
               closeModalFn={() => setOpenShareModal(false)}
             />
-          )}
+          )} */}
 
           {/* todo chatycb */}
           {/* <hr className="my-4" />
@@ -1830,8 +1831,8 @@ again:
         <textarea
           rows={3}
           style={{ fontSize: '17px' }}
-          className="mb-4 w-full rounded border border-neutral-dark bg-white px-4 py-2 text-neutral-dark transition hover:bg-neutral-light"
-          placeholder="Add a comment..."
+          className="mb-2 w-full rounded border border-neutral-dark bg-white px-4 py-2 text-neutral-dark transition hover:bg-neutral-light"
+          placeholder="Add a comment... (press enter to save)"
           onKeyDown={(e) => {
             if (e.key === 'Enter') {
               e.preventDefault();
@@ -1860,7 +1861,7 @@ again:
           }}
           id="alias-input-comment"
         />
-        <button
+        {/* <button
           type="button"
           onClick={() => {
             const aliasInput = document.getElementById(`alias-input-comment`);
@@ -1885,7 +1886,54 @@ again:
           aria-label="Add alias"
         >
           Add Comment
-        </button>
+        </button> */}
+
+        {/* <div className="relative mb-4 w-full">
+          <textarea
+            rows={3}
+            style={{ fontSize: '17px' }}
+            className="w-full rounded border border-neutral-dark bg-white px-4 py-2 pr-10 text-neutral-dark"
+            placeholder="add a comment..."
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                const aliasInput = document.getElementById(
+                  'alias-input-comment',
+                );
+                if (!aliasInput) return;
+                const alias = (aliasInput as HTMLInputElement).value.trim();
+                if (!alias) return;
+                addCommentV2(alias, {
+                  id: renderedData.id,
+                  data: renderedData.data,
+                  metadata: renderedData.metadata,
+                });
+                (aliasInput as HTMLInputElement).value = '';
+              }
+            }}
+            id="alias-input-comment"
+          />
+          <button
+            type="button"
+            onClick={() => {
+              const aliasInput = document.getElementById('alias-input-comment');
+              if (!aliasInput) return;
+              const alias = (aliasInput as HTMLInputElement).value.trim();
+              if (!alias) return;
+              addCommentV2(alias, {
+                id: renderedData.id,
+                data: renderedData.data,
+                metadata: renderedData.metadata,
+              });
+              (aliasInput as HTMLInputElement).value = '';
+            }}
+            className="absolute bottom-2 right-2 rounded-full border border-neutral-light bg-neutral-light px-3 pb-1 text-xl text-neutral-dark focus:border-brand focus:ring-brand"
+            aria-label="add alias"
+          >
+            +
+          </button>
+        </div> */}
+
         {/* 
         todo: implement image upload
         <input
@@ -1973,11 +2021,9 @@ again:
                 {processCustomMarkdown(alias.aliasData)}
               </p>
             </div>
-            <p className="text-sm text-gray-500">
-              Added to yCb: {alias.aliasCreatedAt}
-            </p>
+            <p className="text-sm text-gray-500">{alias.aliasCreatedAt}</p>
             <div className="flex">
-              <button
+              {/* <button
                 className="mr-4 justify-start text-blue-600 hover:underline"
                 type="button"
                 onClick={() => {
@@ -1989,8 +2035,10 @@ again:
                 }}
               >
                 Search
-              </button>
-              {alias.aliasId.includes('temp-') ? null : (
+              </button> */}
+              {alias.aliasId.includes('temp-') ? (
+                '(Refresh page to delete)'
+              ) : (
                 <>
                   {/* <button
                     className="mr-4 justify-start text-blue-600 hover:underline"
@@ -2011,7 +2059,6 @@ again:
                 </>
               )}
             </div>
-            <hr className="mt-2 w-full" />
           </div>
         ))}
         {tempComments.map((alias) => (
@@ -2094,6 +2141,54 @@ again:
       </div>
       {showAliasError && (
         <div className="text-red-500">Error adding comment. Try again.</div>
+      )}
+      {data ? (
+        <div className="mb-2 [&_p]:my-2">
+          <button
+            onClick={() => setOpenShareModal(true)}
+            type="button"
+            className="mt-2 w-full rounded border border-neutral-light bg-neutral-light p-2 text-neutral-dark focus:border-brand focus:ring-brand"
+          >
+            Share
+          </button>
+          {openShareModal && (
+            <ShareModal
+              entry={{
+                data: data.data,
+                image:
+                  data.metadata.author === 'imagedelivery.net'
+                    ? data.metadata.author
+                    : null,
+                metadata: {
+                  title: data.metadata.title,
+                  author: data.metadata.author,
+                },
+              }}
+              comments={
+                data.metadata && data.metadata.aliasData
+                  ? data.metadata.aliasData.map((comment: any) => {
+                      return {
+                        data: comment.aliasData,
+                        image:
+                          comment.aliasMetadata.author === 'imagedelivery.net'
+                            ? comment.metadata.author
+                            : null,
+                        metadata: {
+                          title: comment.aliasMetadata.title,
+                          author: comment.aliasMetadata.author,
+                        },
+                      };
+                    })
+                  : []
+              }
+              isOpen={openShareModal}
+              entryId={data.id}
+              closeModalFn={() => setOpenShareModal(false)}
+            />
+          )}
+        </div>
+      ) : (
+        'Loading...'
       )}
       <button
         type="button"
