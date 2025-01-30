@@ -446,9 +446,10 @@ const SimpleDashboard = () => {
             setUploaderModalOpen(true);
           }}
         >
-          I want to add a text entry
+          I want to add a text/image/URL entry
         </button>
-        <button
+        {/* todo: implement image upload seperate modal */}
+        {/* <button
           type="button"
           className="my-2 me-2 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4"
           onClick={() => {
@@ -465,7 +466,7 @@ const SimpleDashboard = () => {
           }}
         >
           I want to upload a image
-        </button>
+        </button> */}
 
         {/* <button
           type="button"

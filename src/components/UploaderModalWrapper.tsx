@@ -54,7 +54,12 @@ const UploaderModal = ({
       >
         Fast Entry
       </h2>
-      <Uploader closeModal={closeModalFn} />
+      <Uploader
+        closeModal={closeModalFn}
+        textDefault=""
+        titleDefault=""
+        authorDefault="https://yourcommonbase.com/dashboard"
+      />
     </Modal>
   );
 };

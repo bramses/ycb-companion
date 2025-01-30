@@ -6,13 +6,25 @@
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
-const Uploader = ({ closeModal }: { closeModal: () => void }) => {
+interface UploaderProps {
+  closeModal: () => void;
+  textDefault: string;
+  titleDefault: string;
+  authorDefault: string;
+}
+
+const Uploader = ({
+  closeModal,
+  textDefault,
+  titleDefault,
+  authorDefault,
+}: UploaderProps) => {
   // const { user, isLoaded } = useUser();
   const router = useRouter();
-  const [textAreaValue, setTextAreaValue] = useState('');
-  const [title, setTitle] = useState('');
+  const [textAreaValue, setTextAreaValue] = useState(textDefault || '');
+  const [title, setTitle] = useState(titleDefault || '');
   const [author, setAuthor] = useState(
-    'https://ycb-companion.onrender.com/dashboard',
+    authorDefault || 'https://yourcommonbase.com/dashboard',
   );
   // const [firstLastName, setFirstLastName] = useState({
   //   firstName: '',
@@ -24,6 +36,8 @@ const Uploader = ({ closeModal }: { closeModal: () => void }) => {
   const [shareYCBLoadingPct, setShareYCBLoadingPct] = useState(0);
   const [shareYCBInput, setShareYCBInput] = useState('');
   const [showShareYCBTextarea, setShowShareYCBTextarea] = useState(false);
+  const [showError, setShowError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
   // useEffect(() => {
   //   if (!isLoaded) return;
@@ -423,53 +437,90 @@ const Uploader = ({ closeModal }: { closeModal: () => void }) => {
         rows={4}
         style={{ fontSize: '17px' }}
         className="mt-4 block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder:text-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
-        placeholder="Your message..."
+        placeholder="What are you thinking about right now?..."
         value={textAreaValue}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' && e.metaKey) {
-            add(textAreaValue, {
-              author,
-              title,
-            });
-          }
-        }}
+        // onKeyDown={(e) => {
+        //   if (e.key === 'Enter' && e.metaKey) {
+        //     add(textAreaValue, {
+        //       author,
+        //       title,
+        //     });
+        //   }
+        // }}
         onChange={(e) => setTextAreaValue(e.target.value)}
       />
       <input
         type="text"
         style={{ fontSize: '17px' }}
         className="mt-2 block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder:text-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
-        placeholder={title}
+        placeholder="Title your entry..."
         onChange={(e) => setTitle(e.target.value)}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' && e.metaKey) {
-            add(textAreaValue, { author, title });
-          }
-        }}
+        // onKeyDown={(e) => {
+        //   if (e.key === 'Enter' && e.metaKey) {
+        //     add(textAreaValue, { author, title });
+        //   }
+        // }}
         value={title}
       />
-      <input
-        type="text"
-        style={{ fontSize: '17px' }}
-        className="mt-2 block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder:text-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
-        placeholder={author}
-        onChange={(e) => setAuthor(e.target.value)}
-        onKeyDown={async (e) => {
-          if (e.key === 'Enter' && e.metaKey) {
-            const responseEntry = await add(textAreaValue, { author, title });
-            console.log('responseEntry:', responseEntry);
-            if (responseEntry.respData) {
-              router.push(`/dashboard/entry/${responseEntry.respData.id}`);
-              closeModal();
+      <div className="flex w-full">
+        <input
+          type="text"
+          style={{ fontSize: '17px' }}
+          className="mt-2 block grow rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500"
+          placeholder="A URL for your entry..."
+          onChange={(e) => setAuthor(e.target.value)}
+          // onKeyDown={async (e) => {
+          //   if (e.key === 'Enter' && e.metaKey) {
+          //     const responseEntry = await add(textAreaValue, { author, title });
+          //     console.log('responseEntry:', responseEntry);
+          //     if (responseEntry.respData) {
+          //       router.push(`/dashboard/entry/${responseEntry.respData.id}`);
+          //       closeModal();
+          //     }
+          //   }
+          // }}
+          value={author}
+        />
+        <button
+          type="button"
+          className="ml-2 mt-2 inline-block w-1/4 rounded-lg bg-gray-300 px-3 py-1 text-sm font-medium text-gray-900 hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300"
+          onClick={async () => {
+            try {
+              const response = await fetch(`/api/get-title?url=${author}`);
+              const data = await response.json();
+              if (data.title) {
+                setTextAreaValue(
+                  `${data.description} | ${data.title}` || data.title,
+                );
+                setTitle(data.title);
+              }
+            } catch (error) {
+              console.error('Error fetching title:', error);
             }
-          }
-        }}
-        value={author}
-      />
+          }}
+        >
+          Get Title
+        </button>
+      </div>
       <button
         type="button"
         className="mt-2 block w-full rounded-lg bg-blue-700 px-5 py-2.5 text-sm font-medium text-white hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
         onClick={async () => {
+          if (textAreaValue.trim() === '') {
+            setShowError(true);
+            setErrorMessage('Please enter some text for your entry.');
+            return;
+          }
+          if (title.trim() === '') {
+            setShowError(true);
+            setErrorMessage('Please enter a title for your entry.');
+            return;
+          }
+          if (author.trim() === '') {
+            setShowError(true);
+            setErrorMessage('Please enter a URL for your entry.');
+            return;
+          }
           const responseEntry = await add(textAreaValue, { author, title });
           if (responseEntry.respData) {
             router.push(`/dashboard/entry/${responseEntry.respData.id}`);
@@ -553,6 +604,13 @@ const Uploader = ({ closeModal }: { closeModal: () => void }) => {
           >
             Submit
           </button>
+          {showError && (
+            <div className="text-red-500">
+              {errorMessage}
+              <br />
+              Please try again.
+            </div>
+          )}
         </div>
       )}
       {/* <button

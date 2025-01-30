@@ -271,7 +271,12 @@ export default function DashboardLayout(props: { children: React.ReactNode }) {
         >
           Fast Entry
         </h2>
-        <Uploader closeModal={closeFastEntryModal} />
+        <Uploader
+          closeModal={closeFastEntryModal}
+          textDefault=""
+          titleDefault=""
+          authorDefault="https://yourcommonbase.com/dashboard"
+        />
       </Modal>
       <SpeedDial onOpenModal={onOpenModal} openRandom={handleRandom} />
       {props.children}

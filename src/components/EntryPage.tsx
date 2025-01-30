@@ -129,6 +129,15 @@ const EntryPage = () => {
         event.preventDefault();
         setShowModal(false);
       }
+
+      // if c for comment is pressed and !showModal, focus on the comment input
+      if (event.key === 'c' && !showModal) {
+        event.preventDefault();
+        const commentInput = document.getElementById(`alias-input-comment`);
+        if (commentInput) {
+          commentInput.focus();
+        }
+      }
     }
 
     window.addEventListener('keydown', handleKeyDown);
@@ -1160,6 +1169,7 @@ const EntryPage = () => {
     // Fetch neighbors
     const neighbors = await searchNeighbors(commentId, [
       entryId,
+      commentId,
       ...existingNodeIds,
     ]);
 
@@ -1806,34 +1816,7 @@ again:
       ) : (
         'Loading...'
       )}
-      {fData ? (
-        <div className="relative">
-          <div className="relative">
-            <ForceDirectedGraph
-              data={fData}
-              onExpand={handleExpand}
-              isGraphLoading={isGraphLoading}
-              onAddComment={handleAddCommentGraph}
-              graphNodes={graphNodes}
-              setGraphNodes={setGraphNodes}
-              currentIndex={currentIndex}
-              setCurrentIndex={setCurrentIndex}
-              showModal={showModal}
-              setShowModal={setShowModal}
-            />
-            <p className="text-sm text-gray-500">
-              Use left/right arrow keys to navigate, swipe left/right on mobile
-              to cycle through entries (open an entry first).
-              <br />
-            </p>
-            {isGraphLoading && (
-              <div className="absolute inset-0 flex items-center justify-center bg-white/75">
-                <span className="text-lg font-bold">Loading...</span>
-              </div>
-            )}
-          </div>
-        </div>
-      ) : null}
+
       {isInDraftState && (
         <button
           type="button"
@@ -1852,9 +1835,7 @@ again:
           onKeyDown={(e) => {
             if (e.key === 'Enter') {
               e.preventDefault();
-              const aliasInput = document.getElementById(
-                `alias-input-${renderedData?.id}`,
-              );
+              const aliasInput = document.getElementById(`alias-input-comment`);
               if (
                 !aliasInput ||
                 (aliasInput as HTMLInputElement).value.trim() === ''
@@ -1877,14 +1858,12 @@ again:
               (aliasInput as HTMLInputElement).value = ''.trim();
             }
           }}
-          id={`alias-input-${renderedData?.id}`}
+          id="alias-input-comment"
         />
         <button
           type="button"
           onClick={() => {
-            const aliasInput = document.getElementById(
-              `alias-input-${renderedData?.id}`,
-            );
+            const aliasInput = document.getElementById(`alias-input-comment`);
             if (!aliasInput) return;
             // Cast to HTMLInputElement to access value property
             const alias = (aliasInput as HTMLInputElement).value;
@@ -2013,14 +1992,14 @@ again:
               </button>
               {alias.aliasId.includes('temp-') ? null : (
                 <>
-                  <button
+                  {/* <button
                     className="mr-4 justify-start text-blue-600 hover:underline"
                     type="button"
                     onClick={() => openModal(`alias-${alias.aliasId}`)}
                     aria-label="edit"
                   >
                     Edit
-                  </button>
+                  </button> */}
                   <button
                     className="justify-start text-blue-600 hover:underline"
                     type="button"
@@ -2129,6 +2108,34 @@ again:
           entry.
         </div>
       )}
+      {fData ? (
+        <div className="relative">
+          <div className="relative">
+            <ForceDirectedGraph
+              data={fData}
+              onExpand={handleExpand}
+              isGraphLoading={isGraphLoading}
+              onAddComment={handleAddCommentGraph}
+              graphNodes={graphNodes}
+              setGraphNodes={setGraphNodes}
+              currentIndex={currentIndex}
+              setCurrentIndex={setCurrentIndex}
+              showModal={showModal}
+              setShowModal={setShowModal}
+            />
+            <p className="text-sm text-gray-500">
+              Use left/right arrow keys to navigate, swipe left/right on mobile
+              to cycle through entries (open an entry first).
+              <br />
+            </p>
+            {isGraphLoading && (
+              <div className="absolute inset-0 flex items-center justify-center bg-white/75">
+                <span className="text-lg font-bold">Loading...</span>
+              </div>
+            )}
+          </div>
+        </div>
+      ) : null}
     </div>
   ) : (
     <Loading />
