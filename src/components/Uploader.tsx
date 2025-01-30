@@ -477,7 +477,7 @@ const Uploader = ({ closeModal }: { closeModal: () => void }) => {
           }
         }}
       >
-        Add Entry (or press cmd/ctrl + enter)
+        Add Entry
       </button>
       <div className="inline-flex w-full items-center justify-center">
         <hr className="my-8 h-px w-64 border-0 bg-gray-200 dark:bg-gray-700" />

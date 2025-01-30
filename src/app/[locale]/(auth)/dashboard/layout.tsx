@@ -78,6 +78,44 @@ export default function DashboardLayout(props: { children: React.ReactNode }) {
     };
   }, []);
 
+  // add event listener to 'r' key to open random page
+  useEffect(() => {
+    // const fetchRandomEntry = async () => {
+    //   const response = await fetch('/api/random', {
+    //     method: 'POST',
+    //     headers: {
+    //       'Content-Type': 'application/json',
+    //     },
+    //   });
+    //   const randdata = await response.json();
+    //   return randdata.data[0];
+    // };
+
+    // const handleRandom = async () => {
+    //   // fetch a random entry and open it
+    //   const entry = await fetchRandomEntry();
+    //   router.push(`/dashboard/entry/${entry.id}`);
+    // };
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      // should be ignored if in input or textarea
+      const target = event.target as HTMLElement;
+
+      if (
+        event.key === 'r' &&
+        !target.tagName.toLowerCase().includes('input') &&
+        !target.tagName.toLowerCase().includes('textarea')
+      ) {
+        event.preventDefault();
+        handleRandom();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [handleRandom]);
+
   // open search modal beta when user presses cmd+k using next/router
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {

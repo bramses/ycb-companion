@@ -1,6 +1,5 @@
 'use client';
 
-import { useUser } from '@clerk/nextjs';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -18,11 +17,6 @@ const SimpleDashboard = () => {
   const router = useRouter();
   // const [randomEntry, setRandomEntry] = useState<any>(null);
   // const [comments, setComments] = useState<any[]>([]);
-
-  const [firstLastName, setFirstLastName] = useState({
-    firstName: '',
-    lastName: '',
-  });
   const [isSearchModalBetaOpen, setSearchModalBetaOpen] = useState(false);
   const [searchBetaModalQuery, setSearchBetaModalQuery] = useState('');
   const [logEntries, setLogEntries] = useState<any[]>([]);
@@ -39,7 +33,6 @@ const SimpleDashboard = () => {
   const [todaysEntriesLength, setTodaysEntriesLength] = useState(0);
 
   // const [inboxEntries, setInboxEntries] = useState<any[]>([]);
-  const { user, isLoaded } = useUser();
 
   // const handleRandom = async () => {
   //   setRandomEntry(null);
@@ -294,17 +287,6 @@ const SimpleDashboard = () => {
     }
   }, [searchParams]);
 
-  useEffect(() => {
-    if (!isLoaded) return;
-    // set first name as title
-    if (user?.firstName && user?.lastName) {
-      setFirstLastName({
-        firstName: user.firstName,
-        lastName: user.lastName,
-      });
-    }
-  }, [isLoaded, user]);
-
   // useEffect(() => {
   //   const fetchEntry = async () => {
   //     // fetch random entry
@@ -448,6 +430,43 @@ const SimpleDashboard = () => {
         >
           I want to find something specific
         </button>
+        <button
+          type="button"
+          className="my-2 me-2 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4"
+          onClick={() => {
+            handleRandomOpen();
+          }}
+        >
+          I want to open a random entry
+        </button>
+        <button
+          type="button"
+          className="my-2 me-2 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4"
+          onClick={() => {
+            setUploaderModalOpen(true);
+          }}
+        >
+          I want to add a text entry
+        </button>
+        <button
+          type="button"
+          className="my-2 me-2 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4"
+          onClick={() => {
+            setUploaderModalOpen(true);
+          }}
+        >
+          I want to add upload a URL
+        </button>
+        <button
+          type="button"
+          className="my-2 me-2 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4"
+          onClick={() => {
+            setUploaderModalOpen(true);
+          }}
+        >
+          I want to upload a image
+        </button>
+
         {/* <button
           type="button"
           className="my-2 me-2 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4"
@@ -458,7 +477,7 @@ const SimpleDashboard = () => {
         >
           I want to journal
         </button> */}
-        <button
+        {/* <button
           type="button"
           className="my-2 me-2 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4"
           onClick={() => {
@@ -482,7 +501,7 @@ const SimpleDashboard = () => {
           }}
         >
           I want to browse
-        </button>
+        </button> */}
         <button
           type="button"
           className="my-2 me-2 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4"
@@ -509,7 +528,7 @@ const SimpleDashboard = () => {
         >
           I want to connect my entries
         </button>
-        <button
+        {/* <button
           type="button"
           className="my-2 me-2 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4"
           onClick={() => {
@@ -546,7 +565,7 @@ const SimpleDashboard = () => {
           }}
         >
           I want to add something new
-        </button>
+        </button> */}
         <button
           type="button"
           className="my-2 me-2 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4"
