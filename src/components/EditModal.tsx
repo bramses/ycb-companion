@@ -105,11 +105,11 @@ const EditModal = ({
               return;
             }
             // if metadata.alias_ids exists and users empty it, return err
-            if (newMetadata.alias_ids && newMetadata.alias_ids.length === 0) {
-              console.error('alias_ids cannot be empty');
-              return;
-              // throw new Error('alias_ids cannot be empty');
-            }
+            // if (newMetadata.alias_ids && newMetadata.alias_ids.length === 0) {
+            //   console.error('alias_ids cannot be empty');
+            //   return;
+            //   // throw new Error('alias_ids cannot be empty');
+            // }
             // if metadata.alias_ids is not a correct array, do not save
             if (
               newMetadata.alias_ids &&

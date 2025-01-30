@@ -144,13 +144,27 @@ const EntryPage = () => {
     function handleKeyDown(event: KeyboardEvent) {
       if (graphNodes.length === 0) return;
 
-      if (event.key === 'ArrowRight') {
+      const target = event.target as HTMLElement;
+
+      if (
+        event.key === 'ArrowRight' &&
+        !(event.target instanceof HTMLInputElement) &&
+        !(event.target instanceof HTMLTextAreaElement) &&
+        !target.tagName.toLowerCase().includes('input') &&
+        !target.tagName.toLowerCase().includes('textarea')
+      ) {
         // setCurrentIndex((prevIndex) => {
         //   if (prevIndex === null) return 0;
         //   return (prevIndex + 1) % graphNodes.length;
         // });
         setCurrentIndex((prev) => getNextIndex(graphNodes, prev, 1));
-      } else if (event.key === 'ArrowLeft') {
+      } else if (
+        event.key === 'ArrowLeft' &&
+        !(event.target instanceof HTMLInputElement) &&
+        !(event.target instanceof HTMLTextAreaElement) &&
+        !target.tagName.toLowerCase().includes('input') &&
+        !target.tagName.toLowerCase().includes('textarea')
+      ) {
         // setCurrentIndex((prevIndex) => {
         //   if (prevIndex === null) return graphNodes.length - 1;
         //   return (prevIndex - 1 + graphNodes.length) % graphNodes.length;
@@ -158,14 +172,27 @@ const EntryPage = () => {
         setCurrentIndex((prev) => getNextIndex(graphNodes, prev, -1));
       }
 
-      if (event.key === 'Escape') {
+      if (
+        event.key === 'Escape' &&
+        !(event.target instanceof HTMLInputElement) &&
+        !(event.target instanceof HTMLTextAreaElement) &&
+        !target.tagName.toLowerCase().includes('input') &&
+        !target.tagName.toLowerCase().includes('textarea')
+      ) {
         event.preventDefault();
         setShowModal(false);
       }
 
       // if c for comment is pressed and !showModal, focus on the comment input
       // todo: this breaks after the modal has been opened
-      if (event.key === 'c' && !showModal) {
+      if (
+        event.key === 'c' &&
+        !showModal &&
+        !(event.target instanceof HTMLInputElement) &&
+        !(event.target instanceof HTMLTextAreaElement) &&
+        !target.tagName.toLowerCase().includes('input') &&
+        !target.tagName.toLowerCase().includes('textarea')
+      ) {
         event.preventDefault();
         const commentInput = document.getElementById(`alias-input-comment`);
         if (commentInput) {
