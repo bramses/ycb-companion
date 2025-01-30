@@ -548,7 +548,7 @@ const Uploader = ({
         onClick={uploadImage}
         className="mt-2 block rounded-lg bg-blue-700 px-5 py-2.5 text-sm font-medium text-white hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
       >
-        Upload Image
+        I want to upload an image
       </button>
       <div className="inline-flex w-full items-center justify-center">
         <hr className="my-8 h-px w-64 border-0 bg-gray-200 dark:bg-gray-700" />
@@ -576,7 +576,7 @@ const Uploader = ({
         className="mt-2 block rounded-lg bg-blue-700 px-5 py-2.5 text-sm font-medium text-white hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300"
         onClick={() => setShowShareYCBTextarea(true)}
       >
-        Upload from Share yCb
+        I have an ID from ShareYCB
       </button>
 
       {showShareYCBTextarea && (

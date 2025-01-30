@@ -103,6 +103,10 @@ export default function DashboardLayout(props: { children: React.ReactNode }) {
 
       if (
         event.key === 'r' &&
+        // meta key not pressed
+        !event.metaKey &&
+        !event.ctrlKey &&
+        !event.shiftKey &&
         !target.tagName.toLowerCase().includes('input') &&
         !target.tagName.toLowerCase().includes('textarea')
       ) {

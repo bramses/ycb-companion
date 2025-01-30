@@ -12,7 +12,7 @@ import 'react-lite-youtube-embed/dist/LiteYouTubeEmbed.css';
 import { useUser } from '@clerk/nextjs';
 // import Image from 'next/image';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { memo, useEffect, useState } from 'react';
 import LiteYouTubeEmbed from 'react-lite-youtube-embed';
 import { InstagramEmbed, TikTokEmbed } from 'react-social-media-embed';
@@ -28,6 +28,7 @@ import {
   deleteEntry as apiDeleteEntry,
   fetchByID,
   fetchFavicon,
+  fetchRandomEntry,
   // fetchSearchEntries,
   // fetchSearchEntriesHelper,
   formatDate,
@@ -45,6 +46,7 @@ import ForceDirectedGraph from './ForceDirectedGraph';
 import Loading from './Loading';
 import SearchModalBeta from './SearchModalBeta';
 import ShareModal from './ShareModalV2';
+import UploaderModalWrapper from './UploaderModalWrapper';
 import UrlSVG from './UrlSVG';
 
 const EntryPage = () => {
@@ -109,20 +111,51 @@ const EntryPage = () => {
   const [currentIndex, setCurrentIndex] = useState<number | null>(null);
   const [showModal, setShowModal] = useState(false);
 
+  const router = useRouter();
+
+  function getNextIndex(
+    gnigraphNodes: any[],
+    gnicurrentIndex: number | null,
+    direction: 1 | -1,
+  ) {
+    if (!gnigraphNodes.length) return null;
+
+    // if currently null, just find first non-skipped
+    if (currentIndex === null) {
+      const idx = gnigraphNodes.findIndex(
+        (n) => n.group !== 'main' && n.group !== 'comment',
+      );
+      return idx === -1 ? null : idx;
+    }
+
+    // otherwise loop
+    let i = gnicurrentIndex;
+    do {
+      i = (i! + direction + gnigraphNodes.length) % gnigraphNodes.length;
+    } while (
+      gnigraphNodes[i].group === 'main' ||
+      gnigraphNodes[i].group === 'comment'
+    );
+
+    return i;
+  }
+
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
       if (graphNodes.length === 0) return;
 
       if (event.key === 'ArrowRight') {
-        setCurrentIndex((prevIndex) => {
-          if (prevIndex === null) return 0;
-          return (prevIndex + 1) % graphNodes.length;
-        });
+        // setCurrentIndex((prevIndex) => {
+        //   if (prevIndex === null) return 0;
+        //   return (prevIndex + 1) % graphNodes.length;
+        // });
+        setCurrentIndex((prev) => getNextIndex(graphNodes, prev, 1));
       } else if (event.key === 'ArrowLeft') {
-        setCurrentIndex((prevIndex) => {
-          if (prevIndex === null) return graphNodes.length - 1;
-          return (prevIndex - 1 + graphNodes.length) % graphNodes.length;
-        });
+        // setCurrentIndex((prevIndex) => {
+        //   if (prevIndex === null) return graphNodes.length - 1;
+        //   return (prevIndex - 1 + graphNodes.length) % graphNodes.length;
+        // });
+        setCurrentIndex((prev) => getNextIndex(graphNodes, prev, -1));
       }
 
       if (event.key === 'Escape') {
@@ -1584,6 +1617,20 @@ const EntryPage = () => {
     }
   };
 
+  const [isSearchModalBetaOpen, setSearchModalBetaOpen] = useState(false);
+  const [isUploaderModalOpen, setUploaderModalOpen] = useState(false);
+
+  const closeModalActions = () => {
+    setSearchModalBetaOpen(false);
+    setUploaderModalOpen(false);
+  };
+
+  const handleRandomOpen = async () => {
+    // fetch a random entry and open it
+    const entry = await fetchRandomEntry();
+    router.push(`/dashboard/entry/${entry.id}`);
+  };
+
   // const exportGraph = () => {
   //   // load a ShareModal component
   //   // const graphData = JSON.stringify(fData);
@@ -2231,6 +2278,73 @@ again:
           </div>
         </div>
       ) : null}
+      <div>
+        <SearchModalBeta
+          isOpen={isSearchModalBetaOpen || false}
+          closeModalFn={() => closeModalActions()}
+          inputQuery={searchBetaModalQuery}
+        />
+        <UploaderModalWrapper
+          isOpen={isUploaderModalOpen || false}
+          closeModalFn={() => closeModalActions()}
+        />
+        <h2>Actions</h2>
+        <button
+          type="button"
+          className="my-2 me-2 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4"
+          onClick={() => {
+            setSearchModalBetaOpen(true);
+            const intervalId = setInterval(() => {
+              const input = document.getElementById('modal-beta-search');
+              if (input) {
+                input.focus();
+                clearInterval(intervalId); // Stop the interval once the input is focused
+              }
+            }, 100);
+          }}
+        >
+          I want to find something specific
+        </button>
+        <button
+          type="button"
+          className="my-2 me-2 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4"
+          onClick={() => {
+            handleRandomOpen();
+          }}
+        >
+          I want to open a random entry
+        </button>
+        <button
+          type="button"
+          className="my-2 me-2 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4"
+          onClick={() => {
+            setUploaderModalOpen(true);
+            const intervalId = setInterval(() => {
+              const input = document.getElementById('modal-message');
+              if (input) {
+                input.focus();
+                clearInterval(intervalId); // Stop the interval once the input is focused
+              }
+            }, 100);
+          }}
+        >
+          I want to add a text/image/URL entry
+        </button>
+        <button
+          type="button"
+          className="my-2 me-2 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4"
+          onClick={() => {
+            const formattedDate = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
+              .toLocaleDateString()
+              .split('/')
+              .map((d) => (d.length === 1 ? `0${d}` : d))
+              .join('-');
+            router.push(`/dashboard/garden?date=${formattedDate}`);
+          }}
+        >
+          I want to see what I saved exactly one week ago
+        </button>
+      </div>
     </div>
   ) : (
     <Loading />
