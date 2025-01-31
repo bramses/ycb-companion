@@ -34,7 +34,9 @@ export default function DashboardLayout(props: { children: React.ReactNode }) {
       const intervalId = setInterval(() => {
         const input = document.getElementById('modal-message');
         if (input) {
-          input.focus();
+          setTimeout(() => {
+            input.focus();
+          }, 100);
           clearInterval(intervalId); // Stop the interval once the input is focused
         }
       }, 100);
@@ -43,7 +45,9 @@ export default function DashboardLayout(props: { children: React.ReactNode }) {
       const intervalId = setInterval(() => {
         const input = document.getElementById('modal-beta-search');
         if (input) {
-          input.focus();
+          setTimeout(() => {
+            input.focus();
+          }, 100);
           clearInterval(intervalId); // Stop the interval once the input is focused
         }
       }, 100);
@@ -64,7 +68,9 @@ export default function DashboardLayout(props: { children: React.ReactNode }) {
         const intervalId = setInterval(() => {
           const input = document.getElementById('modal-message');
           if (input) {
-            input.focus();
+            setTimeout(() => {
+              input.focus();
+            }, 100);
             clearInterval(intervalId); // Stop the interval once the input is focused
           }
         }, 100);
@@ -128,7 +134,9 @@ export default function DashboardLayout(props: { children: React.ReactNode }) {
         const intervalId = setInterval(() => {
           const input = document.getElementById('modal-beta-search');
           if (input) {
-            input.focus();
+            setTimeout(() => {
+              input.focus();
+            }, 100);
             clearInterval(intervalId); // Stop the interval once the input is focused
           }
         }, 100);

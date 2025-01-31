@@ -391,6 +391,7 @@ const SimpleDashboard = () => {
       <input
         type="password"
         placeholder="Paste your Launch Party Personal Access Token here"
+        style={{ fontSize: '17px' }}
         className="w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500"
         value={platformToken}
         onChange={handleTokenChange}
@@ -408,7 +409,9 @@ const SimpleDashboard = () => {
             const intervalId = setInterval(() => {
               const input = document.getElementById('modal-beta-search');
               if (input) {
-                input.focus();
+                setTimeout(() => {
+                  input.focus();
+                }, 100);
                 clearInterval(intervalId); // Stop the interval once the input is focused
               }
             }, 100);
@@ -433,7 +436,9 @@ const SimpleDashboard = () => {
             const intervalId = setInterval(() => {
               const input = document.getElementById('modal-message');
               if (input) {
-                input.focus();
+                setTimeout(() => {
+                  input.focus();
+                }, 100);
                 clearInterval(intervalId); // Stop the interval once the input is focused
               }
             }, 100);
@@ -449,7 +454,9 @@ const SimpleDashboard = () => {
             const intervalId = setInterval(() => {
               const input = document.getElementById('modal-message-author');
               if (input) {
-                input.focus();
+                setTimeout(() => {
+                  input.focus();
+                }, 100);
                 // highlight the text
                 (input as HTMLInputElement).setSelectionRange(
                   0,

@@ -53,7 +53,9 @@ const SearchModalBetaV1 = ({
   useEffect(() => {
     const input = document.getElementById('modal-beta-search');
     if (input) {
-      input.focus();
+      setTimeout(() => {
+        input.focus();
+      }, 100);
     }
   }, []);
 
