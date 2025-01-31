@@ -334,6 +334,8 @@ const Uploader = ({
       console.log('addrData:', addrData);
       lastEntryId = addrData.respData.id;
 
+      console.log('lastEntryId', lastEntryId);
+
       const aliasIDs = [];
       for await (const comment of data.json.comments) {
         const commentBody: { data: any; metadata: any; createdAt?: string } = {
@@ -378,8 +380,6 @@ const Uploader = ({
         const zaddrData = await zresponse.json();
         console.log('zaddrData:', zaddrData);
       }
-
-      return lastEntryId;
     };
 
     let count = 0;
@@ -390,6 +390,7 @@ const Uploader = ({
     }
 
     setShareYCBLoadingPct(100);
+    return lastEntryId;
   };
 
   const uploadImage = async () => {
@@ -602,6 +603,7 @@ const Uploader = ({
               if (shareYCBInput) {
                 setLoading(true);
                 const lastID = await uploadFromShareYCB(shareYCBInput);
+                console.log('lastID', lastID);
                 setLoading(false);
                 setShareYCBLoadingPct(0);
                 router.push(`/dashboard/entry/${lastID}`);
