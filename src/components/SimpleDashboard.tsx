@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import AnimatedNumbers from 'react-animated-numbers';
 
-import { fetchRandomEntry } from '@/helpers/functions';
+import { fetchFavicon, fetchRandomEntry } from '@/helpers/functions';
 
 // import ForceFromEntry from "./ForceFromEntry";
 import HelpModal from './HelpModal';
@@ -327,8 +327,21 @@ const SimpleDashboard = () => {
           };
         })
         .filter((entry: any) => entry !== null);
-      console.log('Log:', log);
+
       setLogEntries(log);
+
+      // add favicon to each entry
+      const faviconPromises = log.map(async (entry: any) => {
+        if (entry.metadata.author) {
+          const favicon = await fetchFavicon(entry.metadata.author);
+          return { ...entry, favicon: favicon.favicon };
+        }
+
+        return entry;
+      });
+
+      const faviconData = await Promise.all(faviconPromises);
+      setLogEntries(faviconData);
     } catch (error) {
       console.error('Error fetching log entries:', error);
     }
@@ -382,40 +395,6 @@ const SimpleDashboard = () => {
         value={platformToken}
         onChange={handleTokenChange}
       />
-      {totalEntries >= 0 && (
-        <h2 className="mx-2 mt-8 text-xl font-extrabold text-gray-400 md:text-lg lg:text-lg">
-          You have{' '}
-          <span className="bg-gradient-to-r from-sky-400 to-emerald-600 bg-clip-text text-transparent">
-            {totalEntries}
-          </span>{' '}
-          total entries in your commonbase. That&apos;s the equivalent of{' '}
-          <span className="bg-gradient-to-r from-sky-400 to-emerald-600 bg-clip-text text-transparent">
-            {Math.round(totalEntries / 251)}
-          </span>{' '}
-          journals filled! You are{' '}
-          <span className="bg-gradient-to-r from-sky-400 to-emerald-600 bg-clip-text text-transparent">
-            {251 - (totalEntries % 251)}
-          </span>{' '}
-          entries away from filling your next journal!
-        </h2>
-      )}
-
-      <h2 className="mx-2 mt-8 text-xl font-extrabold text-gray-400 md:text-lg lg:text-lg">
-        You have{' '}
-        <AnimatedNumbers
-          includeComma
-          transitions={(index) => ({
-            type: 'spring',
-            duration: index + 0.3,
-          })}
-          animateToNumber={todaysEntriesLength}
-          fontStyle={{
-            fontSize: 18,
-            color: 'black',
-          }}
-        />
-        entries today!
-      </h2>
 
       <h2 className="mx-2 mt-8 text-xl font-extrabold text-gray-400 md:text-lg lg:text-lg">
         What do you want to accomplish today?
@@ -460,7 +439,28 @@ const SimpleDashboard = () => {
             }, 100);
           }}
         >
-          I want to add a text/image/URL entry
+          I want to add a text/image/ShareYCB entry
+        </button>
+        <button
+          type="button"
+          className="my-2 me-2 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4"
+          onClick={() => {
+            setUploaderModalOpen(true);
+            const intervalId = setInterval(() => {
+              const input = document.getElementById('modal-message-author');
+              if (input) {
+                input.focus();
+                // highlight the text
+                (input as HTMLInputElement).setSelectionRange(
+                  0,
+                  (input as HTMLInputElement).value.length,
+                );
+                clearInterval(intervalId); // Stop the interval once the input is focused
+              }
+            }, 100);
+          }}
+        >
+          I want to add a URL entry
         </button>
         {/* todo: implement image upload seperate modal */}
         {/* <button
@@ -796,10 +796,45 @@ const SimpleDashboard = () => {
         </button>
       </div> */}
 
+      {totalEntries >= 0 && (
+        <h2 className="mx-2 mt-8 text-xl font-extrabold text-gray-400 md:text-lg lg:text-lg">
+          You have{' '}
+          <span className="bg-gradient-to-r from-sky-400 to-emerald-600 bg-clip-text text-transparent">
+            {totalEntries}
+          </span>{' '}
+          total entries in your commonbase. That&apos;s the equivalent of{' '}
+          <span className="bg-gradient-to-r from-sky-400 to-emerald-600 bg-clip-text text-transparent">
+            {Math.round(totalEntries / 251)}
+          </span>{' '}
+          journals filled! You are{' '}
+          <span className="bg-gradient-to-r from-sky-400 to-emerald-600 bg-clip-text text-transparent">
+            {251 - (totalEntries % 251)}
+          </span>{' '}
+          entries away from filling your next journal!
+        </h2>
+      )}
+
+      <h2 className="mx-2 mt-8 text-xl font-extrabold text-gray-400 md:text-lg lg:text-lg">
+        You have{' '}
+        <AnimatedNumbers
+          includeComma
+          transitions={(index) => ({
+            type: 'spring',
+            duration: index + 0.3,
+          })}
+          animateToNumber={todaysEntriesLength}
+          fontStyle={{
+            fontSize: 18,
+            color: 'black',
+          }}
+        />
+        entries today!
+      </h2>
+
       <h1 className="my-4 text-xl font-extrabold text-gray-900 md:text-xl lg:text-xl">
         Recent Activity Log
       </h1>
-      <div className="mx-2 my-4">
+      <div className="mx-2 my-4 w-full overflow-auto">
         {logEntries.map((entry: any) => (
           <div key={entry.id}>
             <div
@@ -821,7 +856,14 @@ const SimpleDashboard = () => {
                           alt="ycb-companion-image"
                         />
                       )}
-                    <span className="font-normal">{entry.data}</span>
+                    <span className="flex items-center font-normal">
+                      <img
+                        src={entry.favicon || '/favicon.ico'}
+                        alt="favicon"
+                        className="mr-2 size-6"
+                      />
+                      {entry.data}
+                    </span>
                   </div>
                 </Link>
                 <div className="text-sm text-gray-500">

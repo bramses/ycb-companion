@@ -2081,7 +2081,7 @@ again:
                   'YCB'
                 )}
               </div>
-              {alias &&
+              {/* {alias &&
                 alias.aliasMetadata &&
                 alias.aliasMetadata.author &&
                 alias.aliasMetadata.title === 'Image' && (
@@ -2090,7 +2090,7 @@ again:
                     src={alias.aliasMetadata.author}
                     alt="ycb-companion-image"
                   />
-                )}
+                )} */}
               <p className="text-black">
                 {processCustomMarkdown(alias.aliasData)}
               </p>
@@ -2157,7 +2157,7 @@ again:
                   'YCB'
                 )}
               </div>
-              {alias &&
+              {/* {alias &&
                 alias.aliasMetadata &&
                 alias.aliasMetadata.author &&
                 alias.aliasMetadata.title === 'Image' && (
@@ -2166,7 +2166,7 @@ again:
                     src={alias.aliasMetadata.author}
                     alt="ycb-companion-image"
                   />
-                )}
+                )} */}
               <p className="text-black">
                 {processCustomMarkdown(alias.aliasData)}
               </p>
@@ -2355,7 +2355,28 @@ again:
             }, 100);
           }}
         >
-          I want to add a text/image/URL entry
+          I want to add a text/image/ShareYCB entry
+        </button>
+        <button
+          type="button"
+          className="my-2 me-2 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4"
+          onClick={() => {
+            setUploaderModalOpen(true);
+            const intervalId = setInterval(() => {
+              const input = document.getElementById('modal-message-author');
+              if (input) {
+                input.focus();
+                // highlight the text
+                (input as HTMLInputElement).setSelectionRange(
+                  0,
+                  (input as HTMLInputElement).value.length,
+                );
+                clearInterval(intervalId); // Stop the interval once the input is focused
+              }
+            }, 100);
+          }}
+        >
+          I want to add a URL entry
         </button>
         <button
           type="button"

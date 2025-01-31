@@ -196,13 +196,6 @@ export default function Share({
             </button>
           </>
         )}
-        <button
-          type="button"
-          onClick={() => setModalOpen(false)}
-          style={{ marginLeft: '8px' }}
-        >
-          close
-        </button>
       </Modal>
     </div>
   );

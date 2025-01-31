@@ -298,6 +298,7 @@ const Uploader = ({
     const decoded = atob(id); // { ids: string[], from: string }
     const json = JSON.parse(decoded);
     const { ids } = json;
+    let lastEntryId = '';
 
     const processId = async (pid: string) => {
       const response = await fetch(
@@ -331,6 +332,9 @@ const Uploader = ({
       const addrData = await yresponse.json();
       const parentId = addrData.respData.id;
       console.log('addrData:', addrData);
+      lastEntryId = addrData.respData.id;
+
+      console.log('lastEntryId', lastEntryId);
 
       const aliasIDs = [];
       for await (const comment of data.json.comments) {
@@ -386,6 +390,7 @@ const Uploader = ({
     }
 
     setShareYCBLoadingPct(100);
+    return lastEntryId;
   };
 
   const uploadImage = async () => {
@@ -466,6 +471,7 @@ const Uploader = ({
         <input
           type="text"
           style={{ fontSize: '17px' }}
+          id="modal-message-author"
           className="mt-2 block grow rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500"
           placeholder="A URL for your entry..."
           onChange={(e) => setAuthor(e.target.value)}
@@ -490,7 +496,9 @@ const Uploader = ({
               const data = await response.json();
               if (data.title) {
                 setTextAreaValue(
-                  `${data.description} | ${data.title}` || data.title,
+                  data.description
+                    ? `${data.description} | ${data.title}`
+                    : data.title,
                 );
                 setTitle(data.title);
               }
@@ -594,10 +602,11 @@ const Uploader = ({
             onClick={async () => {
               if (shareYCBInput) {
                 setLoading(true);
-                await uploadFromShareYCB(shareYCBInput);
+                const lastID = await uploadFromShareYCB(shareYCBInput);
+                console.log('lastID', lastID);
                 setLoading(false);
                 setShareYCBLoadingPct(0);
-                router.push(`/dashboard`);
+                router.push(`/dashboard/entry/${lastID}`);
                 setShowShareYCBTextarea(false);
               }
             }}
