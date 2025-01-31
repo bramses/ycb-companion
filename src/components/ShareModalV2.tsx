@@ -56,17 +56,12 @@ export default function Share({
 }: any) {
   const [includeComments, setIncludeComments] = useState(false);
 
-  const [modalOpen, setModalOpen] = useState(true);
   const [showShareButton, setShowShareButton] = useState(false);
-
-  useEffect(() => {
-    console.log(modalOpen);
-  }, [modalOpen]);
 
   // a btn that checks url https://share-ycbs.onrender.com/p/{entryid} and if not a 404 does not show the button
   useEffect(() => {
     if (entryId) {
-      fetch(`http://localhost:3002/api/ping?entryid=${entryId}`)
+      fetch(`https://share-ycbs.onrender.com/api/ping?entryid=${entryId}`)
         .then((response) => {
           if (!response.ok) {
             // If the response is not OK (e.g., 404, 500), hide the button
@@ -134,7 +129,7 @@ export default function Share({
 
     console.log('body:', body);
 
-    fetch('http://localhost:3002/api/add', {
+    fetch('https://share-ycbs.onrender.com/api/add', {
       // todo https://share-ycbs.onrender.com
       method: 'POST',
       body: JSON.stringify({
@@ -171,7 +166,11 @@ export default function Share({
           <>
             <br />
             <br />
-            <button type="button" onClick={handleDownload}>
+            <button
+              type="button"
+              className="mt-2 w-full rounded border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4 focus:ring-gray-300"
+              onClick={handleDownload}
+            >
               share
             </button>
           </>
@@ -179,16 +178,21 @@ export default function Share({
         {showShareButton && (
           <>
             <QRCode
-              value={`http://localhost:3002/p/${entryId}`}
+              value={`https://share-ycbs.onrender.com/p/${entryId}`}
               size={256}
               bgColor="#ffffff"
               fgColor="#000000"
             />
-            <Link target="_blank" href={`http://localhost:3002/p/${entryId}`}>
+            <Link
+              target="_blank"
+              className="mt-2 w-full rounded border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4 focus:ring-gray-300"
+              href={`https://share-ycbs.onrender.com/p/${entryId}`}
+            >
               open on shareycb
             </Link>
             <button
               type="button"
+              className="mt-2 w-full rounded border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4 focus:ring-gray-300"
               onClick={handleDownload}
               style={{ marginLeft: '8px' }}
             >

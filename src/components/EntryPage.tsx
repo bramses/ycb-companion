@@ -196,7 +196,9 @@ const EntryPage = () => {
         event.preventDefault();
         const commentInput = document.getElementById(`alias-input-comment`);
         if (commentInput) {
-          commentInput.focus();
+          setTimeout(() => {
+            commentInput.focus();
+          }, 100);
         }
       }
     }
@@ -221,15 +223,17 @@ const EntryPage = () => {
         const deltaX = endX - startX;
         if (Math.abs(deltaX) > 50) {
           if (deltaX < 0) {
-            setCurrentIndex((prevIndex) => {
-              if (prevIndex === null) return 0;
-              return (prevIndex + 1) % graphNodes.length;
-            });
+            // setCurrentIndex((prevIndex) => {
+            //   if (prevIndex === null) return 0;
+            //   return (prevIndex + 1) % graphNodes.length;
+            // });
+            setCurrentIndex((prev) => getNextIndex(graphNodes, prev, -1));
           } else {
-            setCurrentIndex((prevIndex) => {
-              if (prevIndex === null) return graphNodes.length - 1;
-              return (prevIndex - 1 + graphNodes.length) % graphNodes.length;
-            });
+            // setCurrentIndex((prevIndex) => {
+            //   if (prevIndex === null) return graphNodes.length - 1;
+            //   return (prevIndex - 1 + graphNodes.length) % graphNodes.length;
+            // });
+            setCurrentIndex((prev) => getNextIndex(graphNodes, prev, 1));
           }
         }
       }
@@ -2324,7 +2328,9 @@ again:
             const intervalId = setInterval(() => {
               const input = document.getElementById('modal-beta-search');
               if (input) {
-                input.focus();
+                setTimeout(() => {
+                  input.focus();
+                }, 100);
                 clearInterval(intervalId); // Stop the interval once the input is focused
               }
             }, 100);
@@ -2349,7 +2355,9 @@ again:
             const intervalId = setInterval(() => {
               const input = document.getElementById('modal-message');
               if (input) {
-                input.focus();
+                setTimeout(() => {
+                  input.focus();
+                }, 100);
                 clearInterval(intervalId); // Stop the interval once the input is focused
               }
             }, 100);
@@ -2365,7 +2373,9 @@ again:
             const intervalId = setInterval(() => {
               const input = document.getElementById('modal-message-author');
               if (input) {
-                input.focus();
+                setTimeout(() => {
+                  input.focus();
+                }, 100);
                 // highlight the text
                 (input as HTMLInputElement).setSelectionRange(
                   0,
