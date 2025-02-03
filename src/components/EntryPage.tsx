@@ -1939,7 +1939,7 @@ again:
           }}
           id="alias-input-comment"
         />
-        {/* <button
+        <button
           type="button"
           onClick={() => {
             const aliasInput = document.getElementById(`alias-input-comment`);
@@ -1964,7 +1964,7 @@ again:
           aria-label="Add alias"
         >
           Add Comment
-        </button> */}
+        </button>
 
         {/* <div className="relative mb-4 w-full">
           <textarea
@@ -2220,6 +2220,8 @@ again:
       {showAliasError && (
         <div className="text-red-500">Error adding comment. Try again.</div>
       )}
+      <hr className="my-8 h-px w-full border-0 bg-gray-200 dark:bg-gray-700" />
+
       {data ? (
         <div className="mb-2 [&_p]:my-2">
           <button
@@ -2317,6 +2319,7 @@ again:
         />
         <UploaderModalWrapper
           isOpen={isUploaderModalOpen || false}
+          type=""
           closeModalFn={() => closeModalActions()}
         />
         <h2>Actions</h2>

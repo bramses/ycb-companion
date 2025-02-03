@@ -31,6 +31,7 @@ const SimpleDashboard = () => {
   const [isUploaderModalOpen, setUploaderModalOpen] = useState(false);
   const [totalEntries, setTotalEntries] = useState(-1);
   const [todaysEntriesLength, setTodaysEntriesLength] = useState(0);
+  const [uploaderModalType, setUploaderModalType] = useState('');
 
   // const [inboxEntries, setInboxEntries] = useState<any[]>([]);
 
@@ -450,6 +451,7 @@ const SimpleDashboard = () => {
           type="button"
           className="my-2 me-2 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4"
           onClick={() => {
+            setUploaderModalType('url');
             setUploaderModalOpen(true);
             const intervalId = setInterval(() => {
               const input = document.getElementById('modal-message-author');
@@ -668,6 +670,7 @@ const SimpleDashboard = () => {
       />
       <UploaderModalWrapper
         isOpen={isUploaderModalOpen || false}
+        type={uploaderModalType}
         closeModalFn={() => closeModal()}
       />
       {/* {randomEntry && (

@@ -834,6 +834,7 @@ const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
           border: '1px solid #ccc',
           backgroundColor: '#fff',
           zIndex: 9999,
+          display: showModal || window.innerWidth >= 768 ? 'block' : 'none',
         }}
       >
         <svg
