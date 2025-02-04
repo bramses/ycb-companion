@@ -1,7 +1,7 @@
-import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
+// import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
 import type { NextFetchEvent, NextRequest } from 'next/server';
 import createMiddleware from 'next-intl/middleware';
-
+// export { auth as middleware } from "auth"
 import { AppConfig } from './utils/AppConfig';
 
 const intlMiddleware = createMiddleware({
@@ -10,38 +10,39 @@ const intlMiddleware = createMiddleware({
   defaultLocale: AppConfig.defaultLocale,
 });
 
-const isProtectedRoute = createRouteMatcher([
-  '/dashboard(.*)',
-  '/:locale/dashboard(.*)',
-  '/api/(.*)',
-]);
+// const isProtectedRoute = createRouteMatcher([
+//   '/dashboard(.*)',
+//   '/:locale/dashboard(.*)',
+//   '/api/(.*)',
+// ]);
 
 export default function middleware(
   request: NextRequest,
   event: NextFetchEvent,
 ) {
+  console.log('request.nextUrl.pathname:', request.nextUrl.pathname);
   // Run Clerk middleware only when it's necessary
-  if (
-    request.nextUrl.pathname.includes('/sign-in') ||
-    request.nextUrl.pathname.includes('/sign-up') ||
-    isProtectedRoute(request)
-  ) {
-    return clerkMiddleware((auth, req) => {
-      if (isProtectedRoute(req)) {
-        const locale =
-          req.nextUrl.pathname.match(/(\/.*)\/dashboard/)?.at(1) ?? '';
+  // if (
+  //   request.nextUrl.pathname.includes('/sign-in') ||
+  //   request.nextUrl.pathname.includes('/sign-up') ||
+  //   isProtectedRoute(request)
+  // ) {
+  //   return clerkMiddleware((auth, req) => {
+  //     if (isProtectedRoute(req)) {
+  //       const locale =
+  //         req.nextUrl.pathname.match(/(\/.*)\/dashboard/)?.at(1) ?? '';
 
-        const signInUrl = new URL(`${locale}/sign-in`, req.url);
+  //       const signInUrl = new URL(`${locale}/sign-in`, req.url);
 
-        auth().protect({
-          // `unauthenticatedUrl` is needed to avoid error: "Unable to find `next-intl` locale because the middleware didn't run on this request"
-          unauthenticatedUrl: signInUrl.toString(),
-        });
-      }
+  //       auth().protect({
+  //         // `unauthenticatedUrl` is needed to avoid error: "Unable to find `next-intl` locale because the middleware didn't run on this request"
+  //         unauthenticatedUrl: signInUrl.toString(),
+  //       });
+  //     }
 
-      return intlMiddleware(req);
-    })(request, event);
-  }
+  //     return intlMiddleware(req);
+  //   })(request, event);
+  // }
 
   return intlMiddleware(request);
 }
