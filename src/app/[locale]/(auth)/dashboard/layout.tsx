@@ -61,6 +61,14 @@ export default function DashboardLayout(props: { children: React.ReactNode }) {
   };
 
   useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const shareParam = urlParams.get('share');
+    if (shareParam) {
+      console.log('shareParam:', shareParam);
+    }
+  }, []);
+
+  useEffect(() => {
     const handleKeyDown = (event: any) => {
       if (event.metaKey && event.key === 'u') {
         // cmd-u for Mac users

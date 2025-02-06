@@ -110,6 +110,9 @@ const EntryPage = () => {
   const [graphNodes, setGraphNodes] = useState<any[]>([]);
   const [currentIndex, setCurrentIndex] = useState<number | null>(null);
   const [showModal, setShowModal] = useState(false);
+  const [randomCommentPlaceholder, setRandomCommentPlaceholder] = useState(
+    'Add a comment... (press enter to save)',
+  );
 
   const router = useRouter();
 
@@ -139,6 +142,15 @@ const EntryPage = () => {
 
     return i;
   }
+
+  // get a random entry on load
+  useEffect(() => {
+    const asyncFn = async () => {
+      const entry = await fetchRandomEntry();
+      setRandomCommentPlaceholder(entry.data);
+    };
+    asyncFn();
+  }, []);
 
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
@@ -1910,7 +1922,7 @@ again:
           rows={3}
           style={{ fontSize: '17px' }}
           className="mb-2 w-full rounded border border-neutral-dark bg-white px-4 py-2 text-neutral-dark transition hover:bg-neutral-light"
-          placeholder="Add a comment... (press enter to save)"
+          placeholder={randomCommentPlaceholder}
           onKeyDown={(e) => {
             if (e.key === 'Enter') {
               e.preventDefault();

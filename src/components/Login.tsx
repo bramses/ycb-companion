@@ -1,15 +1,47 @@
-'use client';
+import { signIn } from 'auth';
 
-import { signIn } from 'next-auth/react';
-
-export default function Login() {
+export default function Login({ url }: any) {
   return (
-    <button
-      onClick={() => signIn('keycloak')}
-      type="button"
-      className="rounded-full bg-sky-500 px-5 py-2 text-sm font-semibold leading-5 text-white hover:bg-sky-700"
+    <form
+      action={async () => {
+        'use server';
+
+        if (url) {
+          await signIn('keycloak', { redirectTo: url });
+        } else {
+          await signIn('keycloak', { redirectTo: '/dashboard' });
+        }
+      }}
     >
-      Signin with keycloak
-    </button>
+      <button
+        type="submit"
+        className="rounded-full bg-sky-500 px-5 py-2 text-sm font-semibold leading-5 text-white hover:bg-sky-700"
+      >
+        Sign in
+      </button>
+    </form>
   );
 }
+
+// 'use client';
+
+// import { useSearchParams } from 'next/navigation';
+
+// import { loginAction } from '@/utils/loginAction';
+
+// export default function Login() {
+//   const searchParams = useSearchParams();
+//   const shareParam = searchParams.get('share') || '';
+
+//   return (
+//     <form action={loginAction}>
+//       <input type="hidden" name="share" value={shareParam} />
+//       <button
+//         type="submit"
+//         className="rounded-full bg-sky-500 px-5 py-2 text-sm font-semibold leading-5 text-white hover:bg-sky-700"
+//       >
+//         sign in
+//       </button>
+//     </form>
+//   );
+// }

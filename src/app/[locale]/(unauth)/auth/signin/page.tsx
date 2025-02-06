@@ -1,8 +1,6 @@
 import { auth } from 'auth';
-import console from 'console';
 import { redirect } from 'next/navigation';
 
-// import { getServerSession } from 'next-auth';
 import Login from '@/components/Login';
 
 const signinErrors: Record<string | 'default', string> = {
@@ -29,14 +27,14 @@ export default async function Signin({
   searchParams: { callbackUrl, error },
 }: SignInPageProp) {
   const session = await auth();
-  console.log('session:', session);
   if (session) {
     redirect(callbackUrl || '/');
   }
+
   return (
     <div className="flex h-screen flex-col items-center justify-center space-y-3">
       {error && <div>{signinErrors[error.toLowerCase()]}</div>}
-      <Login />
+      <Login url={callbackUrl} />
     </div>
   );
 }
