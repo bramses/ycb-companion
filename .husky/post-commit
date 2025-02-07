@@ -1,0 +1,2 @@
+#!/bin/sh
+/Users/bram/.nvm/versions/node/v20.17.0/bin/node commit-hook.js
