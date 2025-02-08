@@ -52,7 +52,7 @@
       }
     ]
   },
-  "exclude": ["./out/**/*", "./node_modules/**/*", "commit-hook.js"],
+  "exclude": ["./out/**/*", "./node_modules/**/*", "commit-hook.mjs"],
   "include": [
     "./*.ts",
     "next-env.d.ts",
