@@ -1,9 +1,9 @@
 'use client';
 
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import Modal from 'react-modal';
 
 import LocaleSwitcher from '@/components/LocaleSwitcher';
@@ -11,17 +11,22 @@ import { LogOutButton } from '@/components/LogOutButton';
 import SearchModalBeta from '@/components/SearchModalBeta';
 import SpeedDial from '@/components/SpeedDial';
 import Uploader from '@/components/Uploader';
+import ShareUploader from '@/components/uploaders/share';
 import { fetchRandomEntry } from '@/helpers/functions';
 import { BaseTemplate } from '@/templates/BaseTemplate';
 
 export default function DashboardLayout(props: { children: React.ReactNode }) {
   const t = useTranslations('DashboardLayout');
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const shareParam = searchParams!.get('share') || '';
   const [isSearchModalBetaOpen, setSearchModalBetaOpen] = useState(false);
 
   const [searchBetaModalQuery] = useState('');
 
   const [isFastEntryModalOpen, setFastEntryModalOpen] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
+
   const openFastEntryModal = () => setFastEntryModalOpen(true);
   const closeFastEntryModal = () => setFastEntryModalOpen(false);
 
@@ -54,19 +59,23 @@ export default function DashboardLayout(props: { children: React.ReactNode }) {
     }
   };
 
-  const handleRandom = async () => {
-    // fetch a random entry and open it
+  // const handleRandom = async () => {
+  //   // fetch a random entry and open it
+  //   const entry = await fetchRandomEntry();
+  //   router.push(`/dashboard/entry/${entry.id}`);
+  // };
+
+  const handleRandom = useCallback(async () => {
     const entry = await fetchRandomEntry();
     router.push(`/dashboard/entry/${entry.id}`);
-  };
+  }, [router]);
 
+  // open share if ?share is in url params
   useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const shareParam = urlParams.get('share');
     if (shareParam) {
-      console.log('shareParam:', shareParam);
+      setShowShareModal(true);
     }
-  }, []);
+  }, [shareParam]);
 
   useEffect(() => {
     const handleKeyDown = (event: any) => {
@@ -276,7 +285,7 @@ export default function DashboardLayout(props: { children: React.ReactNode }) {
       <Modal
         isOpen={isFastEntryModalOpen}
         onRequestClose={closeFastEntryModal}
-        contentLabel="Example Modal"
+        contentLabel="Fast Entry Modal"
         ariaHideApp={false}
         // apply custom styles using tailwind classes
         className="fixed left-1/2 top-1/2 z-50 w-full max-w-sm
@@ -298,6 +307,33 @@ export default function DashboardLayout(props: { children: React.ReactNode }) {
           authorDefault="https://yourcommonbase.com/dashboard"
         />
       </Modal>
+      {showShareModal && (
+        <Modal
+          isOpen={showShareModal}
+          onRequestClose={() => setShowShareModal(false)}
+          contentLabel="Share Modal"
+          ariaHideApp={false}
+          // apply custom styles using tailwind classes
+          className="fixed left-1/2 top-1/2 z-50 w-full max-w-sm
+        -translate-x-1/2 -translate-y-1/2 rounded-lg bg-white p-4 shadow-lg"
+        >
+          <button onClick={() => setShowShareModal(false)} type="button">
+            (close)
+          </button>
+          <h2
+            className="mb-4 text-2xl font-semibold text-gray-800"
+            id="modal-title"
+          >
+            Share
+          </h2>
+          <ShareUploader
+            closeModal={closeFastEntryModal}
+            textDefault={shareParam}
+            titleDefault=""
+            authorDefault="https://yourcommonbase.com/dashboard"
+          />
+        </Modal>
+      )}
       <SpeedDial onOpenModal={onOpenModal} openRandom={handleRandom} />
       {props.children}
     </BaseTemplate>

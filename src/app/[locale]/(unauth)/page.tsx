@@ -20,9 +20,16 @@ export default function Index() {
         </div>
         <h2 className="mb-4 text-2xl font-semibold">Features</h2>
         <p className="mb-8 text-lg">
-          Your Commonbase is a <em>self-organizing scrapbook.</em> By using a
-          scrapbook format, you can <b>save any chaotic interest you have.</b>{' '}
-          Want to deeply rabbit hole the{' '}
+          Your Commonbase is a <em>self-organizing scrapbook.</em>Your
+          Commonbase provides zero stress for humans on four core
+          functionalities: storing, searching, synthesizing, and sharing
+          personal knowledge. From a technical standpoint, Your Commonbase is a
+          vector database that has a dual layer: one for user-inputted data that
+          becomes embedded, and another for machine/human metadata. The metadata
+          column holds features about the data, including IDs its related to, or
+          what source URL it came from, etc. By using a scrapbook format, you
+          can <b>save any chaotic interest you have.</b> Want to deeply rabbit
+          hole the{' '}
           <a href="https://www.britannica.com/place/Denmark/The-High-Middle-Ages">
             policies of 14th century Denmark
           </a>{' '}
