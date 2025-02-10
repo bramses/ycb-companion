@@ -31,5 +31,4 @@ jobs:
     with:
       environment: ${{ needs.extract_info.outputs.ENVIRONMENT }}
       version: ${{ needs.extract_info.outputs.VERSION }}
-      push: true
     secrets: inherit
