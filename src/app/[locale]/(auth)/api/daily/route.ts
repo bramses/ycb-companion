@@ -24,6 +24,8 @@ export const POST = async (request: Request) => {
     body: JSON.stringify({
       excludeParentId: true,
       date,
+      // get the timezone from the user's browser
+      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
     }),
   });
   const data = await resp.json();
