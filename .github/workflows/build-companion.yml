@@ -22,7 +22,20 @@ jobs:
 
       - name: Create .env
         run: |
-          echo ALIAS_EMAIL_DOMAIN="${{ secrets.ALIAS_EMAIL_DOMAIN }}" > $(pwd)/apps/drm-frontend/.env
+          echo CLERK_SECRET_KEY="${{ secrets.CLERK_SECRET_KEY }}" > $(pwd)/.env
+          echo NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY="${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}" >> $(pwd)/.env
+          echo CLOUD_URL="${{ secrets.CLOUD_URL }}" >> $(pwd)/.env
+          echo TOKEN="${{ secrets.TOKEN }}" >> $(pwd)/.env
+          echo DATABASE_URL="${{ secrets.DATABASE_URL }}" >> $(pwd)/.env
+          echo NEXT_PUBLIC_API_KEY_CF_IMG="${{ secrets.NEXT_PUBLIC_API_KEY_CF_IMG }}" >> $(pwd)/.env
+          echo NEXT_PUBLIC_CLERK_SIGN_IN_URL="${{ secrets.NEXT_PUBLIC_CLERK_SIGN_IN_URL }}" >> $(pwd)/.env
+          echo OPENAI_API_KEY="${{ secrets.OPENAI_API_KEY }}" >> $(pwd)/.env
+          echo NEXT_PUBLIC_MEILI_HOST="${{ secrets.NEXT_PUBLIC_MEILI_HOST }}" >> $(pwd)/.env
+          echo MEILI_MASTER_KEY="${{ secrets.MEILI_MASTER_KEY }}" >> $(pwd)/.env
+          echo MEILI_DEFAULT_SEARCH_API_KEY="${{ secrets.MEILI_DEFAULT_SEARCH_API_KEY }}" >> $(pwd)/.env
+          echo MEILI_DEFAULT_SEARCH_UID="${{ secrets.MEILI_DEFAULT_SEARCH_UID }}" >> $(pwd)/.env
+          echo MEILI_DEFAULT_ADMIN_API_KEY="${{ secrets.MEILI_DEFAULT_ADMIN_API_KEY }}" >> $(pwd)/.env
+          echo MEILI_DEFAULT_ADMIN_UID="${{ secrets.MEILI_DEFAULT_ADMIN_UID }}" >> $(pwd)/.env
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
