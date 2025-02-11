@@ -1,17 +1,16 @@
 // src/app/[locale]/(auth)/api/download/route.ts
-import { cookies } from 'next/headers'; // Import the cookies utility
 import { NextResponse } from 'next/server';
 
 import { logger } from '@/libs/Logger';
 
-export const POST = async () => {
+export const POST = async (request: Request) => {
+  const { TOKEN } = await request.json();
   const { CLOUD_URL } = process.env;
-
-  const TOKEN = cookies().get('platformToken')?.value; // Retrieve the token from cookies
 
   if (!TOKEN) {
     return NextResponse.json({ error: 'No token provided' }, { status: 401 });
   }
+
 
   try {
     const resp = await fetch(`${CLOUD_URL}/token`, {

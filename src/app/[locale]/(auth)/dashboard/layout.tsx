@@ -6,8 +6,8 @@ import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useState } from 'react';
 import Modal from 'react-modal';
 
-import LocaleSwitcher from '@/components/LocaleSwitcher';
-import { LogOutButton } from '@/components/LogOutButton';
+// import LocaleSwitcher from '@/components/LocaleSwitcher';
+// import { LogOutButton } from '@/components/LogOutButton';
 import SearchModalBeta from '@/components/SearchModalBeta';
 import SpeedDial from '@/components/SpeedDial';
 import Uploader from '@/components/Uploader';
@@ -265,17 +265,17 @@ export default function DashboardLayout(props: { children: React.ReactNode }) {
           </li> */}
         </>
       }
-      rightNav={
-        <>
-          <li>
-            <LogOutButton />
-          </li>
+      // rightNav={
+      //   <>
+      //     <li>
+      //       <LogOutButton />
+      //     </li>
 
-          <li>
-            <LocaleSwitcher />
-          </li>
-        </>
-      }
+      //     <li>
+      //       <LocaleSwitcher />
+      //     </li>
+      //   </>
+      // }
     >
       <SearchModalBeta
         isOpen={isSearchModalBetaOpen || false}

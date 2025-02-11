@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import AnimatedNumbers from 'react-animated-numbers';
 
+// import { useAuth } from 'react-oidc-context';
 import { fetchFavicon, fetchRandomEntry } from '@/helpers/functions';
 
 // import ForceFromEntry from "./ForceFromEntry";
@@ -12,9 +13,13 @@ import HelpModal from './HelpModal';
 import SearchModalBeta from './SearchModalBeta';
 // import Uploader from "./Uploader";
 import UploaderModalWrapper from './UploaderModalWrapper';
+import { fetchAccessToken } from '@/utils/fetchAccessToken';
 
 const SimpleDashboard = () => {
   const router = useRouter();
+
+  // const { user } = useAuth();
+  // console.log('user:', user);
   // const [randomEntry, setRandomEntry] = useState<any>(null);
   // const [comments, setComments] = useState<any[]>([]);
   const [isSearchModalBetaOpen, setSearchModalBetaOpen] = useState(false);
@@ -225,11 +230,15 @@ const SimpleDashboard = () => {
 
   const fetchTotalEntries = async () => {
     try {
+
+      const accessToken = await fetchAccessToken();
+      
       const response = await fetch('/api/count', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
+        body: JSON.stringify({ TOKEN: accessToken }),
       });
       const data = await response.json();
       setTotalEntries(data.count);
@@ -258,6 +267,7 @@ const SimpleDashboard = () => {
         dayString = `0${day}`;
       }
       const dateString = `${year}-${monthString}-${dayString}`;
+      const accessToken = await fetchAccessToken();
 
       // call /api/entries
       const response = await fetch('/api/daily', {
@@ -265,7 +275,7 @@ const SimpleDashboard = () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ date: dateString }),
+        body: JSON.stringify({ date: dateString, TOKEN: accessToken }),
       });
       const responseData = await response.json();
 

@@ -2,7 +2,7 @@
 
 'use client';
 
-import { useUser } from '@clerk/nextjs';
+// import { useUser } from '@clerk/nextjs';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname, useSearchParams } from 'next/navigation';
@@ -72,7 +72,7 @@ const CustomLabel = ({
 };
 
 const SearchResults = () => {
-  const { user, isLoaded } = useUser();
+  // const { user, isLoaded } = useUser();
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
   const [textAreaValue, setTextAreaValue] = useState('');
   const [showLoading, setShowLoading] = useState(false);
@@ -85,7 +85,7 @@ const SearchResults = () => {
   const [entriesUpdated, setEntriesUpdated] = useState(0);
   const [showPieChart, setShowPieChart] = useState(false);
 
-  const [firstLastName, setFirstLastName] = useState({
+  const [firstLastName] = useState({
     firstName: '',
     lastName: '',
   });
@@ -216,16 +216,16 @@ const SearchResults = () => {
     }
   };
 
-  useEffect(() => {
-    if (!isLoaded) return;
-    // set first name as title
-    if (user?.firstName && user?.lastName) {
-      setFirstLastName({
-        firstName: user.firstName,
-        lastName: user.lastName,
-      });
-    }
-  }, [isLoaded, user]);
+  // useEffect(() => {
+  //   if (!isLoaded) return;
+  //   // set first name as title
+  //   if (user?.firstName && user?.lastName) {
+  //     setFirstLastName({
+  //       firstName: user.firstName,
+  //       lastName: user.lastName,
+  //     });
+  //   }
+  // }, [isLoaded, user]);
 
   useEffect(() => {
     const query = searchParams.get('query');

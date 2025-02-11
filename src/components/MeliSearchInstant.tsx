@@ -1,5 +1,6 @@
 'use client';
 
+import { fetchAccessToken } from '@/utils/fetchAccessToken';
 import { instantMeiliSearch } from '@meilisearch/instant-meilisearch';
 import type { SearchClient } from 'instantsearch.js';
 import { useEffect, useState } from 'react';
@@ -10,11 +11,13 @@ const MeliSearchInstant = () => {
 
   useEffect(() => {
     const fetchToken = async () => {
+      const accessToken = await fetchAccessToken();
       const token = await fetch('/api/searchToken', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
+        body: JSON.stringify({ TOKEN: accessToken }),
       });
       const tokenData = await token.json();
       const { searchClient: meliSearchClient } = instantMeiliSearch(

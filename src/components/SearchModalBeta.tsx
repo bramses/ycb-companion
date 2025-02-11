@@ -4,7 +4,7 @@
 /* eslint-disable jsx-a11y/click-events-have-key-events */
 /* eslint-disable jsx-a11y/no-static-element-interactions */
 
-import { useUser } from '@clerk/nextjs';
+// import { useUser } from '@clerk/nextjs';
 import { instantMeiliSearch } from '@meilisearch/instant-meilisearch';
 import type { SearchClient } from 'instantsearch.js';
 import Image from 'next/image';
@@ -20,6 +20,7 @@ import {
   splitIntoWords,
   toHostname,
 } from '@/helpers/functions';
+import { fetchAccessToken } from '@/utils/fetchAccessToken';
 
 const CustomSearchBox = ({ setSemanticSearchResults }: any) => {
   const { query, refine } = useSearchBox();
@@ -134,12 +135,12 @@ const SearchModalBeta = ({
 }) => {
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [firstLastName, setFirstLastName] = useState({
+  const [firstLastName] = useState({
     firstName: '',
     lastName: '',
   });
 
-  const { user, isLoaded } = useUser();
+  // const { user, isLoaded } = useUser();
 
   const handleSearchHelper = async (entryData: string) => {
     const parsedEntries = await fetchSearchEntries(
@@ -166,11 +167,13 @@ const SearchModalBeta = ({
 
   const fetchToken = async () => {
     try {
+      const accessToken = await fetchAccessToken();
       const token = await fetch('/api/searchToken', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
+        body: JSON.stringify({ TOKEN: accessToken }),
       });
       const tokenData = await token.json();
 
@@ -252,16 +255,16 @@ const SearchModalBeta = ({
   //   }
   // }, [isOpen]);
 
-  useEffect(() => {
-    if (!isLoaded) return;
-    // set first name as title
-    if (user?.firstName && user?.lastName) {
-      setFirstLastName({
-        firstName: user.firstName,
-        lastName: user.lastName,
-      });
-    }
-  }, [isLoaded, user]);
+  // useEffect(() => {
+  //   if (!isLoaded) return;
+  //   // set first name as title
+  //   if (user?.firstName && user?.lastName) {
+  //     setFirstLastName({
+  //       firstName: user.firstName,
+  //       lastName: user.lastName,
+  //     });
+  //   }
+  // }, [isLoaded, user]);
 
   const renderResultData = (result: any) => {
     if (
