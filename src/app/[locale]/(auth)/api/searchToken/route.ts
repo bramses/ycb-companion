@@ -11,7 +11,6 @@ export const POST = async (request: Request) => {
     return NextResponse.json({ error: 'No token provided' }, { status: 401 });
   }
 
-
   try {
     const resp = await fetch(`${CLOUD_URL}/token`, {
       method: 'POST',

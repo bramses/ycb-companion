@@ -1,8 +1,6 @@
 import '@/styles/global.css';
 
 import type { Metadata } from 'next';
-import { NextIntlClientProvider, useMessages } from 'next-intl';
-import { unstable_setRequestLocale } from 'next-intl/server';
 
 import { AppConfig } from '@/utils/AppConfig';
 
@@ -39,10 +37,10 @@ export default function RootLayout(props: {
   children: React.ReactNode;
   params: { locale: string };
 }) {
-  unstable_setRequestLocale(props.params.locale);
+  // unstable_setRequestLocale(props.params.locale);
 
-  // Using internationalization in Client Components
-  const messages = useMessages();
+  // // Using internationalization in Client Components
+  // const messages = useMessages();
 
   return (
     <html lang={props.params.locale}>
@@ -52,14 +50,7 @@ export default function RootLayout(props: {
           content="width=device-width, initial-scale=1, shrink-to-fit=no, maximum-scale=1, viewport-fit=cover"
         />
       </head>
-      <body>
-        <NextIntlClientProvider
-          locale={props.params.locale}
-          messages={messages}
-        >
-          {props.children}
-        </NextIntlClientProvider>
-      </body>
+      <body>{props.children}</body>
     </html>
   );
 }

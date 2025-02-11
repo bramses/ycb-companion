@@ -4,7 +4,7 @@
 
 // import { useUser } from '@clerk/nextjs';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 
 interface UploaderProps {
   closeModal: () => void;
@@ -148,56 +148,58 @@ const Uploader = ({
   };
 
   return (
-    <div className="[&_p]:my-6">
-      <div className="mt-2">
-        <textarea
-          rows={4}
-          className="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder:text-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
-          style={{ fontSize: '17px' }}
-          placeholder="eyJpZHMiOlsxNiwxNSwxNCwxMywxMiwxMCw5LDhdLCJmcm9tIjoiYnJhbSJ9"
-          value={shareYCBInput}
-          onChange={(e) => setShareYCBInput(e.target.value)}
-        />
-        <button
-          type="button"
-          className="mt-2 block rounded-lg bg-blue-700 px-5 py-2.5 text-sm font-medium text-white hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300"
-          onClick={async () => {
-            if (shareYCBInput) {
-              try {
-                setLoading(true);
-                const lastID = await uploadFromShareYCB(shareYCBInput);
-                console.log('lastID', lastID);
-                setLoading(false);
-                setShareYCBLoadingPct(0);
-                router.push(`/dashboard/entry/${lastID}`);
-                closeModal();
-              } catch (err) {
-                setShowError(true);
-                setErrorMessage('Unable to add entry. Please try again.');
+    <Suspense fallback={<div>Loading...</div>}>
+      <div className="[&_p]:my-6">
+        <div className="mt-2">
+          <textarea
+            rows={4}
+            className="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder:text-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
+            style={{ fontSize: '17px' }}
+            placeholder="eyJpZHMiOlsxNiwxNSwxNCwxMywxMiwxMCw5LDhdLCJmcm9tIjoiYnJhbSJ9"
+            value={shareYCBInput}
+            onChange={(e) => setShareYCBInput(e.target.value)}
+          />
+          <button
+            type="button"
+            className="mt-2 block rounded-lg bg-blue-700 px-5 py-2.5 text-sm font-medium text-white hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300"
+            onClick={async () => {
+              if (shareYCBInput) {
+                try {
+                  setLoading(true);
+                  const lastID = await uploadFromShareYCB(shareYCBInput);
+                  console.log('lastID', lastID);
+                  setLoading(false);
+                  setShareYCBLoadingPct(0);
+                  router.push(`/dashboard/entry/${lastID}`);
+                  closeModal();
+                } catch (err) {
+                  setShowError(true);
+                  setErrorMessage('Unable to add entry. Please try again.');
+                }
               }
-            }
-          }}
-        >
-          Submit
-        </button>
-        {showError && (
-          <div className="text-red-500">
-            {errorMessage}
-            <br />
-            Please try again.
+            }}
+          >
+            Submit
+          </button>
+          {showError && (
+            <div className="text-red-500">
+              {errorMessage}
+              <br />
+              Please try again.
+            </div>
+          )}
+        </div>
+        {loading && <p>Loading...</p>}
+        {shareYCBLoadingPct !== 0 && (
+          <div className="h-2.5 w-full rounded-full bg-gray-200 dark:bg-gray-700">
+            <div
+              className="h-2.5 rounded-full bg-blue-600"
+              style={{ width: `${shareYCBLoadingPct}%` }}
+            />
           </div>
         )}
       </div>
-      {loading && <p>Loading...</p>}
-      {shareYCBLoadingPct !== 0 && (
-        <div className="h-2.5 w-full rounded-full bg-gray-200 dark:bg-gray-700">
-          <div
-            className="h-2.5 rounded-full bg-blue-600"
-            style={{ width: `${shareYCBLoadingPct}%` }}
-          />
-        </div>
-      )}
-    </div>
+    </Suspense>
   );
 };
 

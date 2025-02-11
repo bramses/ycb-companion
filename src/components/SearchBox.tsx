@@ -1,7 +1,7 @@
 'use client';
 
 import { useSearchParams } from 'next/navigation';
-import { useEffect, useRef, useState } from 'react';
+import { Suspense, useEffect, useRef, useState } from 'react';
 import ScrollToTop from 'react-scroll-to-top';
 
 import { getCache, invalidateCache, setCache } from '@/helpers/old_cache';
@@ -399,164 +399,166 @@ const SearchBox = () => {
   }, [searchParams]);
 
   return (
-    <div>
-      <textarea
-        id="message"
-        ref={textAreaRef}
-        rows={2}
-        className={`sticky top-2 z-30 mt-4 block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 ${
-          isSticky ? 'opacity-50' : 'opacity-100'
-        }`}
-        placeholder="Your query... (Press Enter to search) (Press cmd-k to focus) (Press cmd + u anywhere on website to fast upload)"
-        value={textAreaValue}
-        onChange={(e) => setTextAreaValue(e.target.value)}
-        onFocus={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter') {
-            fetchSearchResults(textAreaValue.trim());
-          }
-        }}
-      />
+    <Suspense fallback={<div>Loading...</div>}>
+      <div>
+        <textarea
+          id="message"
+          ref={textAreaRef}
+          rows={2}
+          className={`sticky top-2 z-30 mt-4 block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 ${
+            isSticky ? 'opacity-50' : 'opacity-100'
+          }`}
+          placeholder="Your query... (Press Enter to search) (Press cmd-k to focus) (Press cmd + u anywhere on website to fast upload)"
+          value={textAreaValue}
+          onChange={(e) => setTextAreaValue(e.target.value)}
+          onFocus={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              fetchSearchResults(textAreaValue.trim());
+            }
+          }}
+        />
 
-      <button
-        type="button"
-        onClick={() => fetchSearchResults(textAreaValue.trim())}
-        className="mb-2 me-2 mt-4 w-full rounded-lg bg-blue-700 px-5 py-2.5 text-sm font-medium text-white hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300"
-      >
-        Search
-      </button>
-
-      {/* a container to hold the buttons in the same row */}
-      <div className="mt-4 flex space-x-2">
-        {/* a btn to take the text in textarea and search google with it in a new tab */}
         <button
           type="button"
-          onClick={() => {
-            window.open(
-              `https://www.google.com/search?q=${textAreaValue}`,
-              '_blank',
-            );
-          }}
-          className="mb-2 me-2 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4 focus:ring-gray-300"
+          onClick={() => fetchSearchResults(textAreaValue.trim())}
+          className="mb-2 me-2 mt-4 w-full rounded-lg bg-blue-700 px-5 py-2.5 text-sm font-medium text-white hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300"
         >
-          Search the Web
+          Search
         </button>
 
-        {/* a btn to call /api/random and put the text in the textarea */}
-        <button
-          type="button"
-          onClick={async () => {
-            setRndmBtnText('Loading...');
-            const response = await fetch('/api/random', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-            });
-            const data = await response.json();
-            // console.log('Random data:', data);
-            setTextAreaValue(data.data.data);
-            setRndmBtnText('Random');
-          }}
-          className="mb-2 me-2 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4 focus:ring-gray-300"
-        >
-          {rndmBtnText}
-        </button>
-      </div>
-
-      {/* a second row if showCollection is true one for "Download Collection" and one for "Clear Collection" */}
-      {showCollection && (
+        {/* a container to hold the buttons in the same row */}
         <div className="mt-4 flex space-x-2">
+          {/* a btn to take the text in textarea and search google with it in a new tab */}
           <button
             type="button"
             onClick={() => {
-              const element = document.createElement('a');
-              const file = new Blob([JSON.stringify(collection)], {
-                type: 'text/plain',
+              window.open(
+                `https://www.google.com/search?q=${textAreaValue}`,
+                '_blank',
+              );
+            }}
+            className="mb-2 me-2 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4 focus:ring-gray-300"
+          >
+            Search the Web
+          </button>
+
+          {/* a btn to call /api/random and put the text in the textarea */}
+          <button
+            type="button"
+            onClick={async () => {
+              setRndmBtnText('Loading...');
+              const response = await fetch('/api/random', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
               });
-              element.href = URL.createObjectURL(file);
-              element.download = 'collection.json';
-              document.body.appendChild(element); // Required for this to work in FireFox
-              element.click();
-              // clear the collection after downloading and hide the buttons
-              setCollection([]);
-              setShowCollection(false);
-              // remove the element
-              document.body.removeChild(element);
+              const data = await response.json();
+              // console.log('Random data:', data);
+              setTextAreaValue(data.data.data);
+              setRndmBtnText('Random');
             }}
             className="mb-2 me-2 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4 focus:ring-gray-300"
           >
-            Download Collection
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              setCollection([]);
-              setShowCollection(false);
-            }}
-            className="mb-2 me-2 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4 focus:ring-gray-300"
-          >
-            Clear Collection
+            {rndmBtnText}
           </button>
         </div>
-      )}
 
-      {showLoading && (
-        <div className="flex justify-center">
-          <div
-            role="status"
-            className="my-4 max-w-md animate-pulse space-y-4 divide-y divide-gray-200 rounded border border-gray-200 p-4 shadow md:p-6 "
-          >
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="mb-2.5 h-2.5 w-24 rounded-full bg-gray-300" />
-                <div className="h-2 w-32 rounded-full bg-gray-200" />
-              </div>
-              <div className="h-2.5 w-12 rounded-full bg-gray-300" />
-            </div>
-            <div className="flex items-center justify-between pt-4">
-              <div>
-                <div className="mb-2.5 h-2.5 w-24 rounded-full bg-gray-300" />
-                <div className="h-2 w-32 rounded-full bg-gray-200" />
-              </div>
-              <div className="h-2.5 w-12 rounded-full bg-gray-300" />
-            </div>
-            <div className="flex items-center justify-between pt-4">
-              <div>
-                <div className="mb-2.5 h-2.5 w-24 rounded-full bg-gray-300" />
-                <div className="h-2 w-32 rounded-full bg-gray-200" />
-              </div>
-              <div className="h-2.5 w-12 rounded-full bg-gray-300" />
-            </div>
-            <div className="flex items-center justify-between pt-4">
-              <div>
-                <div className="mb-2.5 h-2.5 w-24 rounded-full bg-gray-300" />
-                <div className="h-2 w-32 rounded-full bg-gray-200" />
-              </div>
-              <div className="h-2.5 w-12 rounded-full bg-gray-300" />
-            </div>
-            <div className="flex items-center justify-between pt-4">
-              <div>
-                <div className="mb-2.5 h-2.5 w-24 rounded-full bg-gray-300" />
-                <div className="h-2 w-32 rounded-full bg-gray-200" />
-              </div>
-              <div className="h-2.5 w-12 rounded-full bg-gray-300" />
-            </div>
-            <span className="sr-only">Loading...</span>
+        {/* a second row if showCollection is true one for "Download Collection" and one for "Clear Collection" */}
+        {showCollection && (
+          <div className="mt-4 flex space-x-2">
+            <button
+              type="button"
+              onClick={() => {
+                const element = document.createElement('a');
+                const file = new Blob([JSON.stringify(collection)], {
+                  type: 'text/plain',
+                });
+                element.href = URL.createObjectURL(file);
+                element.download = 'collection.json';
+                document.body.appendChild(element); // Required for this to work in FireFox
+                element.click();
+                // clear the collection after downloading and hide the buttons
+                setCollection([]);
+                setShowCollection(false);
+                // remove the element
+                document.body.removeChild(element);
+              }}
+              className="mb-2 me-2 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4 focus:ring-gray-300"
+            >
+              Download Collection
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setCollection([]);
+                setShowCollection(false);
+              }}
+              className="mb-2 me-2 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4 focus:ring-gray-300"
+            >
+              Clear Collection
+            </button>
           </div>
-        </div>
-      )}
+        )}
 
-      <Entries
-        searchResults={searchResults}
-        onDelve={handleDataFromEntry}
-        onAddAlias={handleAliasAdd}
-        onEdit={updateEntry}
-        onAddToCollection={addToCollection}
-        onAddLink={addLink}
-      />
-      <ScrollToTop smooth />
-    </div>
+        {showLoading && (
+          <div className="flex justify-center">
+            <div
+              role="status"
+              className="my-4 max-w-md animate-pulse space-y-4 divide-y divide-gray-200 rounded border border-gray-200 p-4 shadow md:p-6 "
+            >
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="mb-2.5 h-2.5 w-24 rounded-full bg-gray-300" />
+                  <div className="h-2 w-32 rounded-full bg-gray-200" />
+                </div>
+                <div className="h-2.5 w-12 rounded-full bg-gray-300" />
+              </div>
+              <div className="flex items-center justify-between pt-4">
+                <div>
+                  <div className="mb-2.5 h-2.5 w-24 rounded-full bg-gray-300" />
+                  <div className="h-2 w-32 rounded-full bg-gray-200" />
+                </div>
+                <div className="h-2.5 w-12 rounded-full bg-gray-300" />
+              </div>
+              <div className="flex items-center justify-between pt-4">
+                <div>
+                  <div className="mb-2.5 h-2.5 w-24 rounded-full bg-gray-300" />
+                  <div className="h-2 w-32 rounded-full bg-gray-200" />
+                </div>
+                <div className="h-2.5 w-12 rounded-full bg-gray-300" />
+              </div>
+              <div className="flex items-center justify-between pt-4">
+                <div>
+                  <div className="mb-2.5 h-2.5 w-24 rounded-full bg-gray-300" />
+                  <div className="h-2 w-32 rounded-full bg-gray-200" />
+                </div>
+                <div className="h-2.5 w-12 rounded-full bg-gray-300" />
+              </div>
+              <div className="flex items-center justify-between pt-4">
+                <div>
+                  <div className="mb-2.5 h-2.5 w-24 rounded-full bg-gray-300" />
+                  <div className="h-2 w-32 rounded-full bg-gray-200" />
+                </div>
+                <div className="h-2.5 w-12 rounded-full bg-gray-300" />
+              </div>
+              <span className="sr-only">Loading...</span>
+            </div>
+          </div>
+        )}
+
+        <Entries
+          searchResults={searchResults}
+          onDelve={handleDataFromEntry}
+          onAddAlias={handleAliasAdd}
+          onEdit={updateEntry}
+          onAddToCollection={addToCollection}
+          onAddLink={addLink}
+        />
+        <ScrollToTop smooth />
+      </div>
+    </Suspense>
   );
 };
 

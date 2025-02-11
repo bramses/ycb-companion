@@ -2,18 +2,18 @@
 
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import AnimatedNumbers from 'react-animated-numbers';
 
 // import { useAuth } from 'react-oidc-context';
 import { fetchFavicon, fetchRandomEntry } from '@/helpers/functions';
+import { fetchAccessToken } from '@/utils/fetchAccessToken';
 
 // import ForceFromEntry from "./ForceFromEntry";
 import HelpModal from './HelpModal';
 import SearchModalBeta from './SearchModalBeta';
 // import Uploader from "./Uploader";
 import UploaderModalWrapper from './UploaderModalWrapper';
-import { fetchAccessToken } from '@/utils/fetchAccessToken';
 
 const SimpleDashboard = () => {
   const router = useRouter();
@@ -230,9 +230,8 @@ const SimpleDashboard = () => {
 
   const fetchTotalEntries = async () => {
     try {
-
       const accessToken = await fetchAccessToken();
-      
+
       const response = await fetch('/api/count', {
         method: 'POST',
         headers: {
@@ -392,97 +391,98 @@ const SimpleDashboard = () => {
   };
 
   return (
-    <div>
-      <h1 className="mx-2 mt-8 text-xl font-extrabold text-gray-900 md:text-xl lg:text-xl">
-        Welcome to the{' '}
-        <span className="bg-gradient-to-r from-sky-400 to-emerald-600 bg-clip-text text-transparent">
-          Your Commonbase Launch Party!!
-        </span>
-      </h1>
-      <input
-        type="password"
-        placeholder="Paste your Launch Party Personal Access Token here"
-        style={{ fontSize: '17px' }}
-        className="w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500"
-        value={platformToken}
-        onChange={handleTokenChange}
-      />
+    <Suspense fallback={<div>Loading...</div>}>
+      <div>
+        <h1 className="mx-2 mt-8 text-xl font-extrabold text-gray-900 md:text-xl lg:text-xl">
+          Welcome to the{' '}
+          <span className="bg-gradient-to-r from-sky-400 to-emerald-600 bg-clip-text text-transparent">
+            Your Commonbase Launch Party!!
+          </span>
+        </h1>
+        <input
+          type="password"
+          placeholder="Paste your Launch Party Personal Access Token here"
+          style={{ fontSize: '17px' }}
+          className="w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500"
+          value={platformToken}
+          onChange={handleTokenChange}
+        />
 
-      <h2 className="mx-2 mt-8 text-xl font-extrabold text-gray-400 md:text-lg lg:text-lg">
-        What do you want to accomplish today?
-      </h2>
-      <div className="mx-2 my-4">
-        <button
-          type="button"
-          className="my-2 me-2 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4"
-          onClick={() => {
-            setSearchModalBetaOpen(true);
-            const intervalId = setInterval(() => {
-              const input = document.getElementById('modal-beta-search');
-              if (input) {
-                setTimeout(() => {
-                  input.focus();
-                }, 100);
-                clearInterval(intervalId); // Stop the interval once the input is focused
-              }
-            }, 100);
-          }}
-        >
-          I want to find something specific
-        </button>
-        <button
-          type="button"
-          className="my-2 me-2 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4"
-          onClick={() => {
-            handleRandomOpen();
-          }}
-        >
-          I want to open a random entry
-        </button>
-        <button
-          type="button"
-          className="my-2 me-2 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4"
-          onClick={() => {
-            setUploaderModalOpen(true);
-            const intervalId = setInterval(() => {
-              const input = document.getElementById('modal-message');
-              if (input) {
-                setTimeout(() => {
-                  input.focus();
-                }, 100);
-                clearInterval(intervalId); // Stop the interval once the input is focused
-              }
-            }, 100);
-          }}
-        >
-          I want to add a text/image/ShareYCB entry
-        </button>
-        <button
-          type="button"
-          className="my-2 me-2 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4"
-          onClick={() => {
-            setUploaderModalType('url');
-            setUploaderModalOpen(true);
-            const intervalId = setInterval(() => {
-              const input = document.getElementById('modal-message-author');
-              if (input) {
-                setTimeout(() => {
-                  input.focus();
-                }, 100);
-                // highlight the text
-                (input as HTMLInputElement).setSelectionRange(
-                  0,
-                  (input as HTMLInputElement).value.length,
-                );
-                clearInterval(intervalId); // Stop the interval once the input is focused
-              }
-            }, 100);
-          }}
-        >
-          I want to add a URL entry
-        </button>
-        {/* todo: implement image upload seperate modal */}
-        {/* <button
+        <h2 className="mx-2 mt-8 text-xl font-extrabold text-gray-400 md:text-lg lg:text-lg">
+          What do you want to accomplish today?
+        </h2>
+        <div className="mx-2 my-4">
+          <button
+            type="button"
+            className="my-2 me-2 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4"
+            onClick={() => {
+              setSearchModalBetaOpen(true);
+              const intervalId = setInterval(() => {
+                const input = document.getElementById('modal-beta-search');
+                if (input) {
+                  setTimeout(() => {
+                    input.focus();
+                  }, 100);
+                  clearInterval(intervalId); // Stop the interval once the input is focused
+                }
+              }, 100);
+            }}
+          >
+            I want to find something specific
+          </button>
+          <button
+            type="button"
+            className="my-2 me-2 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4"
+            onClick={() => {
+              handleRandomOpen();
+            }}
+          >
+            I want to open a random entry
+          </button>
+          <button
+            type="button"
+            className="my-2 me-2 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4"
+            onClick={() => {
+              setUploaderModalOpen(true);
+              const intervalId = setInterval(() => {
+                const input = document.getElementById('modal-message');
+                if (input) {
+                  setTimeout(() => {
+                    input.focus();
+                  }, 100);
+                  clearInterval(intervalId); // Stop the interval once the input is focused
+                }
+              }, 100);
+            }}
+          >
+            I want to add a text/image/ShareYCB entry
+          </button>
+          <button
+            type="button"
+            className="my-2 me-2 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4"
+            onClick={() => {
+              setUploaderModalType('url');
+              setUploaderModalOpen(true);
+              const intervalId = setInterval(() => {
+                const input = document.getElementById('modal-message-author');
+                if (input) {
+                  setTimeout(() => {
+                    input.focus();
+                  }, 100);
+                  // highlight the text
+                  (input as HTMLInputElement).setSelectionRange(
+                    0,
+                    (input as HTMLInputElement).value.length,
+                  );
+                  clearInterval(intervalId); // Stop the interval once the input is focused
+                }
+              }, 100);
+            }}
+          >
+            I want to add a URL entry
+          </button>
+          {/* todo: implement image upload seperate modal */}
+          {/* <button
           type="button"
           className="my-2 me-2 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4"
           onClick={() => {
@@ -501,7 +501,7 @@ const SimpleDashboard = () => {
           I want to upload a image
         </button> */}
 
-        {/* <button
+          {/* <button
           type="button"
           className="my-2 me-2 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4"
           onClick={() => {
@@ -511,7 +511,7 @@ const SimpleDashboard = () => {
         >
           I want to journal
         </button> */}
-        {/* <button
+          {/* <button
           type="button"
           className="my-2 me-2 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4"
           onClick={() => {
@@ -536,33 +536,33 @@ const SimpleDashboard = () => {
         >
           I want to browse
         </button> */}
-        <button
-          type="button"
-          className="my-2 me-2 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4"
-          onClick={() => {
-            setHelpModalOpen(true);
-            setInstructions([
-              {
-                text: 'To connect entries, you can add a comment or create a wikilink. This makes Your Commonbase much more expansive and allows you to connect your thoughts and ideas in a way that is not possible with a traditional wiki.',
-              },
-              {
-                text: 'To add a comment, click on the entry you want to comment on and then click the "Add Comment" button. Make sure to save it by clicking the save button.',
-                img: 'https://imagedelivery.net/CrhaOMV08a-ykXmRKTxGRA/61f586bb-412a-476f-dfe8-b79fb0643400/public',
-              },
-              {
-                text: 'To create a wikilink, put double brackets around the text you want to link, like [[this is a link]].',
-                img: 'https://imagedelivery.net/CrhaOMV08a-ykXmRKTxGRA/1db94277-9be7-4d4e-847c-2ef0dcb0bb00/public',
-              },
-              {
-                text: 'Close this window and use the "I want to browse" button or "I want to find something specific" button to continue to an entry you want to connect.',
-              },
-            ]);
-            setButtons([null, null, null, null]);
-          }}
-        >
-          I want to connect my entries
-        </button>
-        {/* <button
+          <button
+            type="button"
+            className="my-2 me-2 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4"
+            onClick={() => {
+              setHelpModalOpen(true);
+              setInstructions([
+                {
+                  text: 'To connect entries, you can add a comment or create a wikilink. This makes Your Commonbase much more expansive and allows you to connect your thoughts and ideas in a way that is not possible with a traditional wiki.',
+                },
+                {
+                  text: 'To add a comment, click on the entry you want to comment on and then click the "Add Comment" button. Make sure to save it by clicking the save button.',
+                  img: 'https://imagedelivery.net/CrhaOMV08a-ykXmRKTxGRA/61f586bb-412a-476f-dfe8-b79fb0643400/public',
+                },
+                {
+                  text: 'To create a wikilink, put double brackets around the text you want to link, like [[this is a link]].',
+                  img: 'https://imagedelivery.net/CrhaOMV08a-ykXmRKTxGRA/1db94277-9be7-4d4e-847c-2ef0dcb0bb00/public',
+                },
+                {
+                  text: 'Close this window and use the "I want to browse" button or "I want to find something specific" button to continue to an entry you want to connect.',
+                },
+              ]);
+              setButtons([null, null, null, null]);
+            }}
+          >
+            I want to connect my entries
+          </button>
+          {/* <button
           type="button"
           className="my-2 me-2 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4"
           onClick={() => {
@@ -600,27 +600,29 @@ const SimpleDashboard = () => {
         >
           I want to add something new
         </button> */}
-        <button
-          type="button"
-          className="my-2 me-2 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4"
-          onClick={() => {
-            const formattedDate = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
-              .toLocaleDateString()
-              .split('/')
-              .map((d) => (d.length === 1 ? `0${d}` : d))
-              .join('-');
-            router.push(`/dashboard/garden?date=${formattedDate}`);
-          }}
-        >
-          I want to see what I saved exactly one week ago
-        </button>
-        {/* <button
+          <button
+            type="button"
+            className="my-2 me-2 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4"
+            onClick={() => {
+              const formattedDate = new Date(
+                Date.now() - 7 * 24 * 60 * 60 * 1000,
+              )
+                .toLocaleDateString()
+                .split('/')
+                .map((d) => (d.length === 1 ? `0${d}` : d))
+                .join('-');
+              router.push(`/dashboard/garden?date=${formattedDate}`);
+            }}
+          >
+            I want to see what I saved exactly one week ago
+          </button>
+          {/* <button
           type="button"
           className="my-2 me-2 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4"
         >
           I want to share something with others
         </button> */}
-        {/* <Link
+          {/* <Link
           href={`/dashboard/entry/${randomEntry ? randomEntry.id : '#'}`}
           className="mb-4 inline-block"
         >
@@ -665,25 +667,25 @@ const SimpleDashboard = () => {
             </button>
           </>
         )} */}
-      </div>
-      {/* <ForceFromEntry inputEntry={randomEntry} inputComments={comments} /> */}
-      <HelpModal
-        isOpen={isHelpModalOpen || false}
-        closeModalFn={() => closeModal()}
-        stepButtons={buttons}
-        instructions={instructions}
-      />
-      <SearchModalBeta
-        isOpen={isSearchModalBetaOpen || false}
-        closeModalFn={() => closeModal()}
-        inputQuery={searchBetaModalQuery}
-      />
-      <UploaderModalWrapper
-        isOpen={isUploaderModalOpen || false}
-        type={uploaderModalType}
-        closeModalFn={() => closeModal()}
-      />
-      {/* {randomEntry && (
+        </div>
+        {/* <ForceFromEntry inputEntry={randomEntry} inputComments={comments} /> */}
+        <HelpModal
+          isOpen={isHelpModalOpen || false}
+          closeModalFn={() => closeModal()}
+          stepButtons={buttons}
+          instructions={instructions}
+        />
+        <SearchModalBeta
+          isOpen={isSearchModalBetaOpen || false}
+          closeModalFn={() => closeModal()}
+          inputQuery={searchBetaModalQuery}
+        />
+        <UploaderModalWrapper
+          isOpen={isUploaderModalOpen || false}
+          type={uploaderModalType}
+          closeModalFn={() => closeModal()}
+        />
+        {/* {randomEntry && (
         <>
           <button
             onClick={() => {
@@ -705,8 +707,8 @@ const SimpleDashboard = () => {
         </>
       )} */}
 
-      {/* todo time machine */}
-      {/* <div>
+        {/* todo time machine */}
+        {/* <div>
         <h1 className="my-4 text-xl font-extrabold text-gray-900 md:text-xl lg:text-xl">
           Last {timeMachine}, you saved:
         </h1>
@@ -758,8 +760,8 @@ const SimpleDashboard = () => {
           </Link>
         )}
       </div> */}
-      {/* ask the user what they are thinking about right now in a text box and add it as an entry -- like a journal */}
-      {/* <h1 className="my-4 text-xl font-extrabold text-gray-900 md:text-xl lg:text-xl">
+        {/* ask the user what they are thinking about right now in a text box and add it as an entry -- like a journal */}
+        {/* <h1 className="my-4 text-xl font-extrabold text-gray-900 md:text-xl lg:text-xl">
         Journal
       </h1>
       <div className="mx-2 my-4">
@@ -816,95 +818,96 @@ const SimpleDashboard = () => {
         </button>
       </div> */}
 
-      {totalEntries >= 0 && (
+        {totalEntries >= 0 && (
+          <h2 className="mx-2 mt-8 text-xl font-extrabold text-gray-400 md:text-lg lg:text-lg">
+            You have{' '}
+            <span className="bg-gradient-to-r from-sky-400 to-emerald-600 bg-clip-text text-transparent">
+              {totalEntries}
+            </span>{' '}
+            total entries in your commonbase. That&apos;s the equivalent of{' '}
+            <span className="bg-gradient-to-r from-sky-400 to-emerald-600 bg-clip-text text-transparent">
+              {Math.round(totalEntries / 251)}
+            </span>{' '}
+            journals filled! You are{' '}
+            <span className="bg-gradient-to-r from-sky-400 to-emerald-600 bg-clip-text text-transparent">
+              {251 - (totalEntries % 251)}
+            </span>{' '}
+            entries away from filling your next journal!
+          </h2>
+        )}
+
         <h2 className="mx-2 mt-8 text-xl font-extrabold text-gray-400 md:text-lg lg:text-lg">
           You have{' '}
-          <span className="bg-gradient-to-r from-sky-400 to-emerald-600 bg-clip-text text-transparent">
-            {totalEntries}
-          </span>{' '}
-          total entries in your commonbase. That&apos;s the equivalent of{' '}
-          <span className="bg-gradient-to-r from-sky-400 to-emerald-600 bg-clip-text text-transparent">
-            {Math.round(totalEntries / 251)}
-          </span>{' '}
-          journals filled! You are{' '}
-          <span className="bg-gradient-to-r from-sky-400 to-emerald-600 bg-clip-text text-transparent">
-            {251 - (totalEntries % 251)}
-          </span>{' '}
-          entries away from filling your next journal!
+          <AnimatedNumbers
+            includeComma
+            transitions={(index) => ({
+              type: 'spring',
+              duration: index + 0.3,
+            })}
+            animateToNumber={todaysEntriesLength}
+            fontStyle={{
+              fontSize: 18,
+              color: 'black',
+            }}
+          />
+          entries today!
         </h2>
-      )}
 
-      <h2 className="mx-2 mt-8 text-xl font-extrabold text-gray-400 md:text-lg lg:text-lg">
-        You have{' '}
-        <AnimatedNumbers
-          includeComma
-          transitions={(index) => ({
-            type: 'spring',
-            duration: index + 0.3,
-          })}
-          animateToNumber={todaysEntriesLength}
-          fontStyle={{
-            fontSize: 18,
-            color: 'black',
-          }}
-        />
-        entries today!
-      </h2>
-
-      <h1 className="my-4 text-xl font-extrabold text-gray-900 md:text-xl lg:text-xl">
-        Recent Activity Log
-      </h1>
-      <div className="mx-2 my-4 w-full overflow-auto">
-        {logEntries.map((entry: any) => (
-          <div key={entry.id}>
-            <div
-              key={entry.id}
-              className="mx-2 mb-4 flex items-center justify-between"
-            >
-              <div className="grow">
-                <Link
-                  href={{
-                    pathname: `/dashboard/entry/${entry.id}`,
-                  }}
-                  className="block text-gray-900 no-underline"
-                >
-                  <div className="relative">
-                    {entry.metadata.author &&
-                      entry.metadata.author.includes('imagedelivery.net') && (
+        <h1 className="my-4 text-xl font-extrabold text-gray-900 md:text-xl lg:text-xl">
+          Recent Activity Log
+        </h1>
+        <div className="mx-2 my-4 w-full overflow-auto">
+          {logEntries.map((entry: any) => (
+            <div key={entry.id}>
+              <div
+                key={entry.id}
+                className="mx-2 mb-4 flex items-center justify-between"
+              >
+                <div className="grow">
+                  <Link
+                    href={{
+                      pathname: `/dashboard/entry/${entry.id}`,
+                    }}
+                    className="block text-gray-900 no-underline"
+                  >
+                    <div className="relative">
+                      {entry.metadata.author &&
+                        entry.metadata.author.includes('imagedelivery.net') && (
+                          <img
+                            src={entry.metadata.author}
+                            alt="ycb-companion-image"
+                          />
+                        )}
+                      <span className="flex items-center font-normal">
                         <img
-                          src={entry.metadata.author}
-                          alt="ycb-companion-image"
+                          src={entry.favicon || '/favicon.ico'}
+                          alt="favicon"
+                          className="mr-2 size-6"
                         />
-                      )}
-                    <span className="flex items-center font-normal">
-                      <img
-                        src={entry.favicon || '/favicon.ico'}
-                        alt="favicon"
-                        className="mr-2 size-6"
-                      />
-                      {entry.data}
-                    </span>
+                        {entry.data}
+                      </span>
+                    </div>
+                  </Link>
+                  <div className="text-sm text-gray-500">
+                    {(() => {
+                      if (entry.action === 'added') {
+                        return <b>Added</b>;
+                      }
+                      if (entry.action === 'updated') {
+                        return <b>Updated</b>;
+                      }
+                      return 'Deleted';
+                    })()}{' '}
+                    {new Date(entry.updatedAt).toLocaleDateString()}
                   </div>
-                </Link>
-                <div className="text-sm text-gray-500">
-                  {(() => {
-                    if (entry.action === 'added') {
-                      return <b>Added</b>;
-                    }
-                    if (entry.action === 'updated') {
-                      return <b>Updated</b>;
-                    }
-                    return 'Deleted';
-                  })()}{' '}
-                  {new Date(entry.updatedAt).toLocaleDateString()}
                 </div>
               </div>
+              {/* <hr className="my-4" /> */}
             </div>
-            {/* <hr className="my-4" /> */}
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
-    </div>
+    </Suspense>
   );
 };
 

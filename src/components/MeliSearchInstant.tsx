@@ -1,10 +1,11 @@
 'use client';
 
-import { fetchAccessToken } from '@/utils/fetchAccessToken';
 import { instantMeiliSearch } from '@meilisearch/instant-meilisearch';
 import type { SearchClient } from 'instantsearch.js';
 import { useEffect, useState } from 'react';
 import { Hits, InstantSearch, SearchBox } from 'react-instantsearch';
+
+import { fetchAccessToken } from '@/utils/fetchAccessToken';
 
 const MeliSearchInstant = () => {
   const [searchClient, setSearchClient] = useState<SearchClient | null>(null);
