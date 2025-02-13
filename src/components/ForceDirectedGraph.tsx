@@ -55,9 +55,11 @@ const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
 
   // hovered over main graph
   const [hovered, setHovered] = useState(false);
+  const [showComments, setShowComments] = useState(false);
 
   useEffect(() => {
     console.log('currentIndex:', setCurrentIndex);
+    console.log(onAddComment);
   }, []);
 
   // all node objects
@@ -326,12 +328,12 @@ const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
     );
   }, [currentIndex]);
 
-  // add comment
-  const handleAddComment = async (comment: string, parent: any) => {
-    if (!comment) return;
-    if (comment.trim() === '') return;
-    onAddComment(comment, parent);
-  };
+  // add comment TODO im removing this for now
+  // const handleAddComment = async (comment: string, parent: any) => {
+  //   if (!comment) return;
+  //   if (comment.trim() === '') return;
+  //   onAddComment(comment, parent);
+  // };
 
   // parse youtube
   const getYTId = (url: string): string => {
@@ -1060,7 +1062,7 @@ const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
                 </div>
               ))} */}
 
-            {modalContent.group !== 'comment' &&
+            {/* {modalContent.group !== 'comment' &&
               modalContent.group !== 'main' &&
               modalContent.comments &&
               modalContent.comments.map((comment: any) => (
@@ -1102,10 +1104,71 @@ const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
                     Expand
                   </button>
                 </div>
-              ))}
+              ))} */}
 
-            {/* add comment if not "comment" node */}
             {modalContent.group !== 'comment' &&
+              modalContent.group !== 'main' &&
+              modalContent.comments &&
+              modalContent.comments.length > 0 && (
+                <details>
+                  {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events */}
+                  <summary
+                    onClick={() => setShowComments(!showComments)}
+                    role="button"
+                    className="mt-2"
+                    tabIndex={0}
+                  >
+                    {showComments ? 'Hide Comments' : 'Show Comments'}
+                  </summary>
+                  {showComments &&
+                    modalContent.comments.map((comment: any) => (
+                      <div
+                        key={comment.id}
+                        className="mx-2 mb-4 flex items-center justify-between"
+                      >
+                        <div className="grow">
+                          <div className="block text-gray-900 no-underline">
+                            <div className="relative">
+                              <span
+                                style={{
+                                  fontWeight:
+                                    comment.id === modalContent.matchedCommentId
+                                      ? 'bold'
+                                      : 'normal',
+                                }}
+                              >
+                                {comment.data}
+                              </span>
+                            </div>
+                          </div>
+                          <div className="text-sm text-gray-500">
+                            created:{' '}
+                            {new Date(comment.createdAt).toLocaleString()}
+                            {comment.createdAt !== comment.updatedAt && (
+                              <>
+                                {' '}
+                                | last updated:{' '}
+                                {new Date(
+                                  comment.updatedAt,
+                                ).toLocaleString()}{' '}
+                              </>
+                            )}
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => onExpand(modalContent.id, comment.id)}
+                          type="button"
+                          className="ml-2 rounded bg-blue-500 px-2 py-1 text-white hover:bg-blue-700"
+                        >
+                          Expand
+                        </button>
+                      </div>
+                    ))}
+                </details>
+              )}
+
+            {/* add comment if not "comment" node TODO im removing this for now */}
+            {/* {modalContent.group !== 'comment' &&
               modalContent.group !== 'main' && (
                 <div>
                   <input
@@ -1140,7 +1203,7 @@ const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
                     add comment
                   </button>
                 </div>
-              )}
+              )} */}
             {/* <button
               onClick={() => {
                 onExpand(modalContent.id);

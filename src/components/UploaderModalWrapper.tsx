@@ -28,6 +28,7 @@ import Modal from 'react-modal';
 
 import Uploader from './Uploader';
 import ShareUploader from './uploaders/share';
+import TextUploader from './uploaders/text';
 import URLUploader from './uploaders/url';
 
 const UploaderModal = ({
@@ -52,7 +53,7 @@ const UploaderModal = ({
       <button onClick={closeModalFn} type="button">
         (close)
       </button>
-      {type !== 'url' && (
+      {type !== 'url' && type !== 'text' && type !== 'share' && (
         <>
           <h2
             className="mb-4 text-2xl font-semibold text-gray-800"
@@ -93,6 +94,22 @@ const UploaderModal = ({
             URL Entry
           </h2>
           <ShareUploader
+            closeModal={closeModalFn}
+            textDefault=""
+            titleDefault=""
+            authorDefault="https://yourcommonbase.com/dashboard"
+          />
+        </>
+      )}
+      {type === 'text' && (
+        <>
+          <h2
+            className="mb-4 text-2xl font-semibold text-gray-800"
+            id="modal-title"
+          >
+            Text Entry
+          </h2>
+          <TextUploader
             closeModal={closeModalFn}
             textDefault=""
             titleDefault=""

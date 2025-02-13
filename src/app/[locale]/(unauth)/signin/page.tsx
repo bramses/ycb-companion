@@ -30,7 +30,8 @@ export default function Home() {
 
   return (
     <div>
-      <a href="/dashboard">Dashboard</a>
+      You are signed in.{' '}
+      <a href="/dashboard">Click here to go to the dashboard.</a>
     </div>
   );
 }

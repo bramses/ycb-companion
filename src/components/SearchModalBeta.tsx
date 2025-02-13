@@ -45,7 +45,6 @@ const CustomSearchBox = ({ setSemanticSearchResults }: any) => {
 };
 
 const CustomHit = ({ hit, closeModalFn }: any) => {
-  console.log('hit:', hit);
   return (
     <div key={hit.id}>
       <div className="mx-2 mb-4 flex items-center justify-between">

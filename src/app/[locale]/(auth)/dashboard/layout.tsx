@@ -11,6 +11,7 @@ import { LogOutButton } from '@/components/LogOutButton';
 import SearchModalBeta from '@/components/SearchModalBeta';
 import SpeedDial from '@/components/SpeedDial';
 import Uploader from '@/components/Uploader';
+import UploaderModalWrapper from '@/components/UploaderModalWrapper';
 import ShareUploader from '@/components/uploaders/share';
 import { fetchRandomEntry } from '@/helpers/functions';
 import { BaseTemplate } from '@/templates/BaseTemplate';
@@ -26,6 +27,9 @@ export default function DashboardLayout(props: { children: React.ReactNode }) {
 
   const [isFastEntryModalOpen, setFastEntryModalOpen] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
+
+  const [uploaderModalType, setUploaderModalType] = useState('');
+  const [isUploaderModalOpen, setUploaderModalOpen] = useState(false);
 
   const openFastEntryModal = () => setFastEntryModalOpen(true);
   const closeFastEntryModal = () => setFastEntryModalOpen(false);
@@ -59,11 +63,10 @@ export default function DashboardLayout(props: { children: React.ReactNode }) {
     }
   };
 
-  // const handleRandom = async () => {
-  //   // fetch a random entry and open it
-  //   const entry = await fetchRandomEntry();
-  //   router.push(`/dashboard/entry/${entry.id}`);
-  // };
+  const closeModal = () => {
+    setSearchModalBetaOpen(false);
+    setUploaderModalOpen(false);
+  };
 
   const handleRandom = useCallback(async () => {
     const entry = await fetchRandomEntry();
@@ -79,9 +82,53 @@ export default function DashboardLayout(props: { children: React.ReactNode }) {
 
   useEffect(() => {
     const handleKeyDown = (event: any) => {
-      if (event.metaKey && event.key === 'u') {
-        // cmd-u for Mac users
-        openFastEntryModal();
+      const target = event.target as HTMLElement;
+      if (
+        event.key === 'u' &&
+        // meta key not pressed
+        !event.metaKey &&
+        !event.ctrlKey &&
+        !event.shiftKey &&
+        !target.tagName.toLowerCase().includes('input') &&
+        !target.tagName.toLowerCase().includes('textarea')
+      ) {
+        // upload url
+        setUploaderModalType('url');
+        setUploaderModalOpen(true);
+        const intervalId = setInterval(() => {
+          const input = document.getElementById('modal-message-author');
+          if (input) {
+            setTimeout(() => {
+              input.focus();
+            }, 100);
+            clearInterval(intervalId); // Stop the interval once the input is focused
+          }
+        }, 100);
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
+
+  useEffect(() => {
+    const handleKeyDown = (event: any) => {
+      const target = event.target as HTMLElement;
+      if (
+        event.key === 't' &&
+        // meta key not pressed
+        !event.metaKey &&
+        !event.ctrlKey &&
+        !event.shiftKey &&
+        !target.tagName.toLowerCase().includes('input') &&
+        !target.tagName.toLowerCase().includes('textarea')
+      ) {
+        // upload url
+        setUploaderModalType('text');
+        setUploaderModalOpen(true);
         const intervalId = setInterval(() => {
           const input = document.getElementById('modal-message');
           if (input) {
@@ -145,8 +192,17 @@ export default function DashboardLayout(props: { children: React.ReactNode }) {
 
   // open search modal beta when user presses cmd+k using next/router
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement;
+      if (
+        event.key === '/' &&
+        // meta key not pressed
+        !event.metaKey &&
+        !event.ctrlKey &&
+        !event.shiftKey &&
+        !target.tagName.toLowerCase().includes('input') &&
+        !target.tagName.toLowerCase().includes('textarea')
+      ) {
         openSearchModalBeta();
         const intervalId = setInterval(() => {
           const input = document.getElementById('modal-beta-search');
@@ -281,6 +337,11 @@ export default function DashboardLayout(props: { children: React.ReactNode }) {
         isOpen={isSearchModalBetaOpen || false}
         closeModalFn={closeSearchModalBeta}
         inputQuery={searchBetaModalQuery}
+      />
+      <UploaderModalWrapper
+        isOpen={isUploaderModalOpen || false}
+        type={uploaderModalType}
+        closeModalFn={() => closeModal()}
       />
       <Modal
         isOpen={isFastEntryModalOpen}
