@@ -57,57 +57,57 @@
 
 // v2
 
-import { auth } from 'auth';
-// import type { NextFetchEvent, NextRequest } from "next/server";
-import createMiddleware from 'next-intl/middleware';
+// import { auth } from 'auth';
+// // import type { NextFetchEvent, NextRequest } from "next/server";
+// import createMiddleware from 'next-intl/middleware';
 
-import { AppConfig } from './utils/AppConfig';
+// import { AppConfig } from './utils/AppConfig';
 
-// Define the protected routes
-const protectedRoutes = [
-  /^\/dashboard(.*)/,
-  /^\/[^/]+\/dashboard(.*)/, // Matches /:locale/dashboard(.*)
-  /^\/api\/(.*)/,
-];
+// // Define the protected routes
+// const protectedRoutes = [
+//   /^\/dashboard(.*)/,
+//   /^\/[^/]+\/dashboard(.*)/, // Matches /:locale/dashboard(.*)
+//   /^\/api\/(.*)/,
+// ];
 
-// Function to check if a route is protected
-function isProtectedRoute(pathname: string): boolean {
-  return protectedRoutes.some((route) => route.test(pathname));
-}
+// // Function to check if a route is protected
+// function isProtectedRoute(pathname: string): boolean {
+//   return protectedRoutes.some((route) => route.test(pathname));
+// }
 
-// Create the intl middleware
-const intlMiddleware = createMiddleware({
-  locales: AppConfig.locales,
-  localePrefix: AppConfig.localePrefix,
-  defaultLocale: AppConfig.defaultLocale,
-});
+// // Create the intl middleware
+// const intlMiddleware = createMiddleware({
+//   locales: AppConfig.locales,
+//   localePrefix: AppConfig.localePrefix,
+//   defaultLocale: AppConfig.defaultLocale,
+// });
 
-export default async function middleware(req: any) {
-  const session = await auth();
-  if (
-    !session &&
-    isProtectedRoute(req.nextUrl.pathname) &&
-    !req.nextUrl.pathname.includes('/auth')
-  ) {
-    console.log(req.nextUrl);
-    const callbackUrl = req.nextUrl.href.replace(req.nextUrl.origin, ''); // Get the full URL as the callback
-    const newUrl = new URL('/auth/signin', req.nextUrl.origin);
-    newUrl.searchParams.set('callbackUrl', callbackUrl); // Add callbackUrl as a query parameter
-    return Response.redirect(newUrl); // TODO: does the auth need await now that i added routes to exclude auth?
-    // return intlMiddleware(req);
-  }
+// export default async function middleware(req: any) {
+//   const session = await auth();
+//   if (
+//     !session &&
+//     isProtectedRoute(req.nextUrl.pathname) &&
+//     !req.nextUrl.pathname.includes('/auth')
+//   ) {
+//     console.log(req.nextUrl);
+//     const callbackUrl = req.nextUrl.href.replace(req.nextUrl.origin, ''); // Get the full URL as the callback
+//     const newUrl = new URL('/auth/signin', req.nextUrl.origin);
+//     newUrl.searchParams.set('callbackUrl', callbackUrl); // Add callbackUrl as a query parameter
+//     return Response.redirect(newUrl); // TODO: does the auth need await now that i added routes to exclude auth?
+//     // return intlMiddleware(req);
+//   }
 
-  // Apply intlMiddleware for all requests
-  return intlMiddleware(req);
-}
+//   // Apply intlMiddleware for all requests
+//   return intlMiddleware(req);
+// }
 
-export const config = {
-  matcher: [
-    '/((?!.+\\.[\\w]+$|_next|monitoring|^/ws/).*)',
-    '/',
-    '/(api|trpc)(.*)',
-  ], // Also exclude tunnelRoute used in Sentry from the matcher
-};
+// export const config = {
+//   matcher: [
+//     '/((?!.+\\.[\\w]+$|_next|monitoring|^/ws/).*)',
+//     '/',
+//     '/(api|trpc)(.*)',
+//   ], // Also exclude tunnelRoute used in Sentry from the matcher
+// };
 
 // v3
 
@@ -159,3 +159,73 @@ export const config = {
 //     '/(api|trpc)(.*)',
 //   ],
 // }
+
+// v5
+
+// import type { NextFetchEvent, NextRequest } from "next/server";
+import { cookies } from 'next/headers';
+import createMiddleware from 'next-intl/middleware';
+
+import { AppConfig } from './utils/AppConfig';
+
+// Define the protected routes
+const protectedRoutes = [
+  /^\/dashboard(.*)/,
+  /^\/[^/]+\/dashboard(.*)/, // Matches /:locale/dashboard(.*)
+  /^\/api\/(.*)/,
+];
+
+// Function to check if a route is protected
+function isProtectedRoute(pathname: string): boolean {
+  return protectedRoutes.some((route) => route.test(pathname));
+}
+
+// Create the intl middleware
+const intlMiddleware = createMiddleware({
+  locales: AppConfig.locales,
+  localePrefix: AppConfig.localePrefix,
+  defaultLocale: AppConfig.defaultLocale,
+});
+
+export default async function middleware(req: any) {
+  // check for user in cookies and check if it's expired
+  const user = cookies().get('user');
+  let session = false;
+  if (user) {
+    const userData = JSON.parse(user.value);
+    const currentTime = Math.floor(Date.now() / 1000);
+    console.log('currentTime:', currentTime);
+    console.log('userData.expires_at:', userData.expires_at);
+    console.log(
+      'userData.expires_at > currentTime:',
+      userData.expires_at > currentTime,
+    );
+    if (userData.expires_at > currentTime) {
+      session = true;
+      console.log('session is true');
+    }
+  }
+  console.log('session:', session);
+  if (
+    !session &&
+    isProtectedRoute(req.nextUrl.pathname) &&
+    !req.nextUrl.pathname.includes('/signin')
+  ) {
+    const callbackUrl = req.nextUrl.href.replace(req.nextUrl.origin, ''); // Get the full URL as the callback
+    const newUrl = new URL('/signin', req.nextUrl.origin);
+    newUrl.searchParams.set('callbackUrl', callbackUrl); // Add callbackUrl as a query parameter
+    return Response.redirect('http://localhost:3000/signin'); // TODO: does the auth need await now that i added routes to exclude auth?
+    // return intlMiddleware(req);
+  }
+
+  // Apply intlMiddleware for all requests
+  return intlMiddleware(req);
+}
+
+export const config = {
+  matcher: [
+    '/((?!.+\\.[\\w]+$|_next|monitoring|^/ws/).*)',
+    '/',
+    '/(api|trpc)(.*)',
+  ], // Also exclude tunnelRoute used in Sentry from the matcher
+};

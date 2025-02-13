@@ -1,7 +1,8 @@
-import { cookies } from 'next/headers'; // Import the cookies utility
+// Import the cookies utility
 import { NextResponse } from 'next/server';
 
 import { logger } from '@/libs/Logger';
+import { getAccessToken } from '@/utils/getAccessToken';
 
 // import env variables
 
@@ -9,7 +10,8 @@ export const POST = async (request: Request) => {
   const { limit } = await request.json();
   const { CLOUD_URL } = process.env;
 
-  const TOKEN = cookies().get('platformToken')?.value; // Retrieve the token from cookies
+  const TOKEN = getAccessToken();
+  console.log(TOKEN); // Retrieve the token from cookies
 
   if (!TOKEN) {
     return NextResponse.json({ error: 'No token provided' }, { status: 401 });
