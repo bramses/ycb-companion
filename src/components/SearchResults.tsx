@@ -2,11 +2,11 @@
 
 'use client';
 
-// import { useUser } from '@clerk/nextjs';
+import { useUser } from '@clerk/nextjs';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname, useSearchParams } from 'next/navigation';
-import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import { docco } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 import { Label, Pie, PieChart } from 'recharts';
@@ -72,7 +72,7 @@ const CustomLabel = ({
 };
 
 const SearchResults = () => {
-  // const { user, isLoaded } = useUser();
+  const { user, isLoaded } = useUser();
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
   const [textAreaValue, setTextAreaValue] = useState('');
   const [showLoading, setShowLoading] = useState(false);
@@ -85,7 +85,7 @@ const SearchResults = () => {
   const [entriesUpdated, setEntriesUpdated] = useState(0);
   const [showPieChart, setShowPieChart] = useState(false);
 
-  const [firstLastName] = useState({
+  const [firstLastName, setFirstLastName] = useState({
     firstName: '',
     lastName: '',
   });
@@ -216,16 +216,16 @@ const SearchResults = () => {
     }
   };
 
-  // useEffect(() => {
-  //   if (!isLoaded) return;
-  //   // set first name as title
-  //   if (user?.firstName && user?.lastName) {
-  //     setFirstLastName({
-  //       firstName: user.firstName,
-  //       lastName: user.lastName,
-  //     });
-  //   }
-  // }, [isLoaded, user]);
+  useEffect(() => {
+    if (!isLoaded) return;
+    // set first name as title
+    if (user?.firstName && user?.lastName) {
+      setFirstLastName({
+        firstName: user.firstName,
+        lastName: user.lastName,
+      });
+    }
+  }, [isLoaded, user]);
 
   useEffect(() => {
     const query = searchParams.get('query');
@@ -351,128 +351,125 @@ const SearchResults = () => {
   );
 
   return (
-    <Suspense fallback={<div>Loading...</div>}>
-      <div className="min-w-full">
-        <textarea
-          ref={textAreaRef}
-          id="message"
-          rows={2}
-          style={{ fontSize: '17px' }}
-          className="top-2 mt-4 block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-gray-900 focus:border-blue-500 focus:ring-blue-500"
-          placeholder="Your query... (Press Enter to search) (Press cmd-k to focus) (Press cmd + u anywhere on website to fast upload)"
-          value={textAreaValue}
-          onChange={(e) => setTextAreaValue(e.target.value)}
-          onFocus={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') {
-              handleSearch(textAreaValue);
-            }
-          }}
-        />
+    <div className="min-w-full">
+      <textarea
+        ref={textAreaRef}
+        id="message"
+        rows={2}
+        style={{ fontSize: '17px' }}
+        className="top-2 mt-4 block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-gray-900 focus:border-blue-500 focus:ring-blue-500"
+        placeholder="Your query... (Press Enter to search) (Press cmd-k to focus) (Press cmd + u anywhere on website to fast upload)"
+        value={textAreaValue}
+        onChange={(e) => setTextAreaValue(e.target.value)}
+        onFocus={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') {
+            handleSearch(textAreaValue);
+          }
+        }}
+      />
 
-        <button
-          type="button"
-          onClick={() => handleSearch(textAreaValue)}
-          className="mb-2 me-2 mt-4 w-full rounded-lg bg-blue-700 px-5 py-2.5 text-sm font-medium text-white hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300"
-        >
-          Search
-        </button>
-        <div className="mt-4 flex space-x-2">
-          {/* a btn to take the text in textarea and search google with it in a new tab */}
-          <button
-            type="button"
-            onClick={() => {
-              window.open(
-                `https://www.google.com/search?q=${textAreaValue}`,
-                '_blank',
-              );
-            }}
-            className="mb-2 me-2 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4 focus:ring-gray-300"
-          >
-            Search the Web
-          </button>
-
-          {/* a btn to call /api/random and put the text in the textarea */}
-          <button
-            type="button"
-            onClick={async () => {
-              setRndmBtnText('Loading...');
-              const response = await fetch('/api/random', {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                },
-              });
-              const data = await response.json();
-              // console.log('Random data:', data);
-              setTextAreaValue(data.data.data);
-              setRndmBtnText('Random');
-            }}
-            className="mb-2 me-2 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4 focus:ring-gray-300"
-          >
-            {rndmBtnText}
-          </button>
-        </div>
-        {/* refresh feed btn (empty textarea and fetch recent entries) */}
+      <button
+        type="button"
+        onClick={() => handleSearch(textAreaValue)}
+        className="mb-2 me-2 mt-4 w-full rounded-lg bg-blue-700 px-5 py-2.5 text-sm font-medium text-white hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300"
+      >
+        Search
+      </button>
+      <div className="mt-4 flex space-x-2">
+        {/* a btn to take the text in textarea and search google with it in a new tab */}
         <button
           type="button"
           onClick={() => {
-            setTextAreaValue('');
-            fetchRecentEntries(true);
+            window.open(
+              `https://www.google.com/search?q=${textAreaValue}`,
+              '_blank',
+            );
           }}
-          className="mb-8 me-2 mt-4 w-full rounded-lg bg-blue-700 px-5 py-2.5 text-sm font-medium text-white hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+          className="mb-2 me-2 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4 focus:ring-gray-300"
         >
-          Refresh Feed
+          Search the Web
         </button>
-        {showPieChart && (
-          <Card className="flex flex-col">
-            <CardHeader className="items-center pb-0">
-              <CardTitle>Entries Made & Entries Gardened</CardTitle>
-              <CardDescription>
-                {new Date().toLocaleDateString()}
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="flex-1 pb-0">
-              <ChartContainer
-                config={chartConfig}
-                className="mx-auto aspect-square max-h-[250px]"
-              >
-                <PieChart>
-                  <ChartTooltip
-                    cursor={false}
-                    content={<ChartTooltipContent hideLabel />}
+
+        {/* a btn to call /api/random and put the text in the textarea */}
+        <button
+          type="button"
+          onClick={async () => {
+            setRndmBtnText('Loading...');
+            const response = await fetch('/api/random', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+            });
+            const data = await response.json();
+            // console.log('Random data:', data);
+            setTextAreaValue(data.data.data);
+            setRndmBtnText('Random');
+          }}
+          className="mb-2 me-2 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4 focus:ring-gray-300"
+        >
+          {rndmBtnText}
+        </button>
+      </div>
+      {/* refresh feed btn (empty textarea and fetch recent entries) */}
+      <button
+        type="button"
+        onClick={() => {
+          setTextAreaValue('');
+          fetchRecentEntries(true);
+        }}
+        className="mb-8 me-2 mt-4 w-full rounded-lg bg-blue-700 px-5 py-2.5 text-sm font-medium text-white hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+      >
+        Refresh Feed
+      </button>
+      {showPieChart && (
+        <Card className="flex flex-col">
+          <CardHeader className="items-center pb-0">
+            <CardTitle>Entries Made & Entries Gardened</CardTitle>
+            <CardDescription>{new Date().toLocaleDateString()}</CardDescription>
+          </CardHeader>
+          <CardContent className="flex-1 pb-0">
+            <ChartContainer
+              config={chartConfig}
+              className="mx-auto aspect-square max-h-[250px]"
+            >
+              <PieChart>
+                <ChartTooltip
+                  cursor={false}
+                  content={<ChartTooltipContent hideLabel />}
+                />
+                <Pie
+                  data={chartData}
+                  dataKey="visitors"
+                  nameKey="browser"
+                  innerRadius={60}
+                  strokeWidth={5}
+                >
+                  <Label
+                    content={(props) =>
+                      renderCustomLabel(props, entriesCreated, entriesUpdated)
+                    }
                   />
-                  <Pie
-                    data={chartData}
-                    dataKey="visitors"
-                    nameKey="browser"
-                    innerRadius={60}
-                    strokeWidth={5}
-                  >
-                    <Label
-                      content={(props) =>
-                        renderCustomLabel(props, entriesCreated, entriesUpdated)
-                      }
-                    />
-                  </Pie>
-                </PieChart>
-              </ChartContainer>
-            </CardContent>
-            <CardFooter className="flex-col gap-2 text-sm">
-              <div className="flex items-center gap-2 font-medium leading-none">
-                Try to keep a 1:1 ratio of new entries to updates. Updating
-                entries increase the density of Your Commonbase and make it much
-                better at connecting your thoughts. If you don&apos;t know where
-                to start, hit the random button in the speed dial in the corner!
-              </div>
-              <div className="leading-none text-muted-foreground">
-                You&apos;ll see a weekly result in your email inbox on Sundays
-              </div>
-            </CardFooter>
-          </Card>
-        )}
-        {/* download collection btn only if buildingCollection is true */}
-        {/* {buildingCollection && (
+                </Pie>
+              </PieChart>
+            </ChartContainer>
+          </CardContent>
+          <CardFooter className="flex-col gap-2 text-sm">
+            <div className="flex items-center gap-2 font-medium leading-none">
+              Try to keep a 1:1 ratio of new entries to updates. Updating
+              entries increase the density of Your Commonbase and make it much
+              better at connecting your thoughts. If you don&apos;t know where
+              to start, hit the random button in the speed dial in the corner!
+            </div>
+            <div className="leading-none text-muted-foreground">
+              You&apos;ll see a weekly result in your email inbox on Sundays
+            </div>
+          </CardFooter>
+        </Card>
+      )}
+      {/* download collection btn only if buildingCollection is true */}
+      {/* {buildingCollection && (
         <button
           type="button"
           onClick={() => {
@@ -485,95 +482,95 @@ const SearchResults = () => {
           Download Trail
         </button>
       )} */}
-        {showLoading && <Loading />}
-        {searchResults.map((result) => (
-          <>
-            <div
-              key={result.id}
-              className="mx-2 my-4 flex items-center justify-between"
-            >
-              <div className="grow">
-                <Link
-                  href={{
-                    pathname: `/dashboard/entry/${result.id}`,
-                  }}
-                  className="block text-gray-900 no-underline"
-                  onClick={() => {
-                    if (textAreaValue === '') {
-                      return;
-                    }
-                    window.history.pushState(
-                      {},
-                      '',
-                      createQueryString('query', textAreaValue, pathname),
-                    );
-                  }}
-                >
-                  <div className="relative">
-                    <Image
-                      src={result.favicon}
-                      alt="favicon"
-                      width={16}
-                      height={16}
-                      className="float-left mr-2"
-                    />
-                    <span className="font-normal">
-                      {renderResultData(result)}
-                    </span>
-                  </div>
-                  <div className="ml-6 flex items-center">
-                    {result.parentData ? (
-                      <>
-                        <div className="mr-2 flex size-6 shrink-0 items-center justify-center rounded-full bg-gray-300 text-xs font-bold text-white">
-                          {firstLastName.firstName && firstLastName.lastName ? (
-                            <>
-                              {firstLastName.firstName[0]}
-                              {firstLastName.lastName[0]}
-                            </>
-                          ) : (
-                            'yCb'
-                          )}
-                        </div>
-                        <span className="font-normal">{result.data}</span>
-                      </>
-                    ) : null}
-                  </div>
-                </Link>
-                <div className="text-sm text-gray-500">
-                  Created: {new Date(result.createdAt).toLocaleString()}
-                  {result.createdAt !== result.updatedAt && (
-                    <>
-                      {' '}
-                      | Last Updated:{' '}
-                      {new Date(result.updatedAt).toLocaleString()}{' '}
-                    </>
-                  )}
+      {showLoading && <Loading />}
+      {searchResults.map((result) => (
+        <>
+          <div
+            key={result.id}
+            className="mx-2 my-4 flex items-center justify-between"
+          >
+            <div className="grow">
+              <Link
+                href={{
+                  pathname: `/dashboard/entry/${result.id}`,
+                }}
+                className="block text-gray-900 no-underline"
+                onClick={() => {
+                  if (textAreaValue === '') {
+                    return;
+                  }
+                  window.history.pushState(
+                    {},
+                    '',
+                    createQueryString('query', textAreaValue, pathname),
+                  );
+                }}
+              >
+                <div className="relative">
+                  <Image
+                    src={result.favicon}
+                    alt="favicon"
+                    width={16}
+                    height={16}
+                    className="float-left mr-2"
+                  />
+                  <span className="font-normal">
+                    {renderResultData(result)}
+                  </span>
                 </div>
-                <a
-                  target="_blank"
-                  href={result.metadata.author}
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center font-medium text-blue-600 hover:underline"
-                >
-                  {toHostname(result.metadata.author)}
-                  <svg
-                    className="ms-2.5 size-3 rtl:rotate-[270deg]"
-                    aria-hidden="true"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 18 18"
-                  >
-                    <path
-                      stroke="currentColor"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M15 11v4.833A1.166 1.166 0 0 1 13.833 17H2.167A1.167 1.167 0 0 1 1 15.833V4.167A1.166 1.166 0 0 1 2.167 3h4.618m4.447-2H17v5.768M9.111 8.889l7.778-7.778"
-                    />
-                  </svg>
-                </a>
+                <div className="ml-6 flex items-center">
+                  {result.parentData ? (
+                    <>
+                      <div className="mr-2 flex size-6 shrink-0 items-center justify-center rounded-full bg-gray-300 text-xs font-bold text-white">
+                        {firstLastName.firstName && firstLastName.lastName ? (
+                          <>
+                            {firstLastName.firstName[0]}
+                            {firstLastName.lastName[0]}
+                          </>
+                        ) : (
+                          'yCb'
+                        )}
+                      </div>
+                      <span className="font-normal">{result.data}</span>
+                    </>
+                  ) : null}
+                </div>
+              </Link>
+              <div className="text-sm text-gray-500">
+                Created: {new Date(result.createdAt).toLocaleString()}
+                {result.createdAt !== result.updatedAt && (
+                  <>
+                    {' '}
+                    | Last Updated:{' '}
+                    {new Date(result.updatedAt).toLocaleString()}{' '}
+                  </>
+                )}
               </div>
-              {/* <button
+              <a
+                target="_blank"
+                href={result.metadata.author}
+                rel="noopener noreferrer"
+                className="inline-flex items-center font-medium text-blue-600 hover:underline"
+              >
+                {toHostname(result.metadata.author)}
+                <svg
+                  className="ms-2.5 size-3 rtl:rotate-[270deg]"
+                  aria-hidden="true"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 18 18"
+                >
+                  <path
+                    stroke="currentColor"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M15 11v4.833A1.166 1.166 0 0 1 13.833 17H2.167A1.167 1.167 0 0 1 1 15.833V4.167A1.166 1.166 0 0 1 2.167 3h4.618m4.447-2H17v5.768M9.111 8.889l7.778-7.778"
+                  />
+                </svg>
+              </a>
+            </div>
+            {/* <button
               type="button"
               className={`ml-4 rounded-full p-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-300 ${
                 checkedButtons[result.id] ? 'bg-green-500' : 'bg-blue-500'
@@ -620,12 +617,11 @@ const SearchResults = () => {
                 </svg>
               )}
             </button> */}
-            </div>
-            <hr className="my-4" />
-          </>
-        ))}
-      </div>
-    </Suspense>
+          </div>
+          <hr className="my-4" />
+        </>
+      ))}
+    </div>
   );
 };
 

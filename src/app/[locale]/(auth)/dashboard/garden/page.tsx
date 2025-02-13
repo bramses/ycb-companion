@@ -5,7 +5,7 @@ import 'react-calendar/dist/Calendar.css';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { Suspense, useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import Calendar from 'react-calendar';
 
 import { splitIntoWords } from '@/helpers/functions';
@@ -101,93 +101,88 @@ const GardenDaily = () => {
   };
 
   return (
-    <Suspense fallback={<div>Loading...</div>}>
-      <div>
-        <div className="my-4 flex justify-center">
-          <Calendar
-            onClickDay={(val) => fetchRecords(val)}
-            value={dateSelected}
-          />
-        </div>
-        <h1 className="mb-4 text-4xl font-extrabold leading-none tracking-tight text-gray-900 md:text-5xl lg:text-6xl">
-          {selectedDay}
-          <small className="ms-2 font-semibold text-gray-500">
-            {entries.length > 0 ? `:: ${entries.length} entries` : ''}
-          </small>
-        </h1>
+    <div>
+      <div className="my-4 flex justify-center">
+        <Calendar
+          onClickDay={(val) => fetchRecords(val)}
+          value={dateSelected}
+        />
+      </div>
+      <h1 className="mb-4 text-4xl font-extrabold leading-none tracking-tight text-gray-900 md:text-5xl lg:text-6xl">
+        {selectedDay}
+        <small className="ms-2 font-semibold text-gray-500">
+          {entries.length > 0 ? `:: ${entries.length} entries` : ''}
+        </small>
+      </h1>
 
-        {loading && <p>loading...</p>}
-        {entries.length === 0 && !loading && <p>no entries for this day</p>}
+      {loading && <p>loading...</p>}
+      {entries.length === 0 && !loading && <p>no entries for this day</p>}
 
-        {entries.map((result) => (
-          <div
-            key={result.id}
-            className="mb-4 flex items-center justify-between"
-          >
-            <div className="grow">
-              <Link
-                href={{ pathname: `/dashboard/entry/${result.id}` }}
-                className="block"
-              >
-                <div className="flex items-center text-blue-600 hover:underline">
-                  <Image
-                    src={result.favicon || '/favicon.ico'}
-                    alt="favicon"
-                    width={16}
-                    height={16}
-                    className="mr-2"
-                  />
-                  <span className="font-medium">{renderContent(result)}</span>
-                </div>
-                <div className="text-sm text-gray-500">
-                  {result.parentData && (
-                    <span className="mt-1 block">{result.parentData.data}</span>
-                  )}
-                </div>
-              </Link>
+      {entries.map((result) => (
+        <div key={result.id} className="mb-4 flex items-center justify-between">
+          <div className="grow">
+            <Link
+              href={{ pathname: `/dashboard/entry/${result.id}` }}
+              className="block"
+            >
+              <div className="flex items-center text-blue-600 hover:underline">
+                <Image
+                  src={result.favicon || '/favicon.ico'}
+                  alt="favicon"
+                  width={16}
+                  height={16}
+                  className="mr-2"
+                />
+                <span className="font-medium">{renderContent(result)}</span>
+              </div>
               <div className="text-sm text-gray-500">
-                created:{' '}
-                {new Date(result.createdAt).toLocaleString('en-us', {
-                  timeZone: timezone || undefined,
-                })}
-                {result.createdAt !== result.updatedAt && (
-                  <>
-                    {' '}
-                    | last updated:{' '}
-                    {new Date(result.updatedAt).toLocaleString('en-us', {
-                      timeZone: timezone || undefined,
-                    })}
-                  </>
+                {result.parentData && (
+                  <span className="mt-1 block">{result.parentData.data}</span>
                 )}
               </div>
-              <a
-                target="_blank"
-                href={result.metadata.author}
-                rel="noopener noreferrer"
-                className="inline-flex items-center font-medium text-blue-600 hover:underline"
-              >
-                {toHostname(result.metadata.author)}
-                <svg
-                  className="ms-2.5 size-3 rtl:rotate-[270deg]"
-                  aria-hidden="true"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 18 18"
-                >
-                  <path
-                    stroke="currentColor"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M15 11v4.833A1.166 1.166 0 0 1 13.833 17H2.167A1.167 1.167 0 0 1 1 15.833V4.167A1.166 1.166 0 0 1 2.167 3h4.618m4.447-2H17v5.768M9.111 8.889l7.778-7.778"
-                  />
-                </svg>
-              </a>
+            </Link>
+            <div className="text-sm text-gray-500">
+              created:{' '}
+              {new Date(result.createdAt).toLocaleString('en-us', {
+                timeZone: timezone || undefined,
+              })}
+              {result.createdAt !== result.updatedAt && (
+                <>
+                  {' '}
+                  | last updated:{' '}
+                  {new Date(result.updatedAt).toLocaleString('en-us', {
+                    timeZone: timezone || undefined,
+                  })}
+                </>
+              )}
             </div>
+            <a
+              target="_blank"
+              href={result.metadata.author}
+              rel="noopener noreferrer"
+              className="inline-flex items-center font-medium text-blue-600 hover:underline"
+            >
+              {toHostname(result.metadata.author)}
+              <svg
+                className="ms-2.5 size-3 rtl:rotate-[270deg]"
+                aria-hidden="true"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 18 18"
+              >
+                <path
+                  stroke="currentColor"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M15 11v4.833A1.166 1.166 0 0 1 13.833 17H2.167A1.167 1.167 0 0 1 1 15.833V4.167A1.166 1.166 0 0 1 2.167 3h4.618m4.447-2H17v5.768M9.111 8.889l7.778-7.778"
+                />
+              </svg>
+            </a>
           </div>
-        ))}
-      </div>
-    </Suspense>
+        </div>
+      ))}
+    </div>
   );
 };
 

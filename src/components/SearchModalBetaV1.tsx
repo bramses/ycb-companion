@@ -1,7 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 /* eslint-disable jsx-a11y/img-redundant-alt */
 
-// import { useUser } from '@clerk/nextjs';
+import { useUser } from '@clerk/nextjs';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
@@ -28,12 +28,12 @@ const SearchModalBetaV1 = ({
 }) => {
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [firstLastName] = useState({
+  const [firstLastName, setFirstLastName] = useState({
     firstName: '',
     lastName: '',
   });
 
-  // const { user, isLoaded } = useUser();
+  const { user, isLoaded } = useUser();
 
   const handleSearchHelper = async (entryData: string) => {
     const parsedEntries = await fetchSearchEntries(
@@ -59,16 +59,16 @@ const SearchModalBetaV1 = ({
     }
   }, []);
 
-  // useEffect(() => {
-  //   if (!isLoaded) return;
-  //   // set first name as title
-  //   if (user?.firstName && user?.lastName) {
-  //     setFirstLastName({
-  //       firstName: user.firstName,
-  //       lastName: user.lastName,
-  //     });
-  //   }
-  // }, [isLoaded, user]);
+  useEffect(() => {
+    if (!isLoaded) return;
+    // set first name as title
+    if (user?.firstName && user?.lastName) {
+      setFirstLastName({
+        firstName: user.firstName,
+        lastName: user.lastName,
+      });
+    }
+  }, [isLoaded, user]);
 
   const renderResultData = (result: any) => {
     if (

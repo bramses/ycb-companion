@@ -3,11 +3,11 @@
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { Suspense, useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import Modal from 'react-modal';
 
 import LocaleSwitcher from '@/components/LocaleSwitcher';
-// import { LogOutButton } from '@/components/LogOutButton';
+import { LogOutButton } from '@/components/LogOutButton';
 import SearchModalBeta from '@/components/SearchModalBeta';
 import SpeedDial from '@/components/SpeedDial';
 import Uploader from '@/components/Uploader';
@@ -201,19 +201,18 @@ export default function DashboardLayout(props: { children: React.ReactNode }) {
   // }, []);
 
   return (
-    <Suspense fallback={<div>Loading...</div>}>
-      <BaseTemplate
-        leftNav={
-          <>
-            <li>
-              <Link
-                href="/dashboard/"
-                className="border-none text-gray-700 hover:text-gray-900"
-              >
-                {t('dashboard_link')}
-              </Link>
-            </li>
-            {/* <li className="border-none text-gray-700 hover:text-gray-900">
+    <BaseTemplate
+      leftNav={
+        <>
+          <li>
+            <Link
+              href="/dashboard/"
+              className="border-none text-gray-700 hover:text-gray-900"
+            >
+              {t('dashboard_link')}
+            </Link>
+          </li>
+          {/* <li className="border-none text-gray-700 hover:text-gray-900">
             <Link href="/dashboard/flow/" className="border-none">
               {t('flow_link')}
             </Link>
@@ -226,7 +225,7 @@ export default function DashboardLayout(props: { children: React.ReactNode }) {
               {t('starred_entries_link')}
             </Link>
           </li> */}
-            {/* <li>
+          {/* <li>
             <Link
               href="/dashboard/flow-sessions/"
               className="border-none text-gray-700 hover:text-gray-900"
@@ -240,15 +239,15 @@ export default function DashboardLayout(props: { children: React.ReactNode }) {
             </Link>
             <span> ({inboxCount.data.count})</span>
           </li> */}
-            <li>
-              <Link
-                href="/dashboard/garden/"
-                className="border-none text-gray-700 hover:text-gray-900"
-              >
-                {t('garden_link')}
-              </Link>
-            </li>
-            {/* <li>
+          <li>
+            <Link
+              href="/dashboard/garden/"
+              className="border-none text-gray-700 hover:text-gray-900"
+            >
+              {t('garden_link')}
+            </Link>
+          </li>
+          {/* <li>
             <Link
               href="/dashboard/grid/"
               className="border-none text-gray-700 hover:text-gray-900"
@@ -256,7 +255,7 @@ export default function DashboardLayout(props: { children: React.ReactNode }) {
               {t('grid_link')}
             </Link>
           </li> */}
-            {/* <li>
+          {/* <li>
             <Link
               href="/dashboard/user-profile/"
               className="border-none text-gray-700 hover:text-gray-900"
@@ -264,75 +263,80 @@ export default function DashboardLayout(props: { children: React.ReactNode }) {
               {t('user_profile_link')}
             </Link>
           </li> */}
-          </>
-        }
-        rightNav={
+        </>
+      }
+      rightNav={
+        <>
+          <li>
+            <LogOutButton />
+          </li>
+
           <li>
             <LocaleSwitcher />
           </li>
-        }
+        </>
+      }
+    >
+      <SearchModalBeta
+        isOpen={isSearchModalBetaOpen || false}
+        closeModalFn={closeSearchModalBeta}
+        inputQuery={searchBetaModalQuery}
+      />
+      <Modal
+        isOpen={isFastEntryModalOpen}
+        onRequestClose={closeFastEntryModal}
+        contentLabel="Fast Entry Modal"
+        ariaHideApp={false}
+        // apply custom styles using tailwind classes
+        className="fixed left-1/2 top-1/2 z-50 w-full max-w-sm
+        -translate-x-1/2 -translate-y-1/2 rounded-lg bg-white p-4 shadow-lg"
       >
-        <SearchModalBeta
-          isOpen={isSearchModalBetaOpen || false}
-          closeModalFn={closeSearchModalBeta}
-          inputQuery={searchBetaModalQuery}
+        <button onClick={closeFastEntryModal} type="button">
+          (close)
+        </button>
+        <h2
+          className="mb-4 text-2xl font-semibold text-gray-800"
+          id="modal-title"
+        >
+          Fast Entry
+        </h2>
+        <Uploader
+          closeModal={closeFastEntryModal}
+          textDefault=""
+          titleDefault=""
+          authorDefault="https://yourcommonbase.com/dashboard"
         />
+      </Modal>
+      {showShareModal && (
         <Modal
-          isOpen={isFastEntryModalOpen}
-          onRequestClose={closeFastEntryModal}
-          contentLabel="Fast Entry Modal"
+          isOpen={showShareModal}
+          onRequestClose={() => setShowShareModal(false)}
+          contentLabel="Share Modal"
           ariaHideApp={false}
           // apply custom styles using tailwind classes
           className="fixed left-1/2 top-1/2 z-50 w-full max-w-sm
         -translate-x-1/2 -translate-y-1/2 rounded-lg bg-white p-4 shadow-lg"
         >
-          <button onClick={closeFastEntryModal} type="button">
+          <button onClick={() => setShowShareModal(false)} type="button">
             (close)
           </button>
           <h2
             className="mb-4 text-2xl font-semibold text-gray-800"
             id="modal-title"
           >
-            Fast Entry
+            Share
           </h2>
-          <Uploader
+          <ShareUploader
             closeModal={closeFastEntryModal}
-            textDefault=""
+            textDefault={shareParam}
             titleDefault=""
             authorDefault="https://yourcommonbase.com/dashboard"
           />
         </Modal>
-        {showShareModal && (
-          <Modal
-            isOpen={showShareModal}
-            onRequestClose={() => setShowShareModal(false)}
-            contentLabel="Share Modal"
-            ariaHideApp={false}
-            // apply custom styles using tailwind classes
-            className="fixed left-1/2 top-1/2 z-50 w-full max-w-sm
-        -translate-x-1/2 -translate-y-1/2 rounded-lg bg-white p-4 shadow-lg"
-          >
-            <button onClick={() => setShowShareModal(false)} type="button">
-              (close)
-            </button>
-            <h2
-              className="mb-4 text-2xl font-semibold text-gray-800"
-              id="modal-title"
-            >
-              Share
-            </h2>
-            <ShareUploader
-              closeModal={closeFastEntryModal}
-              textDefault={shareParam}
-              titleDefault=""
-              authorDefault="https://yourcommonbase.com/dashboard"
-            />
-          </Modal>
-        )}
-        <SpeedDial onOpenModal={onOpenModal} openRandom={handleRandom} />
-        {props.children}
-      </BaseTemplate>
-    </Suspense>
+      )}
+      <SpeedDial onOpenModal={onOpenModal} openRandom={handleRandom} />
+      {props.children}
+    </BaseTemplate>
   );
 }
 

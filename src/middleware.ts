@@ -1,9 +1,8 @@
 // // import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
 // import type { NextFetchEvent, NextRequest } from 'next/server';
-import createMiddleware from 'next-intl/middleware';
-
-// export { auth as middleware } from "auth"
-import { AppConfig } from './utils/AppConfig';
+// import createMiddleware from 'next-intl/middleware';
+// // export { auth as middleware } from "auth"
+// import { AppConfig } from './utils/AppConfig';
 
 // const intlMiddleware = createMiddleware({
 //   locales: AppConfig.locales,
@@ -58,24 +57,25 @@ import { AppConfig } from './utils/AppConfig';
 
 // v2
 
+import { auth } from 'auth';
 // import type { NextFetchEvent, NextRequest } from "next/server";
-// import createMiddleware from 'next-intl/middleware';
+import createMiddleware from 'next-intl/middleware';
 
-// import { AppConfig } from './utils/AppConfig';
+import { AppConfig } from './utils/AppConfig';
 
-// // Define the protected routes
-// // const protectedRoutes = [
-// //   /^\/dashboard(.*)/,
-// //   /^\/[^/]+\/dashboard(.*)/, // Matches /:locale/dashboard(.*)
-// //   /^\/api\/(.*)/,
-// // ];
+// Define the protected routes
+const protectedRoutes = [
+  /^\/dashboard(.*)/,
+  /^\/[^/]+\/dashboard(.*)/, // Matches /:locale/dashboard(.*)
+  /^\/api\/(.*)/,
+];
 
-// // // Function to check if a route is protected
-// // function isProtectedRoute(pathname: string): boolean {
-// //   return protectedRoutes.some((route) => route.test(pathname));
-// // }
+// Function to check if a route is protected
+function isProtectedRoute(pathname: string): boolean {
+  return protectedRoutes.some((route) => route.test(pathname));
+}
 
-// // Create the intl middleware
+// Create the intl middleware
 const intlMiddleware = createMiddleware({
   locales: AppConfig.locales,
   localePrefix: AppConfig.localePrefix,
@@ -83,33 +83,31 @@ const intlMiddleware = createMiddleware({
 });
 
 export default async function middleware(req: any) {
+  const session = await auth();
+  if (
+    !session &&
+    isProtectedRoute(req.nextUrl.pathname) &&
+    !req.nextUrl.pathname.includes('/auth')
+  ) {
+    console.log(req.nextUrl);
+    const callbackUrl = req.nextUrl.href.replace(req.nextUrl.origin, ''); // Get the full URL as the callback
+    const newUrl = new URL('/auth/signin', req.nextUrl.origin);
+    newUrl.searchParams.set('callbackUrl', callbackUrl); // Add callbackUrl as a query parameter
+    return Response.redirect(newUrl); // TODO: does the auth need await now that i added routes to exclude auth?
+    // return intlMiddleware(req);
+  }
+
+  // Apply intlMiddleware for all requests
   return intlMiddleware(req);
 }
-// const session = await auth();
-// if (
-//   !session &&
-//   isProtectedRoute(req.nextUrl.pathname) &&
-//   !req.nextUrl.pathname.includes('/auth')
-// ) {
-//   console.log(req.nextUrl);
-//   const callbackUrl = req.nextUrl.href.replace(req.nextUrl.origin, ''); // Get the full URL as the callback
-//   const newUrl = new URL('/auth/signin', req.nextUrl.origin);
-//   newUrl.searchParams.set('callbackUrl', callbackUrl); // Add callbackUrl as a query parameter
-//   return Response.redirect(newUrl); // TODO: does the auth need await now that i added routes to exclude auth?
-//   // return intlMiddleware(req);
-// }
 
-//   // Apply intlMiddleware for all requests
-//   return intlMiddleware(req);
-// }
-
-// export const config = {
-//   matcher: [
-//     '/((?!.+\\.[\\w]+$|_next|monitoring|^/ws/).*)',
-//     '/',
-//     '/(api|trpc)(.*)',
-//   ], // Also exclude tunnelRoute used in Sentry from the matcher
-// };
+export const config = {
+  matcher: [
+    '/((?!.+\\.[\\w]+$|_next|monitoring|^/ws/).*)',
+    '/',
+    '/(api|trpc)(.*)',
+  ], // Also exclude tunnelRoute used in Sentry from the matcher
+};
 
 // v3
 

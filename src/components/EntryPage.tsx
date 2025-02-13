@@ -9,7 +9,7 @@
 
 import 'react-lite-youtube-embed/dist/LiteYouTubeEmbed.css';
 
-// import { useUser } from '@clerk/nextjs';
+import { useUser } from '@clerk/nextjs';
 // import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
@@ -74,8 +74,8 @@ const EntryPage = () => {
   // const [searchResults, setSearchResults] = useState<any[]>([]);
   // const router = useRouter();
   const [showAliasError] = useState(false);
-  // const { user, isLoaded } = useUser();
-  const [firstLastName] = useState({
+  const { user, isLoaded } = useUser();
+  const [firstLastName, setFirstLastName] = useState({
     firstName: '',
     lastName: '',
   });
@@ -421,16 +421,16 @@ const EntryPage = () => {
     }
   }, [pathname, data]);
 
-  // useEffect(() => {
-  //   if (!isLoaded) return;
-  //   // set first name as title
-  //   if (user?.firstName && user?.lastName) {
-  //     setFirstLastName({
-  //       firstName: user.firstName,
-  //       lastName: user.lastName,
-  //     });
-  //   }
-  // }, [isLoaded, user]);
+  useEffect(() => {
+    if (!isLoaded) return;
+    // set first name as title
+    if (user?.firstName && user?.lastName) {
+      setFirstLastName({
+        firstName: user.firstName,
+        lastName: user.lastName,
+      });
+    }
+  }, [isLoaded, user]);
 
   useEffect(() => {
     const handleBeforeUnload = (event: BeforeUnloadEvent) => {

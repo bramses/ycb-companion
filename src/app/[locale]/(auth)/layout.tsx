@@ -1,26 +1,38 @@
 // TODO switch to next-auth provider
 
-// 'use client';
+import { enUS, frFR } from '@clerk/localizations';
+import { ClerkProvider } from '@clerk/nextjs';
 
-// import { useEffect } from 'react';
+import { AppConfig } from '@/utils/AppConfig';
 
-// import userManager from '@/libs/oidc';
+export default function AuthLayout(props: {
+  children: React.ReactNode;
+  params: { locale: string };
+}) {
+  let clerkLocale = enUS;
+  let signInUrl = '/sign-in';
+  let signUpUrl = '/sign-up';
+  let dashboardUrl = '/dashboard';
 
-export default function AuthLayout(props: { children: React.ReactNode }) {
-  // useEffect(() => {
-  //   async function handleLogin() {
-  //     const user = await userManager.getUser();
+  if (props.params.locale === 'fr') {
+    clerkLocale = frFR;
+  }
 
-  //     // save user to local storage
-  //     localStorage.setItem('user', JSON.stringify(user));
+  if (props.params.locale !== AppConfig.defaultLocale) {
+    signInUrl = `/${props.params.locale}${signInUrl}`;
+    signUpUrl = `/${props.params.locale}${signUpUrl}`;
+    dashboardUrl = `/${props.params.locale}${dashboardUrl}`;
+  }
 
-  //     if (!user) {
-  //       await userManager.signinRedirect();
-  //     }
-  //   }
-
-  //   handleLogin();
-  // }, []);
-
-  return props.children;
+  return (
+    <ClerkProvider
+      localization={clerkLocale}
+      signInUrl={signInUrl}
+      signUpUrl={signUpUrl}
+      signInFallbackRedirectUrl={dashboardUrl}
+      signUpFallbackRedirectUrl={dashboardUrl}
+    >
+      {props.children}
+    </ClerkProvider>
+  );
 }
