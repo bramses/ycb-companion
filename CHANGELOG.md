@@ -1,3 +1,10 @@
+# [1.1.0](https://github.com/your-commonbase/ycb-companion/compare/v1.0.0...v1.1.0) (2025-02-14)
+
+
+### Features
+
+* Add OIDC configuration to .env.sample and refactor oidc.ts to utilize environment variables for authentication settings ([b099907](https://github.com/your-commonbase/ycb-companion/commit/b099907dc811ba0e2c6b484589efd0e11730c721))
+
 # 1.0.0 (2025-02-14)
 
 
