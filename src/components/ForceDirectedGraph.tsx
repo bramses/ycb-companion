@@ -1120,50 +1120,49 @@ const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
                   >
                     {showComments ? 'Hide Comments' : 'Show Comments'}
                   </summary>
-                  {showComments &&
-                    modalContent.comments.map((comment: any) => (
-                      <div
-                        key={comment.id}
-                        className="mx-2 mb-4 flex items-center justify-between"
-                      >
-                        <div className="grow">
-                          <div className="block text-gray-900 no-underline">
-                            <div className="relative">
-                              <span
-                                style={{
-                                  fontWeight:
-                                    comment.id === modalContent.matchedCommentId
-                                      ? 'bold'
-                                      : 'normal',
-                                }}
-                              >
-                                {comment.data}
-                              </span>
-                            </div>
-                          </div>
-                          <div className="text-sm text-gray-500">
-                            created:{' '}
-                            {new Date(comment.createdAt).toLocaleString()}
-                            {comment.createdAt !== comment.updatedAt && (
-                              <>
-                                {' '}
-                                | last updated:{' '}
-                                {new Date(
-                                  comment.updatedAt,
-                                ).toLocaleString()}{' '}
-                              </>
-                            )}
+                  {modalContent.comments.map((comment: any) => (
+                    <div
+                      key={comment.id}
+                      className="mx-2 mb-4 flex items-center justify-between"
+                    >
+                      <div className="grow">
+                        <div className="block text-gray-900 no-underline">
+                          <div className="relative">
+                            <span
+                              style={{
+                                fontWeight:
+                                  comment.id === modalContent.matchedCommentId
+                                    ? 'bold'
+                                    : 'normal',
+                              }}
+                            >
+                              {comment.data}
+                            </span>
                           </div>
                         </div>
-                        <button
-                          onClick={() => onExpand(modalContent.id, comment.id)}
-                          type="button"
-                          className="ml-2 rounded bg-blue-500 px-2 py-1 text-white hover:bg-blue-700"
-                        >
-                          Expand
-                        </button>
+                        <div className="text-sm text-gray-500">
+                          created:{' '}
+                          {new Date(comment.createdAt).toLocaleString()}
+                          {comment.createdAt !== comment.updatedAt && (
+                            <>
+                              {' '}
+                              | last updated:{' '}
+                              {new Date(
+                                comment.updatedAt,
+                              ).toLocaleString()}{' '}
+                            </>
+                          )}
+                        </div>
                       </div>
-                    ))}
+                      <button
+                        onClick={() => onExpand(modalContent.id, comment.id)}
+                        type="button"
+                        className="ml-2 rounded bg-blue-500 px-2 py-1 text-white hover:bg-blue-700"
+                      >
+                        Expand
+                      </button>
+                    </div>
+                  ))}
                 </details>
               )}
 
