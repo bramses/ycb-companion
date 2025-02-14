@@ -1,3 +1,5 @@
+// TODO switch to next-auth provider
+
 import { enUS, frFR } from '@clerk/localizations';
 import { ClerkProvider } from '@clerk/nextjs';
 

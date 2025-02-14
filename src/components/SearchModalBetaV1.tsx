@@ -53,7 +53,9 @@ const SearchModalBetaV1 = ({
   useEffect(() => {
     const input = document.getElementById('modal-beta-search');
     if (input) {
-      input.focus();
+      setTimeout(() => {
+        input.focus();
+      }, 100);
     }
   }, []);
 
@@ -120,19 +122,19 @@ const SearchModalBetaV1 = ({
   }, [inputQuery]);
 
   // enter key press event handler
-  const handleEnterKeyPress = (event: KeyboardEvent) => {
-    if (event.key === 'Enter') {
-      handleSearch(inputValue, '');
-    }
-  };
+  // const handleEnterKeyPress = (event: KeyboardEvent) => {
+  //   if (event.key === 'Enter') {
+  //     handleSearch(inputValue, '');
+  //   }
+  // };
+  //
+  // useEffect(() => {
+  //   window.addEventListener('keydown', handleEnterKeyPress);
 
-  useEffect(() => {
-    window.addEventListener('keydown', handleEnterKeyPress);
-
-    return () => {
-      window.removeEventListener('keydown', handleEnterKeyPress);
-    };
-  }, []);
+  //   return () => {
+  //     window.removeEventListener('keydown', handleEnterKeyPress);
+  //   };
+  // }, []);
   return (
     <Modal
       isOpen={isOpen}

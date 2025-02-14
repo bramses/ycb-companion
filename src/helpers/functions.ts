@@ -19,14 +19,8 @@ export const fetchByID = async (entryId: string) => {
   }
 
   const entry = resData.data;
-  console.log('entry:', entry);
-  let { metadata } = entry;
-  // parse metadata
-  try {
-    metadata = JSON.parse(entry.metadata);
-  } catch (err) {
-    console.error('Error parsing metadata:', err);
-  }
+  // console.log('entry:', entry);
+  const { metadata } = entry;
 
   return {
     data: entry.data,
@@ -41,6 +35,11 @@ export async function fetchFavicon(url: string) {
   try {
     const response = await fetch(`/api/favicon?url=${url}`);
     const data = await response.json();
+
+    if (!data.favicon) {
+      return { favicon: '/favicon.ico' };
+    }
+
     return data;
   } catch (err) {
     return { favicon: '/favicon.ico' };
@@ -452,7 +451,7 @@ export const fetchRandomEntry = async () => {
   });
   const data = await response.json();
 
-  return data.data;
+  return data.data[0];
 };
 
 export const downloadCollection = (

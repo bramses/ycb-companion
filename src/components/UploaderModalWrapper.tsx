@@ -27,11 +27,16 @@
 import Modal from 'react-modal';
 
 import Uploader from './Uploader';
+import ShareUploader from './uploaders/share';
+import TextUploader from './uploaders/text';
+import URLUploader from './uploaders/url';
 
 const UploaderModal = ({
   isOpen,
+  type,
   closeModalFn,
 }: {
+  type: string;
   isOpen: boolean;
   closeModalFn: () => void;
 }) => {
@@ -39,7 +44,7 @@ const UploaderModal = ({
     <Modal
       isOpen={isOpen}
       onRequestClose={closeModalFn}
-      contentLabel="Example Modal"
+      contentLabel="Uploader Modal"
       ariaHideApp={false}
       // apply custom styles using tailwind classes
       className="fixed left-1/2 top-1/2 z-50 w-full max-w-sm
@@ -48,13 +53,70 @@ const UploaderModal = ({
       <button onClick={closeModalFn} type="button">
         (close)
       </button>
-      <h2
-        className="mb-4 text-2xl font-semibold text-gray-800"
-        id="modal-title"
-      >
-        Fast Entry
-      </h2>
-      <Uploader closeModal={closeModalFn} />
+      {type !== 'url' && type !== 'text' && type !== 'share' && (
+        <>
+          <h2
+            className="mb-4 text-2xl font-semibold text-gray-800"
+            id="modal-title"
+          >
+            Fast Entry
+          </h2>
+          <Uploader
+            closeModal={closeModalFn}
+            textDefault=""
+            titleDefault=""
+            authorDefault="https://yourcommonbase.com/dashboard"
+          />
+        </>
+      )}
+      {type === 'url' && (
+        <>
+          <h2
+            className="mb-4 text-2xl font-semibold text-gray-800"
+            id="modal-title"
+          >
+            URL Entry
+          </h2>
+          <URLUploader
+            closeModal={closeModalFn}
+            textDefault=""
+            titleDefault=""
+            authorDefault="https://yourcommonbase.com/dashboard"
+          />
+        </>
+      )}
+      {type === 'share' && (
+        <>
+          <h2
+            className="mb-4 text-2xl font-semibold text-gray-800"
+            id="modal-title"
+          >
+            URL Entry
+          </h2>
+          <ShareUploader
+            closeModal={closeModalFn}
+            textDefault=""
+            titleDefault=""
+            authorDefault="https://yourcommonbase.com/dashboard"
+          />
+        </>
+      )}
+      {type === 'text' && (
+        <>
+          <h2
+            className="mb-4 text-2xl font-semibold text-gray-800"
+            id="modal-title"
+          >
+            Text Entry
+          </h2>
+          <TextUploader
+            closeModal={closeModalFn}
+            textDefault=""
+            titleDefault=""
+            authorDefault="https://yourcommonbase.com/dashboard"
+          />
+        </>
+      )}
     </Modal>
   );
 };

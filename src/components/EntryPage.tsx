@@ -1,5 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 /* eslint-disable jsx-a11y/img-redundant-alt */
+/* eslint-disable react-hooks/exhaustive-deps */
+/* eslint-disable no-param-reassign */
 
 // EntryPage.tsx
 
@@ -10,7 +12,7 @@ import 'react-lite-youtube-embed/dist/LiteYouTubeEmbed.css';
 import { useUser } from '@clerk/nextjs';
 // import Image from 'next/image';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { memo, useEffect, useState } from 'react';
 import LiteYouTubeEmbed from 'react-lite-youtube-embed';
 import { InstagramEmbed, TikTokEmbed } from 'react-social-media-embed';
@@ -25,22 +27,26 @@ import {
   // createAmalgam,
   deleteEntry as apiDeleteEntry,
   fetchByID,
+  fetchFavicon,
+  fetchRandomEntry,
   // fetchSearchEntries,
   // fetchSearchEntriesHelper,
   formatDate,
   // splitIntoWords,
   updateEntry as apiUpdateEntry,
-} from '../helpers/functions';
+} from '@/helpers/functions';
+
 import { createEntryTransaction } from '../helpers/transactionFunctions';
 import type { Transaction } from '../helpers/transactionManager';
 import { TransactionManager } from '../helpers/transactionManager';
-import Chat from './Chat';
+// import Chat from './Chat';
 import EditModal from './EditModal';
 import ForceDirectedGraph from './ForceDirectedGraph';
 // import LinksModal from './LinksModal';
 import Loading from './Loading';
-import SearchModalBeta from './SearchModalBetaV1';
-import ShareModal from './ShareModal';
+import SearchModalBeta from './SearchModalBeta';
+import ShareModal from './ShareModalV2';
+import UploaderModalWrapper from './UploaderModalWrapper';
 import UrlSVG from './UrlSVG';
 
 const EntryPage = () => {
@@ -96,66 +102,168 @@ const EntryPage = () => {
 
   const [transactionManager, setTransactionManager] =
     useState<TransactionManager | null>(null);
-  const [tempIds] = useState<string[]>([]);
   const [tempCommentIDs, setTempCommentIDs] = useState<any[]>([]);
-  const [cachedFData, setCachedFData] = useState<any>(null);
+  const [cachedFData] = useState<any>(null);
   const [isInDraftState, setIsInDraftState] = useState(false);
+  const [favicon, setFavicon] = useState('/favicon.ico');
+
+  const [graphNodes, setGraphNodes] = useState<any[]>([]);
+  const [currentIndex, setCurrentIndex] = useState<number | null>(null);
+  const [showModal, setShowModal] = useState(false);
+  const [randomCommentPlaceholder, setRandomCommentPlaceholder] = useState(
+    'Add a comment... (press enter to save)',
+  );
+
+  const router = useRouter();
+
+  function getNextIndex(
+    gnigraphNodes: any[],
+    gnicurrentIndex: number | null,
+    direction: 1 | -1,
+  ) {
+    if (!gnigraphNodes.length) return null;
+
+    // if currently null, just find first non-skipped
+    if (currentIndex === null) {
+      const idx = gnigraphNodes.findIndex(
+        (n) => n.group !== 'main' && n.group !== 'comment',
+      );
+      return idx === -1 ? null : idx;
+    }
+
+    // otherwise loop
+    let i = gnicurrentIndex;
+    do {
+      i = (i! + direction + gnigraphNodes.length) % gnigraphNodes.length;
+    } while (
+      gnigraphNodes[i].group === 'main' ||
+      gnigraphNodes[i].group === 'comment'
+    );
+
+    return i;
+  }
+
+  // get a random entry on load
+  useEffect(() => {
+    const asyncFn = async () => {
+      const entry = await fetchRandomEntry();
+      setRandomCommentPlaceholder(entry.data);
+    };
+    asyncFn();
+  }, []);
+
+  useEffect(() => {
+    function handleKeyDown(event: KeyboardEvent) {
+      if (graphNodes.length === 0) return;
+
+      const target = event.target as HTMLElement;
+
+      if (
+        event.key === 'ArrowRight' &&
+        !(event.target instanceof HTMLInputElement) &&
+        !(event.target instanceof HTMLTextAreaElement) &&
+        !target.tagName.toLowerCase().includes('input') &&
+        !target.tagName.toLowerCase().includes('textarea')
+      ) {
+        // setCurrentIndex((prevIndex) => {
+        //   if (prevIndex === null) return 0;
+        //   return (prevIndex + 1) % graphNodes.length;
+        // });
+        setCurrentIndex((prev) => getNextIndex(graphNodes, prev, 1));
+      } else if (
+        event.key === 'ArrowLeft' &&
+        !(event.target instanceof HTMLInputElement) &&
+        !(event.target instanceof HTMLTextAreaElement) &&
+        !target.tagName.toLowerCase().includes('input') &&
+        !target.tagName.toLowerCase().includes('textarea')
+      ) {
+        // setCurrentIndex((prevIndex) => {
+        //   if (prevIndex === null) return graphNodes.length - 1;
+        //   return (prevIndex - 1 + graphNodes.length) % graphNodes.length;
+        // });
+        setCurrentIndex((prev) => getNextIndex(graphNodes, prev, -1));
+      }
+
+      if (
+        event.key === 'Escape' &&
+        !(event.target instanceof HTMLInputElement) &&
+        !(event.target instanceof HTMLTextAreaElement) &&
+        !target.tagName.toLowerCase().includes('input') &&
+        !target.tagName.toLowerCase().includes('textarea')
+      ) {
+        event.preventDefault();
+        setShowModal(false);
+      }
+
+      // if c for comment is pressed and !showModal, focus on the comment input
+      // todo: this breaks after the modal has been opened
+      if (
+        event.key === 'c' &&
+        !showModal &&
+        !(event.target instanceof HTMLInputElement) &&
+        !(event.target instanceof HTMLTextAreaElement) &&
+        !target.tagName.toLowerCase().includes('input') &&
+        !target.tagName.toLowerCase().includes('textarea')
+      ) {
+        event.preventDefault();
+        const commentInput = document.getElementById(`alias-input-comment`);
+        if (commentInput) {
+          setTimeout(() => {
+            commentInput.focus();
+          }, 100);
+        }
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [graphNodes]);
+
+  useEffect(() => {
+    let startX: number | null = null;
+    function handleTouchStart(e: TouchEvent) {
+      if (!showModal || window.innerWidth >= 768) return;
+      if (e.touches.length > 0) startX = e.touches[0]!.clientX;
+    }
+    function handleTouchEnd(e: TouchEvent) {
+      if (!showModal || window.innerWidth >= 768) return;
+      if (startX === null) return;
+      if (e.changedTouches.length > 0) {
+        const endX = e.changedTouches[0]!.clientX;
+        const deltaX = endX - startX;
+        if (Math.abs(deltaX) > 50) {
+          if (deltaX < 0) {
+            // setCurrentIndex((prevIndex) => {
+            //   if (prevIndex === null) return 0;
+            //   return (prevIndex + 1) % graphNodes.length;
+            // });
+            setCurrentIndex((prev) => getNextIndex(graphNodes, prev, -1));
+          } else {
+            // setCurrentIndex((prevIndex) => {
+            //   if (prevIndex === null) return graphNodes.length - 1;
+            //   return (prevIndex - 1 + graphNodes.length) % graphNodes.length;
+            // });
+            setCurrentIndex((prev) => getNextIndex(graphNodes, prev, 1));
+          }
+        }
+      }
+      startX = null;
+    }
+
+    window.addEventListener('touchstart', handleTouchStart, { passive: false });
+    window.addEventListener('touchend', handleTouchEnd, { passive: false });
+    return () => {
+      window.removeEventListener('touchstart', handleTouchStart);
+      window.removeEventListener('touchend', handleTouchEnd);
+    };
+  }, [showModal, graphNodes]);
 
   const openModal = (key: string) =>
     setModalStates((prev) => ({ ...prev, [key]: true }));
   const closeModal = (key: string) =>
     setModalStates((prev) => ({ ...prev, [key]: false }));
-
-  // const toHostname = (url: string) => {
-  //   try {
-  //     return new URL(url).hostname;
-  //   } catch (err) {
-  //     return url;
-  //   }
-  // };
-
-  // const renderResultData = (result: any) => {
-  //   if (
-  //     result.metadata &&
-  //     result.metadata.author &&
-  //     result.metadata.author.includes('imagedelivery.net')
-  //   ) {
-  //     return <img src={result.metadata.author} alt="Image" />;
-  //   }
-
-  //   if (result.metadata && result.metadata.code) {
-  //     return (
-  //       <SyntaxHighlighter
-  //         language={
-  //           result.metadata.language === 'typescriptreact'
-  //             ? 'tsx'
-  //             : result.metadata.language
-  //         }
-  //         style={docco}
-  //         wrapLines
-  //         wrapLongLines
-  //         customStyle={{ height: '200px', overflow: 'scroll' }}
-  //       >
-  //         {result.metadata.code}
-  //       </SyntaxHighlighter>
-  //     );
-  //   }
-
-  //   if (result.parentData) {
-  //     return result.parentData.data;
-  //   }
-  //   if (result.data.split(' ').length > 2200) {
-  //     return (
-  //       <>
-  //         {splitIntoWords(result.data, 22, 0)}...
-  //         <span className="mt-1 block text-sm text-gray-500">
-  //           ...{splitIntoWords(result.data, 22, 22)}...
-  //         </span>
-  //       </>
-  //     );
-  //   }
-  //   return result.data;
-  // };
 
   const checkEmbeds = (
     res: { data: any; metadata: any },
@@ -219,46 +327,13 @@ const EntryPage = () => {
     }
   };
 
-  // const handleSearchHelper = async (entryData: string) => {
-  //   const parsedEntries = await fetchSearchEntries(
-  //     entryData,
-  //     setSearchResults,
-  //     null,
-  //   );
-  //   return parsedEntries;
-  // };
-
-  // const handleSearchLinksModal = async (entryData: string) => {
-  //   const parsedEntries = await fetchSearchEntriesHelper(entryData);
-  //   return parsedEntries;
-  // };
-
-  // const handleSearch = async (entryData: string, _: string) => {
-  //   const parsedEntries = await handleSearchHelper(entryData);
-  //   // add ids of parsed entries to uniqueRelationships
-  //   // parsedEntries.forEach((entry: any) => {
-  //   //   const { id } = entry;
-  //   //   if (id) {
-  //   //     setUniqueRelationships((prev: any) => new Set([...prev, id]));
-  //   //   }
-  //   //   // console.log('uniqueRelationships:', uniqueRelationships);
-  //   // });
-  //   setSearchResults(parsedEntries);
-  // };
-
-  // useEffect(() => {
-  //   if (data?.metadata?.aliasData) {
-  //     data.metadata.aliasData.forEach(async (alias: any) => {
-  //       const parsedEntries = await handleSearchHelper(alias.aliasData);
-  //       parsedEntries.forEach((entry: any) => {
-  //         const { id } = entry;
-  //         if (id) {
-  //           setUniqueRelationships((prev: any) => new Set([...prev, id]));
-  //         }
-  //       });
-  //     });
-  //   }
-  // }, [data?.metadata?.aliasData]);
+  useEffect(() => {
+    if (data?.metadata?.author) {
+      fetchFavicon(data.metadata.author).then((res) => {
+        setFavicon(res.favicon);
+      });
+    }
+  }, [data]);
 
   useEffect(() => {
     if (!data) {
@@ -278,7 +353,7 @@ const EntryPage = () => {
             // remove current page from the history stack so user doesnt back to it for loop
             window.history.pushState({}, '', window.location.pathname);
             // Redirect to a 404 page
-            window.location.href = '/404';
+            window.location.href = '/404'; // todo a react toast instead
           }
           // Handle other errors
           console.error(error);
@@ -341,22 +416,6 @@ const EntryPage = () => {
 
         // set author to the URL
         setAuthor(res.metadata.author);
-
-        // search for related entries
-        // handleSearch(res.data, res.id);
-        // if (res) {
-        //   const amalgam = await createAmalgam(
-        //     res,
-        //     res.metadata.aliasData,
-        //     [],
-        //     [],
-        //     {
-        //       disableAliasKeysInMetadata: true,
-        //       disableAliasKeysInComments: true,
-        //     },
-        //   );
-        //   console.log('Amalgam:', amalgam);
-        // }
       };
       asyncFn();
     }
@@ -425,85 +484,11 @@ const EntryPage = () => {
     };
   }, [isInDraftState]);
 
-  // useEffect(() => {
-  //   const handleKeyDown = (event: KeyboardEvent) => {
-  //     if (event.key === 'k') {
-  //       const selectedText = window.getSelection()?.toString();
-  //       if (selectedText) {
-  //         // open search modal beta
-  //         setModalStates((prev) => ({ ...prev, searchModalBeta: true }));
-  //         setSearchBetaModalQuery(selectedText);
-  //       }
-  //     }
-  //   };
-
-  //   window.addEventListener('keydown', handleKeyDown);
-
-  //   return () => {
-  //     window.removeEventListener('keydown', handleKeyDown);
-  //   };
-  // }, []);
-
   useEffect(() => {
     if (data) {
       document.title = data.data;
     }
   }, [data]);
-
-  // Transaction Handlers
-
-  // Handle Edit Entry
-  const handleEditEntry = (newData: string, newMetadata: any) => {
-    if (!transactionManager || !data) return;
-
-    console.log('newMetadata:', newMetadata);
-
-    // Update the draft state
-    const draftState = transactionManager.getDraftState();
-    draftState.data = newData;
-    draftState.metadata = newMetadata;
-
-    // Update UI immediately
-    setIsInDraftState(true);
-    setData({ ...draftState });
-
-    // Add transaction
-    const editEntryTx: Transaction = async () => {
-      await apiUpdateEntry(data.id, newData, newMetadata);
-    };
-
-    // should happen last
-    transactionManager.addTransaction(editEntryTx, { dependencies: tempIds });
-  };
-
-  // Handle Delete Entry
-  const handleDeleteEntry = () => {
-    if (!transactionManager || !data) return;
-
-    // Confirm deletion
-    const confirmDelete = window.confirm(
-      'Are you sure you want to delete this entry?',
-    );
-    if (!confirmDelete) return;
-
-    setIsInDraftState(true);
-
-    // Update the draft state
-    const draftState = transactionManager.getDraftState();
-    draftState.deleted = true;
-
-    // Update UI immediately (navigate back to dashboard)
-    // router.push('/dashboard');
-
-    // Add transaction
-    const deleteEntryTx: Transaction = async () => {
-      await apiDeleteEntry(data.id);
-    };
-
-    transactionManager.addTransaction(deleteEntryTx);
-  };
-
-  // Handle Add Comment
   // const handleAddComment = (aliasInput: string) => {
   //   if (!transactionManager || !data) return;
   //   console.log('alias:', aliasInput);
@@ -611,6 +596,38 @@ const EntryPage = () => {
   //     { tempAliasId, aliasInput: input, aliasImageUrl: imageUrl },
   //   ]);
   // };
+
+  const checkForEmbeddings = async (entryId: string, aliasIDs: string[]) => {
+    const response = await fetch(`/api/checkForEmbed`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        id: entryId,
+      }),
+    });
+
+    const adata = await response.json();
+    if (adata.data.status !== 'completed') return false;
+
+    for await (const aliasID of aliasIDs) {
+      const cresponse = await fetch(`/api/checkForEmbed`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          id: entryId,
+          aliasID,
+        }),
+      });
+      const cdata = await cresponse.json();
+      if (cdata.data.status !== 'completed') return false;
+    }
+
+    return true;
+  };
 
   const handleSaveComments = async () => {
     if (!transactionManager || !data) return;
@@ -805,60 +822,6 @@ const EntryPage = () => {
     }
   };
 
-  // // Handle Add Link
-  // const handleAddLink = (name: string, url: string) => {
-  //   if (!transactionManager || !data) return;
-
-  //   // Update the draft state
-  //   const draftState = transactionManager.getDraftState();
-  //   const newLink = { name, url };
-  //   draftState.metadata.links = [...(draftState.metadata.links || []), newLink];
-
-  //   // Update UI immediately
-  //   setIsInDraftState(true);
-  //   setData({ ...draftState });
-
-  //   const addLinkTxName = `addLinkTx-${uuidv4()}`;
-
-  //   // Add transaction to update the entry
-  //   const addLinkTx: Transaction = async () => {
-  //     await apiUpdateEntry(data.id, data.data, draftState.metadata);
-  //   };
-
-  //   // add the new link to the tempIds array
-  //   setTempIds((prev) => [...prev, newLink.name]);
-
-  //   transactionManager.addTransaction(addLinkTx, {
-  //     name: addLinkTxName,
-  //   });
-  // };
-
-  // // Handle Delete Link
-  // const handleDeleteLink = (index: number) => {
-  //   if (!transactionManager || !data) return;
-
-  //   // Update the draft state
-  //   const draftState = transactionManager.getDraftState();
-  //   if (draftState.metadata.links && draftState.metadata.links[index]) {
-  //     draftState.metadata.links.splice(index, 1);
-  //   }
-
-  //   // Update UI immediately
-  //   setIsInDraftState(true);
-  //   setData({ ...draftState });
-
-  //   // Add transaction to update the entry
-  //   const deleteLinkTx: Transaction = async () => {
-  //     await apiUpdateEntry(data.id, data.data, draftState.metadata);
-  //   };
-
-  //   // add the new link to the tempIds array
-  //   const tempDeleteLinkId = `temp-delete-link-${uuidv4()}`;
-  //   setTempIds((prev) => [...prev, tempDeleteLinkId]);
-
-  //   transactionManager.addTransaction(deleteLinkTx);
-  // };
-
   // Handle Save All Transactions
   const handleSaveAll = async () => {
     if (!transactionManager) return;
@@ -987,204 +950,201 @@ const EntryPage = () => {
         );
       }
 
-      elements.push(<p key={`line-${uuidv4()}`}>{parts}</p>);
+      elements.push(
+        <span
+          key={`line-${uuidv4()}`}
+          style={{ display: 'block', marginBottom: '1em' }}
+        >
+          {parts}
+        </span>,
+      );
     });
 
     return elements;
   };
 
-  const searchNeighbors = async (query: string, skipIDS: string[] = []) => {
+  const searchNeighbors = async (
+    platformId: string,
+    skipIDS: string[] = [],
+  ) => {
     const response = await fetch('/api/search', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        query,
-        matchCount: 6,
-      }),
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ platformId, matchCount: 6 }),
     });
     const res = await response.json();
-    const neighbors = [];
-    for await (const neighbor of res.data) {
-      if (skipIDS.includes(neighbor.id)) {
-        console.log('skipping neighbor:', neighbor.id);
-      } else {
-        if (JSON.parse(neighbor.metadata).parent_id) {
-          const parent = await fetchByID(
-            JSON.parse(neighbor.metadata).parent_id,
-          );
-          neighbor.parent = parent;
 
-          // if neighbor has alias_ids, fetch them and add them to the aliases array
-          if (parent.metadata.alias_ids) {
-            const commentIDs = parent.metadata.alias_ids;
-            // fetch each comment by id and add it to the comments array
-            neighbor.parent.comments = [];
-            for await (const commentID of commentIDs) {
-              const comment = await fetchByID(commentID);
-              neighbor.parent.comments.push(comment);
-            }
+    const neighbors = await Promise.all(
+      res.data.map(async (neighbor: any) => {
+        if (skipIDS.includes(neighbor.id)) return null;
+
+        // parent fetch in parallel with neighbor's alias fetch
+        const parentId = neighbor.metadata.parent_id;
+        const aliasIds = neighbor.metadata.alias_ids || [];
+
+        const [parentData, neighborAliases] = await Promise.all([
+          parentId ? fetchByID(parentId) : Promise.resolve(null),
+          Promise.all(aliasIds.map((id: string) => fetchByID(id))),
+        ]);
+
+        if (parentData) {
+          neighbor.parent = parentData;
+          if (parentData.metadata.alias_ids) {
+            // neighbor.parent.comments = await Promise.all(
+            //   parentData.metadata.alias_ids.map((id: string) => fetchByID(id))
+            // );
+
+            const aliasCommentsPromise = Promise.all(
+              parentData.metadata.alias_ids.map((id: string) => fetchByID(id)),
+            );
+
+            // Optionally handle the alias comments when they are ready
+            aliasCommentsPromise
+              .then((comments) => {
+                neighbor.parent.comments = comments;
+              })
+              .catch((error) => {
+                console.error('Error fetching alias comments:', error);
+              });
           }
         }
 
-        // if neighbor has alias_ids, fetch them and add them to the aliases array
-        if (JSON.parse(neighbor.metadata).alias_ids) {
-          const commentIDs = JSON.parse(neighbor.metadata).alias_ids;
-          // fetch each comment by id and add it to the comments array
-          neighbor.comments = [];
-          for await (const commentID of commentIDs) {
-            const comment = await fetchByID(commentID);
-            neighbor.comments.push(comment);
-          }
+        if (neighborAliases.length) {
+          neighbor.comments = neighborAliases;
         }
 
-        // if metadata.author includes imagedelivery.net, add it to the thumbnails array
-        if (JSON.parse(neighbor.metadata).author) {
-          if (
-            JSON.parse(neighbor.metadata).author.includes('imagedelivery.net')
-          ) {
-            neighbor.image = JSON.parse(neighbor.metadata).author;
+        // handle metadata
+        if (neighbor.metadata.author) {
+          if (neighbor.metadata.author.includes('imagedelivery.net')) {
+            neighbor.image = neighbor.metadata.author;
           }
-          neighbor.author = JSON.parse(neighbor.metadata).author;
+          neighbor.author = neighbor.metadata.author;
         }
-        if (JSON.parse(neighbor.metadata).title) {
-          neighbor.title = JSON.parse(neighbor.metadata).title;
+        if (neighbor.metadata.title) {
+          neighbor.title = neighbor.metadata.title;
         }
-        neighbors.push(neighbor);
-      }
-    }
-    return neighbors;
+
+        if (neighbor.createdAt) {
+          neighbor.createdAt = new Date(neighbor.createdAt).toISOString();
+        }
+
+        return neighbor;
+      }),
+    );
+
+    const filteredNeighbors = neighbors.filter(Boolean);
+    return filteredNeighbors;
   };
 
-  const searchPenPals = async (query: string, skipIDS: string[] = []) => {
+  const searchPenPals = async (platformId: string, skipIDS: string[] = []) => {
     const response = await fetch('/api/search', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        query,
-        matchCount: 6,
-      }),
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ platformId, matchCount: 6 }),
     });
     const res = await response.json();
-    console.log('penPals:', res);
-    const penPals = [];
 
-    // for pen pals if metadata.parent_id is not null, add it to the pen pals array fetch the parent entry and add it to the pen pal as a parent
+    const penPals = await Promise.all(
+      res.data.map(async (penPal: any) => {
+        if (skipIDS.includes(penPal.id)) return null;
 
-    for await (const penPal of res.data) {
-      if (skipIDS.includes(penPal.id)) {
-        console.log('skipping penPal:', penPal.id);
-      } else {
-        if (JSON.parse(penPal.metadata).parent_id) {
-          console.log(
-            'penPal.metadata:',
-            JSON.parse(penPal.metadata).parent_id,
-          );
-          const parent = await fetchByID(JSON.parse(penPal.metadata).parent_id);
-          penPal.parent = parent;
+        const parentId = penPal.metadata.parent_id;
+        const aliasIds = penPal.metadata.alias_ids || [];
 
-          // if neighbor has alias_ids, fetch them and add them to the aliases array
-          if (parent.metadata.alias_ids) {
-            const commentIDs = parent.metadata.alias_ids;
-            // fetch each comment by id and add it to the comments array
-            penPal.parent.comments = [];
-            for await (const commentID of commentIDs) {
-              const comment = await fetchByID(commentID);
-              penPal.parent.comments.push(comment);
-            }
+        const [parentData, penPalAliases] = await Promise.all([
+          parentId ? fetchByID(parentId) : null,
+          Promise.all(aliasIds.map((id: string) => fetchByID(id))),
+        ]);
+
+        if (parentData) {
+          penPal.parent = parentData;
+          if (parentData.metadata.alias_ids) {
+            // penPal.parent.comments = await Promise.all(
+            //   parentData.metadata.alias_ids.map((id: string) => fetchByID(id))
+            // );
+
+            const aliasCommentsPromise = Promise.all(
+              parentData.metadata.alias_ids.map((id: string) => fetchByID(id)),
+            );
+
+            // Optionally handle the alias comments when they are ready
+            aliasCommentsPromise
+              .then((comments) => {
+                penPal.parent.comments = comments;
+              })
+              .catch((error) => {
+                console.error('Error fetching alias comments:', error);
+              });
           }
         }
 
-        // if neighbor has alias_ids, fetch them and add them to the aliases array
-        if (JSON.parse(penPal.metadata).alias_ids) {
-          const commentIDs = JSON.parse(penPal.metadata).alias_ids;
-          // fetch each comment by id and add it to the comments array
-          penPal.comments = [];
-          for await (const commentID of commentIDs) {
-            const comment = await fetchByID(commentID);
-            penPal.comments.push(comment);
-          }
+        if (penPalAliases.length) {
+          penPal.comments = penPalAliases;
         }
 
-        if (JSON.parse(penPal.metadata).author) {
-          if (
-            JSON.parse(penPal.metadata).author.includes('imagedelivery.net')
-          ) {
-            penPal.image = JSON.parse(penPal.metadata).author;
+        if (penPal.metadata.author) {
+          if (penPal.metadata.author.includes('imagedelivery.net')) {
+            penPal.image = penPal.metadata.author;
           }
-          penPal.author = JSON.parse(penPal.metadata).author;
+          penPal.author = penPal.metadata.author;
         }
-        if (JSON.parse(penPal.metadata).title) {
-          penPal.title = JSON.parse(penPal.metadata).title;
+        if (penPal.metadata.title) {
+          penPal.title = penPal.metadata.title;
         }
-        penPals.push(penPal);
-      }
-    }
 
-    return penPals;
+        if (penPal.createdAt) {
+          penPal.createdAt = new Date(penPal.createdAt).toISOString();
+        }
+
+        return penPal;
+      }),
+    );
+
+    return penPals.filter(Boolean);
   };
 
   const searchInternalLinks = async (query: string, skipIDS: string[] = []) => {
     const response = await fetch('/api/search', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        query,
-        matchCount: 6,
-      }),
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ query, matchCount: 6 }),
     });
     const res = await response.json();
-    console.log('internalLinks:', res);
-    const internalLinks = [];
 
-    // for internal links if metadata.parent_id is not null, add it to the internalLinks array fetch the parent entry and add it to the internalLinks as a parent
+    const internalLinks = await Promise.all(
+      res.data.map(async (link: any) => {
+        if (skipIDS.includes(link.id) || link.similarity === 1.01) return null;
 
-    for await (const internalLink of res.data) {
-      if (skipIDS.includes(internalLink.id)) {
-        console.log('skipping internalLink:', internalLink.id);
-      } else if (internalLink.similarity === 1.01) {
-        console.log('skipping internalLink kw match:', internalLink.id);
-      } else {
-        if (JSON.parse(internalLink.metadata).parent_id) {
-          console.log(
-            'internalLink.metadata:',
-            JSON.parse(internalLink.metadata).parent_id,
-          );
-          const parent = await fetchByID(
-            JSON.parse(internalLink.metadata).parent_id,
-          );
-          internalLink.parent = parent;
+        const parentId = link.metadata.parent_id;
+        if (parentId) {
+          const parentData = await fetchByID(parentId);
+          link.parent = parentData;
         }
-        if (JSON.parse(internalLink.metadata).author) {
-          if (
-            JSON.parse(internalLink.metadata).author.includes(
-              'imagedelivery.net',
-            )
-          ) {
-            internalLink.image = JSON.parse(internalLink.metadata).author;
+
+        if (link.metadata.author) {
+          if (link.metadata.author.includes('imagedelivery.net')) {
+            link.image = link.metadata.author;
           }
-          internalLink.author = JSON.parse(internalLink.metadata).author;
+          link.author = link.metadata.author;
         }
-        if (JSON.parse(internalLink.metadata).title) {
-          internalLink.title = JSON.parse(internalLink.metadata).title;
+        if (link.metadata.title) {
+          link.title = link.metadata.title;
         }
-        internalLinks.push(internalLink);
-      }
-    }
 
-    return internalLinks;
+        if (link.createdAt) {
+          link.createdAt = new Date(link.createdAt).toISOString();
+        }
+
+        return link;
+      }),
+    );
+
+    return internalLinks.filter(Boolean);
   };
 
   // add a comment to the specified parent and update it
   const handleAddCommentGraph = async (comment: string, parent: any) => {
     // add the comment to the parent's aliasData
-
-    console.log(`[handleAdd] ${comment} ${JSON.stringify(parent)}`);
 
     const commentRes = await addEntry(comment, {
       author: parent.author,
@@ -1200,7 +1160,7 @@ const EntryPage = () => {
     // append to parentRes metadata alias ids
     let parentMetadata = parentRes.metadata;
     try {
-      parentMetadata = JSON.parse(parentRes.metadata);
+      parentMetadata = parentRes.metadata;
     } catch (err) {
       console.error('Error parsing parent metadata:', err);
     }
@@ -1236,6 +1196,10 @@ const EntryPage = () => {
     const internalPenPalIds = inputFData.internalLinks.flatMap((link: any) =>
       link.penPals.map((penPal: any) => penPal.id),
     );
+    const expansionIds = inputFData.expansion.flatMap((expansion: any) =>
+      expansion.children.map((child: any) => child.id),
+    );
+
     return [
       inputFData.entry?.id,
       ...neighborIds,
@@ -1243,65 +1207,54 @@ const EntryPage = () => {
       ...internalLinkIds,
       ...penPalIds,
       ...internalPenPalIds,
+      ...expansionIds,
     ].filter(Boolean);
   };
 
-  // const handleExpand = async (nodeId: string) => {
-  //   // Fetch the node's data and metadata
-  //   const nodeData = await fetchByID(nodeId);
-  //   if (!nodeData) {
-  //     console.error(`Cannot fetch data for node with id ${nodeId}`);
-  //     return;
-  //   }
-
-  //   const comments = nodeData.metadata.aliasData || [];
-  //   const commentIDs = comments.map((comment: any) => comment.aliasId);
-
-  //   // Get all existing node IDs to avoid duplicates
-  //   const existingNodeIds = getAllNodeIds(fData);
-
-  //   // Fetch neighbors, excluding already existing nodes
-  //   const neighbors = await searchNeighbors(nodeData.data, [
-  //     nodeId,
-  //     ...commentIDs,
-  //     ...existingNodeIds,
-  //   ]);
-
-  //   const newNeighbors = neighbors.filter(
-  //     (neighbor: any) => !existingNodeIds.includes(neighbor.id),
-  //   );
-
-  //   // Update fData with new neighbors
-  //   setFData((prevData: any) => ({
-  //     ...prevData,
-  //     neighbors: [...prevData.neighbors, ...newNeighbors],
-  //   }));
-
-  //   // Process comments and internal links similarly...
-
-  //   // Check if new data was added
-  //   if (newNeighbors.length === 0 /* && other checks */) {
-  //     alert('Area is fully explored');
-  //   }
-  // };
-
-  // Implement the 'expandFData' function to merge new data into 'fData'
-  const expandFData = async (entry: any, comments: any[] = []) => {
-    const commentIDs = comments.map((comment: any) => comment.aliasId);
+  const expandFData = async (entryId: any, commentId: any) => {
     const existingNodeIds = getAllNodeIds(fData);
 
+    if (!commentId) {
+      // Fetch neighbors
+      const neighbors = await searchNeighbors(entryId, [
+        entryId,
+        ...existingNodeIds,
+      ]);
+
+      // append entry.id to existingNodeIds
+
+      const newNeighbors = neighbors.filter(
+        (neighbor: any) => !existingNodeIds.includes(neighbor.id),
+      );
+
+      // Update 'fData' with new neighbors
+      setFData((prevData: any) => ({
+        ...prevData,
+        // neighbors: [...prevData.neighbors, ...newNeighbors],
+        expansion: [
+          ...prevData.expansion,
+          { parent: entryId, children: newNeighbors, comment: 'todo' },
+        ],
+      }));
+
+      // Process comments and internal links similarly...
+
+      // Return whether new data was added
+      const newDataAdded = newNeighbors.length > 0; // Add checks for comments and internal links if processed
+      return newDataAdded;
+    }
     // Fetch neighbors
-    const neighbors = await searchNeighbors(entry.data, [
-      entry.id,
-      ...commentIDs,
+    const neighbors = await searchNeighbors(commentId, [
+      entryId,
+      commentId,
       ...existingNodeIds,
     ]);
+
+    // append entry.id to existingNodeIds
 
     const newNeighbors = neighbors.filter(
       (neighbor: any) => !existingNodeIds.includes(neighbor.id),
     );
-
-    // h
 
     // Update 'fData' with new neighbors
     setFData((prevData: any) => ({
@@ -1309,7 +1262,7 @@ const EntryPage = () => {
       // neighbors: [...prevData.neighbors, ...newNeighbors],
       expansion: [
         ...prevData.expansion,
-        { parent: entry.id, children: newNeighbors },
+        { parent: entryId, children: newNeighbors, comment: 'todo' },
       ],
     }));
 
@@ -1320,99 +1273,77 @@ const EntryPage = () => {
     return newDataAdded;
   };
 
-  const handleExpand = async (nodeId: string) => {
+  const handleExpand = async (
+    nodeId: string,
+    initNodeDataID: string | null = null,
+  ) => {
     setIsGraphLoading(true);
-    const nodeData = await fetchByID(nodeId);
 
-    if (!nodeData) {
-      console.error(`Cannot fetch data for node with id ${nodeId}`);
+    if (!initNodeDataID) {
+      // Expand the graph with the new data
+      const newDataAdded = await expandFData(nodeId, null);
+
+      if (!newDataAdded) {
+        alert('Area is fully explored');
+      }
+      setIsGraphLoading(false);
+    } else {
+      // Expand the graph with the new data
+      const newDataAdded = await expandFData(nodeId, initNodeDataID);
+
+      if (!newDataAdded) {
+        alert('Area is fully explored');
+      }
+      setIsGraphLoading(false);
+    }
+  };
+
+  const generateFData = async (entry: any, comments: any[] = []) => {
+    console.time('generateFData');
+    setIsGraphLoading(true);
+
+    // check that all embeddings are completed
+    // ... existing code ...
+    const checkEmbeddingsWithDelay = async (
+      entryId: string,
+      maxTries: number,
+      currentTry = 0,
+    ): Promise<boolean> => {
+      if (currentTry >= maxTries) return false;
+      const allEmbeddingsComplete = await checkForEmbeddings(entryId, []);
+      if (allEmbeddingsComplete) return true;
+      await new Promise<void>((resolve) => {
+        setTimeout(resolve, 1000);
+      });
+      return checkEmbeddingsWithDelay(entryId, maxTries, currentTry + 1);
+    };
+
+    const allEmbeddingsComplete = await checkEmbeddingsWithDelay(entry.id, 10);
+
+    if (!allEmbeddingsComplete) {
+      console.log('Embeddings not complete after 10 tries -- try again later');
+      alert('Failed to complete embeddings. Please try again later.');
+      // Optionally, you can redirect the user or take other actions
       return;
     }
 
-    // Expand the graph with the new data
-    const newDataAdded = await expandFData(
-      nodeData,
-      nodeData.metadata.aliasData,
-    );
-
-    if (!newDataAdded) {
-      alert('Area is fully explored');
-    }
-    setIsGraphLoading(false);
-  };
-
-  // const generateFData = async (entry: any, comments: any[] = []) => {
-  //   setIsGraphLoading(true);
-  //   const commentIDs = comments.map((comment: any) => comment.aliasId);
-
-  //   // Fetch neighbors and update state incrementally
-  //   const neighbors = await searchNeighbors(entry.data, [
-  //     entry.id,
-  //     ...commentIDs,
-  //   ]);
-  //   setFData((prevData: any) => ({
-  //     ...prevData,
-  //     neighbors,
-  //   }));
-
-  //   const neighborIDs = neighbors.map((neighbor: any) => neighbor.id);
-
-  //   // Process comments and update state incrementally
-  //   for await (const comment of comments) {
-  //     const penPals = await searchPenPals(comment.aliasData, [
-  //       ...neighborIDs,
-  //       entry.id,
-  //       ...commentIDs,
-  //     ]);
-  //     setFData((prevData: any) => ({
-  //       ...prevData,
-  //       comments: [
-  //         ...(prevData.comments || []),
-  //         { comment: comment.aliasData, penPals },
-  //       ],
-  //     }));
-  //   }
-
-  //   // Extract and process internal links, updating state incrementally
-  //   const dataLinks = entry.data.match(/\[\[(.*?)\]\]/g) || [];
-  //   for await (const link of dataLinks) {
-  //     const linkData = link.replace('[[', '').replace(']]', '');
-  //     const linkParts = linkData.split('|');
-  //     const internalLink = linkParts.length === 2 ? linkParts[0] : linkData;
-  //     const penPals = await searchInternalLinks(internalLink, [
-  //       ...neighborIDs,
-  //       entry.id,
-  //       ...commentIDs,
-  //     ]);
-  //     setFData((prevData: any) => ({
-  //       ...prevData,
-  //       internalLinks: [
-  //         ...(prevData.internalLinks || []),
-  //         { internalLink, penPals },
-  //       ],
-  //     }));
-  //   }
-
-  //   setIsGraphLoading(false);
-  // };
-
-  const generateFData = async (entry: any, comments: any[] = []) => {
-    setIsGraphLoading(true);
-
     const commentIDs = comments.map((comment: any) => comment.aliasId);
 
+    // console.log(entry)
+
     // Create a promise for neighbors
-    const neighborsPromise = searchNeighbors(entry.data, [
+    // TODO im rolling over to a platform_id search
+    const neighborsPromise = searchNeighbors(entry.id, [
       entry.id,
       ...commentIDs,
     ]);
 
     const commentsPromises = comments.map(async (comment: any) => {
-      const penPals = await searchPenPals(comment.aliasData, [
+      const penPals = await searchPenPals(comment.aliasId, [
         entry.id,
         ...commentIDs,
       ]);
-      return { comment: comment.aliasData, penPals };
+      return { comment: comment.aliasData, penPals, id: comment.aliasId };
     });
 
     const dataLinks = entry.data.match(/\[\[(.*?)\]\]/g) || [];
@@ -1442,6 +1373,7 @@ const EntryPage = () => {
       internalLinks: processedInternalLinks,
     }));
     setIsGraphLoading(false);
+    console.timeEnd('generateFData');
   };
 
   const addCommentV2 = async (
@@ -1489,25 +1421,10 @@ const EntryPage = () => {
     const addedCommentRespData = await addedComment.json();
     const addedCommentData = addedCommentRespData.respData;
 
-    // extend the force directed graph with the new comment
-    // get pen pals
-    const penPals = await searchPenPals(aliasInput, [
-      parent.id,
-      addedCommentData.id,
-    ]);
-    setFData((prevData: any) => ({
-      ...prevData,
-      comments: [
-        ...(prevData.comments || []),
-        { comment: aliasInput, penPals },
-      ],
-    }));
-
     const parentRes = await fetchByID(parent.id);
-    console.log('parentRes:', parentRes);
     let parentResMetadata = parentRes.metadata;
     try {
-      parentResMetadata = JSON.parse(parentRes.metadata);
+      parentResMetadata = parentRes.metadata;
     } catch (err) {
       console.error('Error parsing parent metadata:', err);
     }
@@ -1523,7 +1440,238 @@ const EntryPage = () => {
     await apiUpdateEntry(parent.id, parent.data, {
       ...parentResMetadata,
     });
+
     setIsSaving(false);
+
+    setIsGraphLoading(true);
+
+    const checkEmbeddingsWithDelay = async (
+      entryId: string,
+      maxTries: number,
+      currentTry = 0,
+    ): Promise<boolean> => {
+      if (currentTry >= maxTries) return false;
+      const allEmbeddingsComplete = await checkForEmbeddings(entryId, []);
+      if (allEmbeddingsComplete) return true;
+      await new Promise<void>((resolve) => {
+        setTimeout(resolve, 1000);
+      });
+      return checkEmbeddingsWithDelay(entryId, maxTries, currentTry + 1);
+    };
+
+    const allEmbeddingsComplete = await checkEmbeddingsWithDelay(
+      addedCommentData.id,
+      10,
+    );
+
+    if (!allEmbeddingsComplete) {
+      console.log('Embeddings not complete after 10 tries -- try again later');
+      alert('Failed to complete embeddings. Please try again later.');
+      // Optionally, you can redirect the user or take other actions
+      return;
+    }
+
+    // extend the force directed graph with the new comment
+    // get pen pals
+    // todo the switch of the order of update and fetchByID is causing the graph to not update correctly
+    const penPals = await searchPenPals(addedCommentData.id, [
+      parent.id,
+      addedCommentData.id,
+    ]);
+    setFData((prevData: any) => ({
+      ...prevData,
+      comments: [
+        ...(prevData.comments || []),
+        { comment: aliasInput, penPals, id: addedCommentData.id },
+      ],
+    }));
+
+    setIsGraphLoading(false);
+  };
+
+  function timeAgo(date: Date): string {
+    const now = new Date();
+    const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+
+    const intervals: { [key: string]: number } = {
+      year: 31536000,
+      month: 2592000,
+      week: 604800,
+      day: 86400,
+      hour: 3600,
+      minute: 60,
+    };
+
+    for (const [key, value] of Object.entries(intervals)) {
+      const interval = Math.floor(seconds / value);
+      if (interval >= 1) {
+        return `${interval} ${key}${interval > 1 ? 's' : ''} ago`;
+      }
+    }
+
+    return 'just now';
+  }
+
+  const handleDeleteEntryV2 = async () => {
+    if (!data) return;
+    // Check if there are alias IDs
+    if (data.metadata.alias_ids && data.metadata.alias_ids.length > 0) {
+      alert('Please delete all comments before deleting the entry.');
+      return;
+    }
+
+    // Confirm deletion
+    const confirmDelete = window.confirm(
+      'Are you sure you want to delete this entry?',
+    );
+    if (!confirmDelete) return;
+
+    try {
+      // Attempt to delete the entry via API
+      const response = await fetch(`/api/delete`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ id: data.id }),
+      });
+
+      if (response.ok) {
+        // Redirect to homepage on successful deletion
+        window.location.href = '/dashboard';
+      } else {
+        throw new Error('Failed to delete entry');
+      }
+    } catch (error) {
+      alert('Failed to delete entry. Please try again.');
+      console.error('Error deleting entry:', error);
+    }
+  };
+
+  // const handleDeleteCommentV2 = async (aliasId: string) => {
+  //   if (!data) return;
+
+  //   // Confirm deletion
+  //   const confirmDelete = window.confirm(
+  //     'Are you sure you want to delete this comment?',
+  //   );
+  //   if (!confirmDelete) return;
+  //   setIsSaving(true);
+
+  //   const entryToBeDeleted = await fetchByID(aliasId);
+
+  //   // update the parent entry to remove the deleted comment
+  //   const parentEntry = await fetchByID(entryToBeDeleted.metadata.parent_id);
+  //   if (!parentEntry) return;
+
+  //   try {
+  //     // Attempt to delete the comment via API
+  //     const response = await fetch(`/api/delete`, {
+  //       method: 'POST',
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //       },
+  //       body: JSON.stringify({ id: aliasId }),
+  //     });
+
+  //     await apiUpdateEntry(parentEntry.id, parentEntry.data, {
+  //       ...parentEntry.metadata,
+  //       alias_ids: parentEntry.metadata.alias_ids.filter(
+  //         (id: string) => id !== aliasId
+  //       ),
+  //     });
+
+  //     setIsSaving(false);
+
+  //     // if (response.ok) {
+  //     //   // Update the local state to remove the deleted comment
+  //     //   setData((prevData) => {
+  //     //     if (!prevData) return null;
+  //     //     const updatedAliasData = prevData.metadata.aliasData.filter(
+  //     //       (alias: any) => alias.aliasId !== aliasId
+  //     //     );
+  //     //     const updatedAliasIds = prevData.metadata.alias_ids.filter(
+  //     //       (id: string) => id !== aliasId
+  //     //     );
+
+  //     //     return {
+  //     //       ...prevData,
+  //     //       metadata: {
+  //     //         ...prevData.metadata,
+  //     //         aliasData: updatedAliasData,
+  //     //         alias_ids: updatedAliasIds,
+  //     //       },
+  //     //     };
+  //     //   });
+  //     //   alert('Comment deleted successfully.');
+  //     // } else {
+  //     //   throw new Error('Failed to delete comment');
+  //     // }
+  //   } catch (error) {
+  //     alert('Failed to delete comment. Please try again.');
+  //     console.error('Error deleting comment:', error);
+  //   }
+  // };
+
+  const handleEditEntryV2 = async (newData: string, newMetadata: any) => {
+    if (!data) return;
+
+    // Set saving state to true
+    setIsSaving(true);
+
+    const updatedMetadata = { ...newMetadata };
+    if (updatedMetadata.aliasData) {
+      delete updatedMetadata.aliasData;
+    }
+
+    try {
+      // Make an API call to update the entry
+      await fetch(`/api/update`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          id: data.id,
+          data: newData,
+          metadata: updatedMetadata,
+        }),
+      });
+
+      // Update the state with the new data and metadata
+      setData((prevData) => ({
+        data: newData,
+        metadata: newMetadata,
+        id: data.id,
+        createdAt: prevData!.createdAt,
+      }));
+
+      // reload graph
+      // console.log('reloading graph');
+      // generateFData(data, data.metadata.aliasData);
+
+      // Optionally, update any other state or UI elements as needed
+      console.log('Entry updated successfully');
+    } catch (error) {
+      console.error('Failed to update entry:', error);
+    } finally {
+      // Reset saving state
+      setIsSaving(false);
+    }
+  };
+
+  const [isSearchModalBetaOpen, setSearchModalBetaOpen] = useState(false);
+  const [isUploaderModalOpen, setUploaderModalOpen] = useState(false);
+
+  const closeModalActions = () => {
+    setSearchModalBetaOpen(false);
+    setUploaderModalOpen(false);
+  };
+
+  const handleRandomOpen = async () => {
+    // fetch a random entry and open it
+    const entry = await fetchRandomEntry();
+    router.push(`/dashboard/entry/${entry.id}`);
   };
 
   // const exportGraph = () => {
@@ -1548,7 +1696,7 @@ const EntryPage = () => {
       if (isInDraftState) return;
 
       setFData({
-        entry: data.data,
+        entry: data,
         neighbors: [],
         comments: [],
         internalLinks: [],
@@ -1557,7 +1705,6 @@ const EntryPage = () => {
 
       if (cachedFData) {
         setFData(cachedFData);
-        console.log('using cached fdata:', cachedFData);
         return;
       }
       await generateFData(data, data.metadata.aliasData);
@@ -1573,7 +1720,7 @@ const EntryPage = () => {
     : data;
 
   return renderedData ? (
-    <div className="my-4 min-w-full max-w-full">
+    <div className="min-h-screen min-w-full max-w-full px-5 py-4">
       {hasYouTubeEmbed && (
         <LiteYouTubeEmbed
           id={youtubeId}
@@ -1608,8 +1755,9 @@ const EntryPage = () => {
         </audio>
       )}
       {data ? (
-        <div className="m-4 [&_p]:my-6">
-          <button
+        <div className="mb-2 [&_p]:my-2">
+          {/* todo Implement star button functionality */}
+          {/* <button
             type="button"
             className="my-2 me-2 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4"
             onClick={async () => {
@@ -1630,7 +1778,7 @@ const EntryPage = () => {
             }}
           >
             {data.metadata.isStarred ? 'Unstar' : 'Star'}
-          </button>
+          </button> */}
           <div
             onDoubleClick={() => {
               setModalStates((prev) => ({
@@ -1638,78 +1786,79 @@ const EntryPage = () => {
                 editModal: true,
               }));
             }}
+            className="mt-2 text-neutral-dark [&_p]:my-6"
           >
-            {processCustomMarkdown(renderedData.data)}
-            <Link
-              href={renderedData.metadata.author}
-              className=" inline-flex items-center overflow-auto font-medium text-blue-600 hover:underline"
-              target="_blank"
-            >
-              {renderedData.metadata.title}
-              <UrlSVG />
-            </Link>
-            <br />
-            <br />
-            <a
-              href={`/dashboard/garden?date=${new Date(renderedData.createdAt)
-                .toLocaleDateString()
-                .split('/')
-                .map((d) => (d.length === 1 ? `0${d}` : d))
-                .join('-')}
+            {processCustomMarkdown(data.data)}
+            <div className="float-right mb-2">
+              <Link
+                href={data.metadata.author}
+                className=" float-right inline-flex items-center font-medium text-brand hover:underline"
+                target="_blank"
+              >
+                <img src={favicon} alt="favicon" className="mr-2 size-6" />
+                {data.metadata.title}
+                <UrlSVG />
+              </Link>
+              <br />
+              <a
+                href={`/dashboard/garden?date=${new Date(data.createdAt)
+                  .toLocaleDateString()
+                  .split('/')
+                  .map((d) => (d.length === 1 ? `0${d}` : d))
+                  .join('-')}
                 `}
-              className="text-blue-600 hover:underline"
-            >
-              {new Intl.DateTimeFormat('en-US', {
-                month: 'long',
-                day: 'numeric',
-                year: 'numeric',
-                hour: 'numeric',
-                minute: 'numeric',
-                hour12: true,
-              }).format(new Date(renderedData.createdAt))}
-            </a>
+                className="float-right inline-flex items-center font-medium text-brand hover:underline"
+              >
+                {timeAgo(new Date(data.createdAt))}
+              </a>
+            </div>
           </div>
 
-          {fData ? (
-            <div className="relative">
-              <div className="relative">
-                <ForceDirectedGraph
-                  data={fData}
-                  onExpand={handleExpand}
-                  isGraphLoading={isGraphLoading}
-                  onAddComment={handleAddCommentGraph}
-                />
-                <p className="text-sm text-gray-500">
-                  Use left/right arrow keys to navigate, swipe left/right on
-                  mobile to cycle through entries (open an entry first).
-                  <br />
-                </p>
-                {isGraphLoading && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-75">
-                    <span className="text-lg font-bold">Loading...</span>
-                  </div>
-                )}
-              </div>
-            </div>
-          ) : null}
-
-          <button
+          {/* <button
             onClick={() => setOpenShareModal(true)}
             type="button"
-            className="my-2 me-2 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4"
+            className="mt-2 w-full rounded border border-neutral-light bg-neutral-light p-2 text-neutral-dark focus:border-brand focus:ring-brand"
           >
-            Share Graph
+            Share
           </button>
           {openShareModal && (
             <ShareModal
-              originalData={fData}
+              entry={{
+                data: data.data,
+                image:
+                  data.metadata.author === 'imagedelivery.net'
+                    ? data.metadata.author
+                    : null,
+                metadata: {
+                  title: data.metadata.title,
+                  author: data.metadata.author,
+                },
+              }}
+              comments={
+                data.metadata && data.metadata.aliasData
+                  ? data.metadata.aliasData.map((comment: any) => {
+                      return {
+                        data: comment.aliasData,
+                        image:
+                          comment.aliasMetadata.author === 'imagedelivery.net'
+                            ? comment.metadata.author
+                            : null,
+                        metadata: {
+                          title: comment.aliasMetadata.title,
+                          author: comment.aliasMetadata.author,
+                        },
+                      };
+                    })
+                  : []
+              }
               isOpen={openShareModal}
               entryId={data.id}
               closeModalFn={() => setOpenShareModal(false)}
             />
-          )}
+          )} */}
 
-          <hr className="my-4" />
+          {/* todo chatycb */}
+          {/* <hr className="my-4" />
           {fData && (
             <Chat
               seedMessages={[
@@ -1730,7 +1879,7 @@ again:
               ]}
             />
           )}
-          <hr className="my-4" />
+          <hr className="my-4" /> */}
 
           <EditModal
             isOpen={modalStates.editModal || false}
@@ -1739,7 +1888,7 @@ again:
             id={renderedData.id}
             disabledKeys={['aliasData', 'alias_ids', 'links', 'parent_id']}
             metadata={renderedData.metadata}
-            onSave={handleEditEntry}
+            onSave={handleEditEntryV2}
           />
           <SearchModalBeta
             isOpen={modalStates.searchModalBeta || false}
@@ -1758,6 +1907,7 @@ again:
       ) : (
         'Loading...'
       )}
+
       {isInDraftState && (
         <button
           type="button"
@@ -1771,16 +1921,40 @@ again:
         <textarea
           rows={3}
           style={{ fontSize: '17px' }}
-          className="w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-gray-900 focus:border-blue-500 focus:ring-blue-500"
-          placeholder="Add a comment..."
-          id={`alias-input-${renderedData?.id}`}
+          className="mb-2 w-full rounded border border-neutral-dark bg-white px-4 py-2 text-neutral-dark transition hover:bg-neutral-light"
+          placeholder={randomCommentPlaceholder}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              const aliasInput = document.getElementById(`alias-input-comment`);
+              if (
+                !aliasInput ||
+                (aliasInput as HTMLInputElement).value.trim() === ''
+              )
+                return;
+              // Cast to HTMLInputElement to access value property
+              const alias = (aliasInput as HTMLInputElement).value;
+              // if empty alias, do not add
+              if (!alias || alias.trim() === '') {
+                console.log('empty alias');
+                return;
+              }
+              // handleAddComment(alias);
+              addCommentV2(alias, {
+                id: renderedData.id,
+                data: renderedData.data,
+                metadata: renderedData.metadata,
+              });
+              // clear input field
+              (aliasInput as HTMLInputElement).value = ''.trim();
+            }
+          }}
+          id="alias-input-comment"
         />
         <button
           type="button"
           onClick={() => {
-            const aliasInput = document.getElementById(
-              `alias-input-${renderedData?.id}`,
-            );
+            const aliasInput = document.getElementById(`alias-input-comment`);
             if (!aliasInput) return;
             // Cast to HTMLInputElement to access value property
             const alias = (aliasInput as HTMLInputElement).value;
@@ -1798,11 +1972,58 @@ again:
             // clear input field
             (aliasInput as HTMLInputElement).value = '';
           }}
-          className="mb-2 me-2 mt-4 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4 focus:ring-gray-300"
+          className="w-full rounded border border-neutral-light bg-neutral-light p-2 text-neutral-dark focus:border-brand focus:ring-brand"
           aria-label="Add alias"
         >
           Add Comment
         </button>
+
+        {/* <div className="relative mb-4 w-full">
+          <textarea
+            rows={3}
+            style={{ fontSize: '17px' }}
+            className="w-full rounded border border-neutral-dark bg-white px-4 py-2 pr-10 text-neutral-dark"
+            placeholder="add a comment..."
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                const aliasInput = document.getElementById(
+                  'alias-input-comment',
+                );
+                if (!aliasInput) return;
+                const alias = (aliasInput as HTMLInputElement).value.trim();
+                if (!alias) return;
+                addCommentV2(alias, {
+                  id: renderedData.id,
+                  data: renderedData.data,
+                  metadata: renderedData.metadata,
+                });
+                (aliasInput as HTMLInputElement).value = '';
+              }
+            }}
+            id="alias-input-comment"
+          />
+          <button
+            type="button"
+            onClick={() => {
+              const aliasInput = document.getElementById('alias-input-comment');
+              if (!aliasInput) return;
+              const alias = (aliasInput as HTMLInputElement).value.trim();
+              if (!alias) return;
+              addCommentV2(alias, {
+                id: renderedData.id,
+                data: renderedData.data,
+                metadata: renderedData.metadata,
+              });
+              (aliasInput as HTMLInputElement).value = '';
+            }}
+            className="absolute bottom-2 right-2 rounded-full border border-neutral-light bg-neutral-light px-3 pb-1 text-xl text-neutral-dark focus:border-brand focus:ring-brand"
+            aria-label="add alias"
+          >
+            +
+          </button>
+        </div> */}
+
         {/* 
         todo: implement image upload
         <input
@@ -1855,7 +2076,7 @@ again:
         )} */}
       <div>
         {renderedData?.metadata?.aliasData?.map((alias: any) => (
-          <div key={alias.aliasId} className="mb-4 flex flex-col items-start">
+          <div key={alias.aliasId} className="my-6 border-neutral-light">
             <EditModal
               isOpen={modalStates[`alias-${alias.aliasId}`] || false}
               closeModalFn={() => closeModal(`alias-${alias.aliasId}`)}
@@ -1876,7 +2097,7 @@ again:
                   'YCB'
                 )}
               </div>
-              {alias &&
+              {/* {alias &&
                 alias.aliasMetadata &&
                 alias.aliasMetadata.author &&
                 alias.aliasMetadata.title === 'Image' && (
@@ -1885,16 +2106,14 @@ again:
                     src={alias.aliasMetadata.author}
                     alt="ycb-companion-image"
                   />
-                )}
+                )} */}
               <p className="text-black">
                 {processCustomMarkdown(alias.aliasData)}
               </p>
             </div>
-            <p className="text-sm text-gray-500">
-              Added to yCb: {alias.aliasCreatedAt}
-            </p>
+            <p className="text-sm text-gray-500">{alias.aliasCreatedAt}</p>
             <div className="flex">
-              <button
+              {/* <button
                 className="mr-4 justify-start text-blue-600 hover:underline"
                 type="button"
                 onClick={() => {
@@ -1906,17 +2125,19 @@ again:
                 }}
               >
                 Search
-              </button>
-              {alias.aliasId.includes('temp-') ? null : (
+              </button> */}
+              {alias.aliasId.includes('temp-') ? (
+                '(Refresh page to delete)'
+              ) : (
                 <>
-                  <button
+                  {/* <button
                     className="mr-4 justify-start text-blue-600 hover:underline"
                     type="button"
                     onClick={() => openModal(`alias-${alias.aliasId}`)}
                     aria-label="edit"
                   >
                     Edit
-                  </button>
+                  </button> */}
                   <button
                     className="justify-start text-blue-600 hover:underline"
                     type="button"
@@ -1928,7 +2149,6 @@ again:
                 </>
               )}
             </div>
-            <hr className="mt-2 w-full" />
           </div>
         ))}
         {tempComments.map((alias) => (
@@ -1953,7 +2173,7 @@ again:
                   'YCB'
                 )}
               </div>
-              {alias &&
+              {/* {alias &&
                 alias.aliasMetadata &&
                 alias.aliasMetadata.author &&
                 alias.aliasMetadata.title === 'Image' && (
@@ -1962,7 +2182,7 @@ again:
                     src={alias.aliasMetadata.author}
                     alt="ycb-companion-image"
                   />
-                )}
+                )} */}
               <p className="text-black">
                 {processCustomMarkdown(alias.aliasData)}
               </p>
@@ -2012,9 +2232,59 @@ again:
       {showAliasError && (
         <div className="text-red-500">Error adding comment. Try again.</div>
       )}
+      <hr className="my-8 h-px w-full border-0 bg-gray-200 dark:bg-gray-700" />
+
+      {data ? (
+        <div className="mb-2 [&_p]:my-2">
+          <button
+            onClick={() => setOpenShareModal(true)}
+            type="button"
+            className="mt-2 w-full rounded border border-neutral-light bg-neutral-light p-2 text-neutral-dark focus:border-brand focus:ring-brand"
+          >
+            Share
+          </button>
+          {openShareModal && (
+            <ShareModal
+              entry={{
+                data: data.data,
+                image:
+                  data.metadata.author === 'imagedelivery.net'
+                    ? data.metadata.author
+                    : null,
+                metadata: {
+                  title: data.metadata.title,
+                  author: data.metadata.author,
+                },
+              }}
+              comments={
+                data.metadata && data.metadata.aliasData
+                  ? data.metadata.aliasData.map((comment: any) => {
+                      return {
+                        data: comment.aliasData,
+                        image:
+                          comment.aliasMetadata.author === 'imagedelivery.net'
+                            ? comment.metadata.author
+                            : null,
+                        metadata: {
+                          title: comment.aliasMetadata.title,
+                          author: comment.aliasMetadata.author,
+                        },
+                      };
+                    })
+                  : []
+              }
+              isOpen={openShareModal}
+              entryId={data.id}
+              closeModalFn={() => setOpenShareModal(false)}
+            />
+          )}
+        </div>
+      ) : (
+        'Loading...'
+      )}
       <button
         type="button"
-        onClick={handleDeleteEntry}
+        onClick={handleDeleteEntryV2}
         className="my-2 me-2 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-red-600 hover:bg-red-800 hover:text-white focus:outline-none focus:ring-4"
       >
         Delete Entry
@@ -2025,137 +2295,129 @@ again:
           entry.
         </div>
       )}
-
-      {/* <h2 className="my-4 text-4xl font-extrabold">Add Links</h2>
-      <button
-        type="button"
-        className="my-4 w-full rounded-lg bg-blue-700 px-5 py-2.5 text-sm font-medium text-white hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300"
-        onClick={() => setIsLinkModalOpen(true)}
-      >
-        Add Link
-      </button>
-      {isLinkModalOpen && (
-        <LinksModal
-          isOpen={isLinkModalOpen}
-          closeModalFn={() => setIsLinkModalOpen(false)}
-          onSave={(name, url) => {
-            handleAddLink(name, url);
-            setIsLinkModalOpen(false);
-          }}
-          onSearch={handleSearchLinksModal}
-        />
-      )}
-      {renderedData.metadata.links &&
-        renderedData.metadata.links.length > 0 && (
-          <>
-            <h2 className="my-4 text-4xl font-extrabold">Links</h2>
-            <div>
-              {renderedData.metadata.links.map((link: any, index: number) => (
-                <div
-                  key={`${link.name}-${uuidv4()}`}
-                  className="flex items-center"
-                >
-                  <Link
-                    href={link.url}
-                    target="_blank"
-                    className="text-blue-600 hover:underline"
-                  >
-                    {link.name}
-                  </Link>
-                  <button
-                    type="button"
-                    className="ml-2 text-red-500 hover:underline"
-                    onClick={() => handleDeleteLink(index)}
-                  >
-                    Delete
-                  </button>
-                </div>
-              ))}
-            </div>
-          </>
-        )} */}
-      {/* <h2 className="my-4 text-4xl font-extrabold">{relatedText}</h2>
-      {searchResults.map((result) => (
-        <div key={result.id}>
-          <div
-            key={result.id}
-            className="mx-2 mb-4 flex items-center justify-between"
-          >
-            <div className="grow">
-              <Link
-                href={{
-                  pathname: `/dashboard/entry/${result.id}`,
-                }}
-                className="block text-gray-900 no-underline"
-              >
-                <div className="relative">
-                  <Image
-                    src={result.favicon}
-                    alt="favicon"
-                    width={16}
-                    height={16}
-                    className="float-left mr-2"
-                  />
-                  <span className="font-normal">
-                    {renderResultData(result)}
-                  </span>
-                </div>
-                <div className="ml-6 flex items-center">
-                  {result.parentData ? (
-                    <>
-                      <div className="mr-2 flex size-6 shrink-0 items-center justify-center rounded-full bg-gray-300 text-xs font-bold text-white">
-                        {firstLastName.firstName && firstLastName.lastName ? (
-                          <>
-                            {firstLastName.firstName[0]}
-                            {firstLastName.lastName[0]}
-                          </>
-                        ) : (
-                          'yCb'
-                        )}
-                      </div>
-                      <span className="font-normal">{result.data}</span>
-                    </>
-                  ) : null}
-                </div>
-              </Link>
-              <div className="text-sm text-gray-500">
-                Created: {new Date(result.createdAt).toLocaleString()}
-                {result.createdAt !== result.updatedAt && (
-                  <>
-                    {' '}
-                    | Last Updated:{' '}
-                    {new Date(result.updatedAt).toLocaleString()}{' '}
-                  </>
-                )}
+      {fData ? (
+        <div className="relative">
+          <div className="relative">
+            <ForceDirectedGraph
+              data={fData}
+              onExpand={handleExpand}
+              isGraphLoading={isGraphLoading}
+              onAddComment={handleAddCommentGraph}
+              graphNodes={graphNodes}
+              setGraphNodes={setGraphNodes}
+              currentIndex={currentIndex}
+              setCurrentIndex={setCurrentIndex}
+              showModal={showModal}
+              setShowModal={setShowModal}
+            />
+            <p className="text-sm text-gray-500">
+              Use left/right arrow keys to navigate, swipe left/right on mobile
+              to cycle through entries (open an entry first).
+              <br />
+            </p>
+            {isGraphLoading && (
+              <div className="absolute inset-0 flex items-center justify-center bg-white/75">
+                <span className="text-lg font-bold">Loading...</span>
               </div>
-              <a
-                target="_blank"
-                href={result.metadata.author}
-                rel="noopener noreferrer"
-                className="inline-flex items-center font-medium text-blue-600 hover:underline"
-              >
-                {toHostname(result.metadata.author)}
-                <svg
-                  className="ms-2.5 size-3 rtl:rotate-[270deg]"
-                  aria-hidden="true"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 18 18"
-                >
-                  <path
-                    stroke="currentColor"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M15 11v4.833A1.166 1.166 0 0 1 13.833 17H2.167A1.167 1.167 0 0 1 1 15.833V4.167A1.166 1.166 0 0 1 2.167 3h4.618m4.447-2H17v5.768M9.111 8.889l7.778-7.778"
-                  />
-                </svg>
-              </a>
-            </div>
+            )}
           </div>
-          <hr className="my-4" />
         </div>
-      ))} */}
+      ) : null}
+      <div>
+        <SearchModalBeta
+          isOpen={isSearchModalBetaOpen || false}
+          closeModalFn={() => closeModalActions()}
+          inputQuery={searchBetaModalQuery}
+        />
+        <UploaderModalWrapper
+          isOpen={isUploaderModalOpen || false}
+          type=""
+          closeModalFn={() => closeModalActions()}
+        />
+        <h2>Actions</h2>
+        <button
+          type="button"
+          className="my-2 me-2 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4"
+          onClick={() => {
+            setSearchModalBetaOpen(true);
+            const intervalId = setInterval(() => {
+              const input = document.getElementById('modal-beta-search');
+              if (input) {
+                setTimeout(() => {
+                  input.focus();
+                }, 100);
+                clearInterval(intervalId); // Stop the interval once the input is focused
+              }
+            }, 100);
+          }}
+        >
+          I want to find something specific
+        </button>
+        <button
+          type="button"
+          className="my-2 me-2 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4"
+          onClick={() => {
+            handleRandomOpen();
+          }}
+        >
+          I want to open a random entry
+        </button>
+        <button
+          type="button"
+          className="my-2 me-2 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4"
+          onClick={() => {
+            setUploaderModalOpen(true);
+            const intervalId = setInterval(() => {
+              const input = document.getElementById('modal-message');
+              if (input) {
+                setTimeout(() => {
+                  input.focus();
+                }, 100);
+                clearInterval(intervalId); // Stop the interval once the input is focused
+              }
+            }, 100);
+          }}
+        >
+          I want to add a text/image/ShareYCB entry
+        </button>
+        <button
+          type="button"
+          className="my-2 me-2 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4"
+          onClick={() => {
+            setUploaderModalOpen(true);
+            const intervalId = setInterval(() => {
+              const input = document.getElementById('modal-message-author');
+              if (input) {
+                setTimeout(() => {
+                  input.focus();
+                }, 100);
+                // highlight the text
+                (input as HTMLInputElement).setSelectionRange(
+                  0,
+                  (input as HTMLInputElement).value.length,
+                );
+                clearInterval(intervalId); // Stop the interval once the input is focused
+              }
+            }, 100);
+          }}
+        >
+          I want to add a URL entry
+        </button>
+        <button
+          type="button"
+          className="my-2 me-2 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4"
+          onClick={() => {
+            const formattedDate = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
+              .toLocaleDateString()
+              .split('/')
+              .map((d) => (d.length === 1 ? `0${d}` : d))
+              .join('-');
+            router.push(`/dashboard/garden?date=${formattedDate}`);
+          }}
+        >
+          I want to see what I saved exactly one week ago
+        </button>
+      </div>
     </div>
   ) : (
     <Loading />

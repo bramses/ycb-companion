@@ -1,11 +1,11 @@
 'use client';
 
-import { useUser } from '@clerk/nextjs';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import AnimatedNumbers from 'react-animated-numbers';
 
-import { fetchRandomEntry } from '@/helpers/functions';
+import { fetchFavicon, fetchRandomEntry } from '@/helpers/functions';
 
 // import ForceFromEntry from "./ForceFromEntry";
 import HelpModal from './HelpModal';
@@ -17,27 +17,23 @@ const SimpleDashboard = () => {
   const router = useRouter();
   // const [randomEntry, setRandomEntry] = useState<any>(null);
   // const [comments, setComments] = useState<any[]>([]);
-
-  const [firstLastName, setFirstLastName] = useState({
-    firstName: '',
-    lastName: '',
-  });
   const [isSearchModalBetaOpen, setSearchModalBetaOpen] = useState(false);
   const [searchBetaModalQuery, setSearchBetaModalQuery] = useState('');
   const [logEntries, setLogEntries] = useState<any[]>([]);
   // const [isSaving, setIsSaving] = useState(false);
-  const [timeMachine, setTimeMachine] = useState<any>('week');
-  const [randomTimeMachineEntry, setRandomTimeMachineEntry] =
-    useState<any>(null);
-  const [timeMachineEntries, setTimeMachineEntries] = useState<any[]>([]);
+  // const [timeMachine, setTimeMachine] = useState<any>('week');
+  // const [randomTimeMachineEntry, setRandomTimeMachineEntry] =
+  //   useState<any>(null);
+  // const [timeMachineEntries, setTimeMachineEntries] = useState<any[]>([]);
   const [isHelpModalOpen, setHelpModalOpen] = useState(false);
   const [instructions, setInstructions] = useState<any[]>([]);
   const [buttons, setButtons] = useState<any[]>([]);
   const [isUploaderModalOpen, setUploaderModalOpen] = useState(false);
   const [totalEntries, setTotalEntries] = useState(-1);
+  const [todaysEntriesLength, setTodaysEntriesLength] = useState(0);
+  const [uploaderModalType, setUploaderModalType] = useState('');
 
   // const [inboxEntries, setInboxEntries] = useState<any[]>([]);
-  const { user, isLoaded } = useUser();
 
   // const handleRandom = async () => {
   //   setRandomEntry(null);
@@ -149,59 +145,59 @@ const SimpleDashboard = () => {
     [setSelectedDay, setLoading, setEntries],
   );
   */
-  const fetchTimeMachineEntries = async () => {
-    try {
-      const date = new Date();
-      switch (timeMachine) {
-        case 'week':
-          date.setDate(date.getDate() - 7);
-          break;
-        case 'month':
-          date.setMonth(date.getMonth() - 1);
-          break;
-        case 'year':
-          date.setFullYear(date.getFullYear() - 1);
-          break;
-        default:
-          break;
-      }
-      // use daily endpoint to fetch entries from the past week, month, or year
+  // const fetchTimeMachineEntries = async () => {
+  //   try {
+  //     const date = new Date();
+  //     switch (timeMachine) {
+  //       case 'week':
+  //         date.setDate(date.getDate() - 7);
+  //         break;
+  //       case 'month':
+  //         date.setMonth(date.getMonth() - 1);
+  //         break;
+  //       case 'year':
+  //         date.setFullYear(date.getFullYear() - 1);
+  //         break;
+  //       default:
+  //         break;
+  //     }
+  //     // use daily endpoint to fetch entries from the past week, month, or year
 
-      // convert date to form 2024-01-01
-      const year = date.getFullYear();
-      const month = date.getMonth() + 1;
-      let monthString = month.toString();
-      // put a 0 in front of month if it is less than 10
-      if (month < 10) {
-        monthString = `0${month}`;
-      }
-      const day = date.getDate();
-      let dayString = day.toString();
-      if (day < 10) {
-        dayString = `0${day}`;
-      }
-      const dateString = `${year}-${monthString}-${dayString}`;
+  //     // convert date to form 2024-01-01
+  //     const year = date.getFullYear();
+  //     const month = date.getMonth() + 1;
+  //     let monthString = month.toString();
+  //     // put a 0 in front of month if it is less than 10
+  //     if (month < 10) {
+  //       monthString = `0${month}`;
+  //     }
+  //     const day = date.getDate();
+  //     let dayString = day.toString();
+  //     if (day < 10) {
+  //       dayString = `0${day}`;
+  //     }
+  //     const dateString = `${year}-${monthString}-${dayString}`;
 
-      const response = await fetch('/api/daily', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ date: dateString }),
-      });
-      const responseData = await response.json();
-      setTimeMachineEntries(responseData.data);
-      // math random number between 0 and the length of the responseData.data array
-      const randomIndex = Math.floor(Math.random() * responseData.data.length);
-      setRandomTimeMachineEntry(responseData.data[randomIndex]);
-    } catch (error) {
-      console.error('Error fetching time machine entries:', error);
-    }
-  };
+  //     const response = await fetch('/api/daily', {
+  //       method: 'POST',
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //       },
+  //       body: JSON.stringify({ date: dateString }),
+  //     });
+  //     const responseData = await response.json();
+  //     setTimeMachineEntries(responseData.data);
+  //     // math random number between 0 and the length of the responseData.data array
+  //     const randomIndex = Math.floor(Math.random() * responseData.data.length);
+  //     setRandomTimeMachineEntry(responseData.data[randomIndex]);
+  //   } catch (error) {
+  //     console.error('Error fetching time machine entries:', error);
+  //   }
+  // };
 
-  useEffect(() => {
-    fetchTimeMachineEntries();
-  }, [timeMachine]);
+  // useEffect(() => {
+  //   fetchTimeMachineEntries();
+  // }, [timeMachine]);
 
   // const fetchInboxEntries = async () => {
   //   try {
@@ -236,8 +232,7 @@ const SimpleDashboard = () => {
         },
       });
       const data = await response.json();
-      console.log('Total entries:', data.data);
-      setTotalEntries(data.data);
+      setTotalEntries(data.count);
     } catch (error) {
       console.error('Error fetching total entries:', error);
     }
@@ -245,6 +240,41 @@ const SimpleDashboard = () => {
 
   useEffect(() => {
     fetchTotalEntries();
+  }, []);
+
+  useEffect(() => {
+    const todaysEntriesLengthFn = async () => {
+      const today = new Date();
+      const year = today.getFullYear();
+      const month = today.getMonth() + 1;
+      let monthString = month.toString();
+      // put a 0 in front of month if it is less than 10
+      if (month < 10) {
+        monthString = `0${month}`;
+      }
+      const day = today.getDate();
+      let dayString = day.toString();
+      if (day < 10) {
+        dayString = `0${day}`;
+      }
+      const dateString = `${year}-${monthString}-${dayString}`;
+
+      // call /api/entries
+      const response = await fetch('/api/daily', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ date: dateString }),
+      });
+      const responseData = await response.json();
+
+      // console.log('Fetched records:', responseData);
+      // set entries to the mapped data
+      setTodaysEntriesLength(responseData.data.length);
+    };
+
+    todaysEntriesLengthFn();
   }, []);
 
   const searchParams = useSearchParams();
@@ -257,17 +287,6 @@ const SimpleDashboard = () => {
       setSearchBetaModalQuery(query);
     }
   }, [searchParams]);
-
-  useEffect(() => {
-    if (!isLoaded) return;
-    // set first name as title
-    if (user?.firstName && user?.lastName) {
-      setFirstLastName({
-        firstName: user.firstName,
-        lastName: user.lastName,
-      });
-    }
-  }, [isLoaded, user]);
 
   // useEffect(() => {
   //   const fetchEntry = async () => {
@@ -286,9 +305,7 @@ const SimpleDashboard = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          page: 1,
           limit: 20,
-          sortModel: [{ colId: 'createdAt', sort: 'desc' }],
         }),
       });
       const data = await response.json();
@@ -296,13 +313,7 @@ const SimpleDashboard = () => {
       const log = data.data
         .map((entry: any) => {
           // skip entries with parent_id
-          let metadata;
-          try {
-            metadata = JSON.parse(entry.metadata);
-          } catch (err) {
-            console.error('Error parsing metadata:', err);
-          }
-          if (metadata.parent_id) {
+          if (entry.metadata.parent_id) {
             return null;
           }
           if (entry.createdAt === entry.updatedAt) {
@@ -317,8 +328,21 @@ const SimpleDashboard = () => {
           };
         })
         .filter((entry: any) => entry !== null);
-      console.log('Log:', log);
+
       setLogEntries(log);
+
+      // add favicon to each entry
+      const faviconPromises = log.map(async (entry: any) => {
+        if (entry.metadata.author) {
+          const favicon = await fetchFavicon(entry.metadata.author);
+          return { ...entry, favicon: favicon.favicon };
+        }
+
+        return entry;
+      });
+
+      const faviconData = await Promise.all(faviconPromises);
+      setLogEntries(faviconData);
     } catch (error) {
       console.error('Error fetching log entries:', error);
     }
@@ -340,32 +364,40 @@ const SimpleDashboard = () => {
     router.push(`/dashboard/entry/${entry.id}`);
   };
 
+  const [platformToken, setPlatformToken] = useState('');
+
+  useEffect(() => {
+    // Retrieve the token from cookies when the component mounts
+    const match = document.cookie.match(/(^| )platformToken=([^;]+)/);
+    if (match) {
+      setPlatformToken(match[2] || '');
+    }
+  }, []);
+
+  const handleTokenChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const newToken = event.target.value;
+    setPlatformToken(newToken);
+    // Save the token to cookies
+    document.cookie = `platformToken=${newToken}; path=/;`;
+  };
+
   return (
     <div>
       <h1 className="mx-2 mt-8 text-xl font-extrabold text-gray-900 md:text-xl lg:text-xl">
-        Welcome Back to{' '}
+        Welcome to the{' '}
         <span className="bg-gradient-to-r from-sky-400 to-emerald-600 bg-clip-text text-transparent">
-          Your Commonbase
+          Your Commonbase Launch Party!!
         </span>
-        , {firstLastName.firstName}!
       </h1>
-      {totalEntries >= 0 && (
-        <h2 className="mx-2 mt-8 text-xl font-extrabold text-gray-400 md:text-lg lg:text-lg">
-          You have{' '}
-          <span className="bg-gradient-to-r from-sky-400 to-emerald-600 bg-clip-text text-transparent">
-            {totalEntries}
-          </span>{' '}
-          entries in your commonbase. That&apos;s the equivalent of{' '}
-          <span className="bg-gradient-to-r from-sky-400 to-emerald-600 bg-clip-text text-transparent">
-            {Math.round(totalEntries / 251)}
-          </span>{' '}
-          journals filled! You are{' '}
-          <span className="bg-gradient-to-r from-sky-400 to-emerald-600 bg-clip-text text-transparent">
-            {251 - (totalEntries % 251)}
-          </span>{' '}
-          entries away from filling your next journal!
-        </h2>
-      )}
+      <input
+        type="password"
+        placeholder="Paste your Launch Party Personal Access Token here"
+        style={{ fontSize: '17px' }}
+        className="w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500"
+        value={platformToken}
+        onChange={handleTokenChange}
+      />
+
       <h2 className="mx-2 mt-8 text-xl font-extrabold text-gray-400 md:text-lg lg:text-lg">
         What do you want to accomplish today?
       </h2>
@@ -375,6 +407,15 @@ const SimpleDashboard = () => {
           className="my-2 me-2 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4"
           onClick={() => {
             setSearchModalBetaOpen(true);
+            const intervalId = setInterval(() => {
+              const input = document.getElementById('modal-beta-search');
+              if (input) {
+                setTimeout(() => {
+                  input.focus();
+                }, 100);
+                clearInterval(intervalId); // Stop the interval once the input is focused
+              }
+            }, 100);
           }}
         >
           I want to find something specific
@@ -383,13 +424,108 @@ const SimpleDashboard = () => {
           type="button"
           className="my-2 me-2 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4"
           onClick={() => {
+            handleRandomOpen();
+          }}
+        >
+          I want to open a random entry
+        </button>
+        <button
+          type="button"
+          className="my-2 me-2 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4"
+          onClick={() => {
+            setUploaderModalOpen(true);
+            const intervalId = setInterval(() => {
+              const input = document.getElementById('modal-message');
+              if (input) {
+                setTimeout(() => {
+                  input.focus();
+                }, 100);
+                clearInterval(intervalId); // Stop the interval once the input is focused
+              }
+            }, 100);
+          }}
+        >
+          I want to add a text/image/ShareYCB entry
+        </button>
+        <button
+          type="button"
+          className="my-2 me-2 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4"
+          onClick={() => {
+            setUploaderModalType('text');
+            setUploaderModalOpen(true);
+            const intervalId = setInterval(() => {
+              const input = document.getElementById('modal-message');
+              if (input) {
+                setTimeout(() => {
+                  input.focus();
+                }, 100);
+                // highlight the text
+                (input as HTMLInputElement).setSelectionRange(
+                  0,
+                  (input as HTMLInputElement).value.length,
+                );
+                clearInterval(intervalId); // Stop the interval once the input is focused
+              }
+            }, 100);
+          }}
+        >
+          I want to add a text entry
+        </button>
+        <button
+          type="button"
+          className="my-2 me-2 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4"
+          onClick={() => {
+            setUploaderModalType('url');
+            setUploaderModalOpen(true);
+            const intervalId = setInterval(() => {
+              const input = document.getElementById('modal-message-author');
+              if (input) {
+                setTimeout(() => {
+                  input.focus();
+                }, 100);
+                // highlight the text
+                (input as HTMLInputElement).setSelectionRange(
+                  0,
+                  (input as HTMLInputElement).value.length,
+                );
+                clearInterval(intervalId); // Stop the interval once the input is focused
+              }
+            }, 100);
+          }}
+        >
+          I want to add a URL entry
+        </button>
+        {/* todo: implement image upload seperate modal */}
+        {/* <button
+          type="button"
+          className="my-2 me-2 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4"
+          onClick={() => {
+            setUploaderModalOpen(true);
+          }}
+        >
+          I want to add upload a URL
+        </button>
+        <button
+          type="button"
+          className="my-2 me-2 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4"
+          onClick={() => {
+            setUploaderModalOpen(true);
+          }}
+        >
+          I want to upload a image
+        </button> */}
+
+        {/* <button
+          type="button"
+          className="my-2 me-2 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4"
+          onClick={() => {
             // open the flow page
-            router.push('/dashboard/flow');
+            router.push("/dashboard/flow");
           }}
         >
           I want to journal
-        </button>
-        <button
+        </button> */}
+        {/* <button
           type="button"
           className="my-2 me-2 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4"
           onClick={() => {
@@ -413,7 +549,7 @@ const SimpleDashboard = () => {
           }}
         >
           I want to browse
-        </button>
+        </button> */}
         <button
           type="button"
           className="my-2 me-2 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4"
@@ -440,7 +576,7 @@ const SimpleDashboard = () => {
         >
           I want to connect my entries
         </button>
-        <button
+        {/* <button
           type="button"
           className="my-2 me-2 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4"
           onClick={() => {
@@ -477,13 +613,27 @@ const SimpleDashboard = () => {
           }}
         >
           I want to add something new
-        </button>
+        </button> */}
         <button
+          type="button"
+          className="my-2 me-2 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4"
+          onClick={() => {
+            const formattedDate = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
+              .toLocaleDateString()
+              .split('/')
+              .map((d) => (d.length === 1 ? `0${d}` : d))
+              .join('-');
+            router.push(`/dashboard/garden?date=${formattedDate}`);
+          }}
+        >
+          I want to see what I saved exactly one week ago
+        </button>
+        {/* <button
           type="button"
           className="my-2 me-2 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4"
         >
           I want to share something with others
-        </button>
+        </button> */}
         {/* <Link
           href={`/dashboard/entry/${randomEntry ? randomEntry.id : '#'}`}
           className="mb-4 inline-block"
@@ -544,6 +694,7 @@ const SimpleDashboard = () => {
       />
       <UploaderModalWrapper
         isOpen={isUploaderModalOpen || false}
+        type={uploaderModalType}
         closeModalFn={() => closeModal()}
       />
       {/* {randomEntry && (
@@ -568,7 +719,8 @@ const SimpleDashboard = () => {
         </>
       )} */}
 
-      <div>
+      {/* todo time machine */}
+      {/* <div>
         <h1 className="my-4 text-xl font-extrabold text-gray-900 md:text-xl lg:text-xl">
           Last {timeMachine}, you saved:
         </h1>
@@ -583,13 +735,6 @@ const SimpleDashboard = () => {
             <option value="year">Year</option>
           </select>
         </div>
-        {/* {
-    "id": "14586",
-    "data": "This is a crucial, often missed, point about the transition from foraging to farming. The change wasn’t merely a pivotal point in how our species lived in the world. It marked a fundamental shift in what kind of world human beings inhabited, both materially and conceptually. It isn’t hyperbole to say that agriculture extracted humans from the world and pitted us against it. Niles Eldredge of the American Museum of Natural History has written that the shift to agriculture and resulting civilization removed our species from the relation with the natural world that we had until then shared with every other species since life began. “We abruptly stepped out of the local ecosystem.… Our interests no longer dovetail[ed] with those of the natural world around us.…” Adopting agriculture was “tantamount to declaring war on local ecosystems.”",
-    "metadata": "{\"author\":\"https://readwise.io/open/626412500\",\"title\":\"Civilized to Death - Christopher Ryan\",\"readwise_id\":626412500}",
-    "createdAt": "2023-11-14T19:38:04.037Z",
-    "updatedAt": "2024-10-18T00:47:41.990Z"
-} */}
 
         {timeMachineEntries.length > 1 && (
           <button
@@ -613,35 +758,20 @@ const SimpleDashboard = () => {
             className="block text-gray-900 no-underline"
           >
             <div className="relative">
-              {JSON.parse(randomTimeMachineEntry.metadata).author &&
-                JSON.parse(randomTimeMachineEntry.metadata).author.includes(
+              {randomTimeMachineEntry.metadata.author &&
+                randomTimeMachineEntry.metadata.author.includes(
                   'imagedelivery.net',
                 ) && (
                   <img
-                    src={JSON.parse(randomTimeMachineEntry.metadata).author}
+                    src={randomTimeMachineEntry.metadata.author}
                     alt="ycb-companion-image"
                   />
                 )}
               <span className="font-normal">{randomTimeMachineEntry.data}</span>
             </div>
-            {/* <div className="text-sm text-gray-500">
-              Created:{" "}
-              {new Date(randomTimeMachineEntry.createdAt).toLocaleDateString()}
-              {randomTimeMachineEntry.createdAt !==
-                randomTimeMachineEntry.updatedAt && (
-                <>
-                  {" "}
-                  | Last Updated:{" "}
-                  {new Date(
-                    randomTimeMachineEntry.updatedAt
-                  ).toLocaleDateString()}{" "}
-                </>
-              )}
-            </div> */}
           </Link>
         )}
-        {/* if timeMachineEntries is > 1 length, a btn fetches a new random entry from the timeMachineEntries array */}
-      </div>
+      </div> */}
       {/* ask the user what they are thinking about right now in a text box and add it as an entry -- like a journal */}
       {/* <h1 className="my-4 text-xl font-extrabold text-gray-900 md:text-xl lg:text-xl">
         Journal
@@ -700,10 +830,45 @@ const SimpleDashboard = () => {
         </button>
       </div> */}
 
+      {totalEntries >= 0 && (
+        <h2 className="mx-2 mt-8 text-xl font-extrabold text-gray-400 md:text-lg lg:text-lg">
+          You have{' '}
+          <span className="bg-gradient-to-r from-sky-400 to-emerald-600 bg-clip-text text-transparent">
+            {totalEntries}
+          </span>{' '}
+          total entries in your commonbase. That&apos;s the equivalent of{' '}
+          <span className="bg-gradient-to-r from-sky-400 to-emerald-600 bg-clip-text text-transparent">
+            {Math.round(totalEntries / 251)}
+          </span>{' '}
+          journals filled! You are{' '}
+          <span className="bg-gradient-to-r from-sky-400 to-emerald-600 bg-clip-text text-transparent">
+            {251 - (totalEntries % 251)}
+          </span>{' '}
+          entries away from filling your next journal!
+        </h2>
+      )}
+
+      <h2 className="mx-2 mt-8 text-xl font-extrabold text-gray-400 md:text-lg lg:text-lg">
+        You have{' '}
+        <AnimatedNumbers
+          includeComma
+          transitions={(index) => ({
+            type: 'spring',
+            duration: index + 0.3,
+          })}
+          animateToNumber={todaysEntriesLength}
+          fontStyle={{
+            fontSize: 18,
+            color: 'black',
+          }}
+        />
+        entries today!
+      </h2>
+
       <h1 className="my-4 text-xl font-extrabold text-gray-900 md:text-xl lg:text-xl">
         Recent Activity Log
       </h1>
-      <div className="mx-2 my-4">
+      <div className="mx-2 my-4 w-full overflow-auto">
         {logEntries.map((entry: any) => (
           <div key={entry.id}>
             <div
@@ -718,16 +883,21 @@ const SimpleDashboard = () => {
                   className="block text-gray-900 no-underline"
                 >
                   <div className="relative">
-                    {JSON.parse(entry.metadata).author &&
-                      JSON.parse(entry.metadata).author.includes(
-                        'imagedelivery.net',
-                      ) && (
+                    {entry.metadata.author &&
+                      entry.metadata.author.includes('imagedelivery.net') && (
                         <img
-                          src={JSON.parse(entry.metadata).author}
+                          src={entry.metadata.author}
                           alt="ycb-companion-image"
                         />
                       )}
-                    <span className="font-normal">{entry.data}</span>
+                    <span className="flex items-center font-normal">
+                      <img
+                        src={entry.favicon || '/favicon.ico'}
+                        alt="favicon"
+                        className="mr-2 size-6"
+                      />
+                      {entry.data}
+                    </span>
                   </div>
                 </Link>
                 <div className="text-sm text-gray-500">

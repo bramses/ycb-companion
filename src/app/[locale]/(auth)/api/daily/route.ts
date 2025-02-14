@@ -1,8 +1,8 @@
+// Import the cookies utility
 import { NextResponse } from 'next/server';
 
 import { logger } from '@/libs/Logger';
-
-import { GET } from '../getCBPath/route';
+import { getAccessToken } from '@/utils/getAccessToken';
 
 // import env variables
 
@@ -10,25 +10,26 @@ export const POST = async (request: Request) => {
   const { date } = await request.json();
   const { CLOUD_URL } = process.env;
 
-  const dbRes = await GET(request);
-  if (!dbRes) {
-    return NextResponse.json({}, { status: 500 });
+  const TOKEN = getAccessToken();
+  console.log(TOKEN);
+
+  if (!TOKEN) {
+    return NextResponse.json({ error: 'No token provided' }, { status: 401 });
   }
-  const { DATABASE_URL, API_KEY } = await dbRes.json();
 
   const resp = await fetch(`${CLOUD_URL}/entriesByDate`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
+      Authorization: `Bearer ${TOKEN}`,
     },
     body: JSON.stringify({
       excludeParentId: true,
       date,
-      dbPath: DATABASE_URL,
-      apiKey: API_KEY,
+      // get the timezone from the user's browser
+      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
     }),
   });
-  logger.info('resp:', resp);
   const data = await resp.json();
 
   try {
@@ -38,7 +39,7 @@ export const POST = async (request: Request) => {
       data,
     });
   } catch (error) {
-    logger.error(error, 'An error occurred while creating a search');
+    logger.error(error, 'An error occurred while creating a daily');
 
     return NextResponse.json({}, { status: 500 });
   }

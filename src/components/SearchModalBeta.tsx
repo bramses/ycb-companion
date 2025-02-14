@@ -97,12 +97,12 @@ const CustomHit = ({ hit, closeModalFn }: any) => {
             </>
           )}
 
-          <div className="text-sm text-gray-500">
+          {/* <div className="text-sm text-gray-500">
             Created: {new Date(hit.created_at).toLocaleString()}
             {hit.createdat !== hit.updated_at && (
               <> | Last Updated: {new Date(hit.updated_at).toLocaleString()} </>
             )}
-          </div>
+          </div> */}
         </div>
       </div>
       <hr className="my-4" />
@@ -156,7 +156,9 @@ const SearchModalBeta = ({
   };
 
   const [isSearchClient, setSearchClient] = useState<SearchClient | null>(null);
-  const [meliToken, setMeliToken] = useState<{
+  // todo fix token
+
+  const [meliToken] = useState<{
     token: string;
     expiresAt: string;
   } | null>(null);
@@ -179,10 +181,13 @@ const SearchModalBeta = ({
       }
 
       // expires 10s after the token is created
-      setMeliToken({
-        token: tokenData.token.token,
-        expiresAt: new Date(Date.now() + 10 * 60 * 1000 - 2000).toISOString(),
-      });
+      sessionStorage.setItem(
+        'meliToken',
+        JSON.stringify({
+          token: tokenData.token.token,
+          expiresAt: new Date(Date.now() + 10 * 60 * 1000 - 2000).toISOString(),
+        }),
+      );
 
       const { searchClient } = instantMeiliSearch(
         process.env.NEXT_PUBLIC_MEILI_HOST!, // Host
@@ -199,10 +204,15 @@ const SearchModalBeta = ({
   };
 
   useEffect(() => {
-    // Check if the token is expired by polling every 5 seconds
     const interval = setInterval(() => {
-      if (meliToken && new Date(meliToken.expiresAt) < new Date()) {
-        console.log('Token expired, fetching a new token...');
+      const storedToken = sessionStorage.getItem('meliToken');
+      if (storedToken) {
+        const { expiresAt } = JSON.parse(storedToken);
+        if (new Date(expiresAt) < new Date()) {
+          console.log('Token expired, fetching a new token...');
+          fetchToken();
+        }
+      } else {
         fetchToken();
       }
     }, 1000);
@@ -230,12 +240,16 @@ const SearchModalBeta = ({
   }, []);
 
   // on open focus on the input
-  useEffect(() => {
-    const input = document.getElementById('modal-beta-search');
-    if (input) {
-      input.focus();
-    }
-  }, []);
+  // useEffect(() => {
+  //   const input = document.getElementById('modal-beta-search');
+  //   if (input) {
+  //     setTimeout(() => {
+  //   }
+  //   if (input && isOpen) {
+  //     console.log('focus on input');
+  //     input!.focus();
+  //   }
+  // }, [isOpen]);
 
   useEffect(() => {
     if (!isLoaded) return;
@@ -349,19 +363,19 @@ const SearchModalBeta = ({
   }, [inputQuery]);
 
   // enter key press event handler
-  const handleEnterKeyPress = (event: KeyboardEvent) => {
-    if (event.key === 'Enter') {
-      handleSearch(inputValue, '');
-    }
-  };
+  // const handleEnterKeyPress = (event: KeyboardEvent) => {
+  //   if (event.key === 'Enter') {
+  //     handleSearch(inputValue, '');
+  //   }
+  // };
 
-  useEffect(() => {
-    window.addEventListener('keydown', handleEnterKeyPress);
+  // useEffect(() => {
+  //   window.addEventListener('keydown', handleEnterKeyPress);
 
-    return () => {
-      window.removeEventListener('keydown', handleEnterKeyPress);
-    };
-  }, []);
+  //   return () => {
+  //     window.removeEventListener('keydown', handleEnterKeyPress);
+  //   };
+  // }, []);
 
   const setSemanticSearchResults = () => {
     setSearchResults([]);
@@ -377,7 +391,7 @@ const SearchModalBeta = ({
       {isSearchClient ? (
         <InstantSearch
           searchClient={isSearchClient}
-          indexName="commonbase_prod"
+          indexName="ycb_fts_staging"
         >
           <button onClick={closeModalFn} type="button">
             (close)
@@ -407,7 +421,7 @@ const SearchModalBeta = ({
               >
                 {isLoading ? 'Loading...' : 'Search'}
               </button>
-              <button
+              {/* <button
                 type="button"
                 onClick={() => {
                   window.open(
@@ -418,7 +432,7 @@ const SearchModalBeta = ({
                 className="mb-2 me-2 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4 focus:ring-gray-300"
               >
                 Search the Web
-              </button>
+              </button> */}
             </div>
             {searchResults.map((result: any) => (
               <>

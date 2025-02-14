@@ -6,13 +6,25 @@
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
-const Uploader = ({ closeModal }: { closeModal: () => void }) => {
+interface UploaderProps {
+  closeModal: () => void;
+  textDefault: string;
+  titleDefault: string;
+  authorDefault: string;
+}
+
+const Uploader = ({
+  closeModal,
+  textDefault,
+  titleDefault,
+  authorDefault,
+}: UploaderProps) => {
   // const { user, isLoaded } = useUser();
   const router = useRouter();
-  const [textAreaValue, setTextAreaValue] = useState('');
-  const [title, setTitle] = useState('');
+  const [textAreaValue, setTextAreaValue] = useState(textDefault || '');
+  const [title, setTitle] = useState(titleDefault || '');
   const [author, setAuthor] = useState(
-    'https://ycb-companion.onrender.com/dashboard',
+    authorDefault || 'https://yourcommonbase.com/dashboard',
   );
   // const [firstLastName, setFirstLastName] = useState({
   //   firstName: '',
@@ -21,6 +33,11 @@ const Uploader = ({ closeModal }: { closeModal: () => void }) => {
 
   const apiKey = process.env.NEXT_PUBLIC_API_KEY_CF_IMG;
   const [loading, setLoading] = useState(false);
+  const [shareYCBLoadingPct, setShareYCBLoadingPct] = useState(0);
+  const [shareYCBInput, setShareYCBInput] = useState('');
+  const [showShareYCBTextarea, setShowShareYCBTextarea] = useState(false);
+  const [showError, setShowError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
   // useEffect(() => {
   //   if (!isLoaded) return;
@@ -90,88 +107,290 @@ const Uploader = ({ closeModal }: { closeModal: () => void }) => {
     // }
   };
 
+  //   const uploadFromShareYCB = async (id: string) => {
+  //     setShareYCBLoadingPct(1);
+
+  //     // decode the base64 string
+  //     const decoded = atob(id); // { ids: string[], from: string }
+  //     // turn to json
+  //     const json = JSON.parse(decoded);
+  //     const { ids } = json;
+
+  //     for (let i = 0; i < ids.length; i++) {
+  //       const id = ids[i];
+  //       const response = await fetch(
+  //         `https://share-ycbs.onrender.com/api/get-upload?id=${id}`,
+  //       );
+  //       const respData = await response.json();
+  //       if (respData.error) {
+  //         throw new Error(respData.error);
+  //       }
+  //       const { data } = respData;
+  //       console.log(`data for id: ${id}`, data);
+  //       // // add data using /api/add
+  //       /* {
+  //     "id": 7,
+  //     "created_at": "2025-01-23T05:26:19.989819+00:00",
+  //     "updated_at": "2025-01-23T05:26:19.989819+00:00",
+  //     "json": {
+  //         "entry": {
+  //             "data": "He’s like how do we stop this demon and willem Defoe hit him with the I don’t know",
+  //             "metadata": {
+  //                 "title": "thought",
+  //                 "author": "https://ycb-companion.onrender.com/dashboard"
+  //             }
+  //         },
+  //         "comments": [
+  //             {
+  //                 "data": "from Nosferatu, 2024",
+  //                 "metadata": {
+  //                     "title": "thought",
+  //                     "author": "https://ycb-companion.onrender.com/dashboard"
+  //                 }
+  //             },
+  //             {
+  //                 "data": "call it nosfera2",
+  //                 "metadata": {
+  //                     "title": "thought",
+  //                     "author": "https://ycb-companion.onrender.com/dashboard"
+  //                 }
+  //             }
+  //         ],
+  //         "username": "bram"
+  //     },
+  //     "creator": "bram"
+  // }
+  //     */
+  //    // add entry first and then add comments youll need to add the entry id to the comments and then after all comments are added, update the parent entry with the new comments ids
+
+  //    // append (from ycb/[creator]) to the metadata.title
+
+  //    const numEntries = data.json.comments.length + 2;
+
+  //     const yresponse = await fetch('/api/add', {
+  //       method: 'POST',
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //       },
+  //       body: JSON.stringify({
+  //         data: data.json.entry.data,
+  //         metadata: {
+  //           ...data.json.entry.metadata,
+  //           title: `${data.json.entry.metadata.title} (from ycb/${data.creator})`, // Append creator to title
+  //         }
+  //       }),
+  //     });
+  //     const addrData = await yresponse.json();
+
+  //     // one entry done
+  //     setShareYCBLoadingPct(shareYCBLoadingPct + Math.round((1 / numEntries) * 100));
+
+  //     const parentId = addrData.respData.id;
+  //     console.log('addrData:', addrData);
+  //     // add comments
+  //     const aliasIDs = [];
+  //     for (let i = 0; i < data.json.comments.length; i++) {
+  //       const comment = data.json.comments[i];
+  //       const response = await fetch('/api/add', {
+  //         method: 'POST',
+  //         headers: {
+  //           'Content-Type': 'application/json',
+  //         },
+  //         body: JSON.stringify({
+  //           data: comment.data,
+  //           metadata: {
+  //             ...comment.metadata,
+  //             title: `${comment.metadata.title} (from ycb/${data.creator})`, // Append creator to title
+  //             parent_id: parentId,
+  //           },
+  //         }),
+  //       });
+  //       const addrData = await response.json();
+  //       aliasIDs.push(addrData.respData.id);
+  //       setShareYCBLoadingPct(shareYCBLoadingPct + Math.round((1 / numEntries) * 100));
+  //     }
+  //     // update parent entry with new comments ids
+  //     const zresponse = await fetch('/api/update', {
+  //       method: 'POST',
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //       },
+  //       body: JSON.stringify({
+  //         id: addrData.respData.id,
+  //         data: data.json.entry.data,
+  //         metadata: {
+  //           ...data.json.entry.metadata,
+  //           title: `${data.json.entry.metadata.title} (from ycb/${data.creator})`, // Append creator to title
+  //           alias_ids: aliasIDs,
+  //         },
+  //       }),
+  //     });
+  //     const zaddrData = await zresponse.json();
+  //     console.log('zaddrData:', zaddrData);
+  //     setShareYCBLoadingPct(100);
+  //     return addrData;
+  //   }
+  //   };
+
+  // const uploadAudio = async () => {
+  //   const fileInput = document.getElementById('file-input-audio');
+  //   if (!fileInput) return;
+  //   (fileInput as HTMLInputElement).click();
+
+  //   fileInput.addEventListener('change', async (event) => {
+  //     const file = (event.target as HTMLInputElement).files?.[0];
+  //     if (!file) return;
+  //     setLoading(true);
+  //     const formData = new FormData();
+  //     formData.append('audio', file);
+
+  //     const response = await fetch('/api/transcribe', {
+  //       method: 'POST',
+  //       body: formData, // This mimics your curl -F "audio=@test.m4a"
+  //     });
+
+  //     if (!response.ok) {
+  //       throw new Error(`HTTP error! status: ${response.status}`);
+  //     }
+
+  //     const data = await response.json();
+  //     const { transcription, cfURL } = data;
+  //     console.log('Transcribe response:', data);
+
+  //     console.log('Audio description:', `${transcription} - ${cfURL}`);
+
+  //     add(data.data.transcription, {
+  //       author: data.data.cfURL,
+  //       title: 'Audio',
+  //     });
+  //     setLoading(false);
+
+  //     // const reader = new FileReader();
+  //     // reader.onload = () => {
+  //     //   const arrayBuffer = reader.result;
+  //     //   setLoading(true);
+
+  //     //   const worker = new Worker('/audioWorker.js');
+  //     //   worker.postMessage({ file: arrayBuffer, apiKey });
+
+  //     //   worker.onmessage = (e) => {
+  //     //     const { success, data, error } = e.data;
+  //     //     if (success) {
+  //     //       console.log('Audio description:', data);
+  //     //       // add(data.transcription, {
+  //     //       //   author: data.cfURL,
+  //     //       //   title: 'Audio',
+  //     //       // });
+  //     //     } else {
+  //     //       console.error('Error:', error);
+  //     //     }
+  //     //     setLoading(false);
+  //     //   };
+  //     // };
+  //     // reader.readAsArrayBuffer(file);
+  //   });
+  // };
+
   const uploadFromShareYCB = async (id: string) => {
-    const response = await fetch(
-      `https://share-ycbs.onrender.com/api/get-upload?id=${id}`,
-    );
-    const respData = await response.json();
-    if (respData.error) {
-      throw new Error(respData.error);
-    }
-    const { data } = respData;
-    // add data using /api/add
-    const addresponse = await fetch('/api/add', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        data: data.json.data,
-        metadata: JSON.parse(data.json.metadata),
-      }),
-    });
-    const addrData = await addresponse.json();
-    console.log('addrData:', addrData);
-    return addrData;
-  };
+    setShareYCBLoadingPct(1);
 
-  const uploadAudio = async () => {
-    const fileInput = document.getElementById('file-input-audio');
-    if (!fileInput) return;
-    (fileInput as HTMLInputElement).click();
+    // Decode the base64 string
+    const decoded = atob(id); // { ids: string[], from: string }
+    const json = JSON.parse(decoded);
+    const { ids } = json;
+    let lastEntryId = '';
 
-    fileInput.addEventListener('change', async (event) => {
-      const file = (event.target as HTMLInputElement).files?.[0];
-      if (!file) return;
-      setLoading(true);
-      const formData = new FormData();
-      formData.append('audio', file);
+    const processId = async (pid: string) => {
+      const response = await fetch(
+        `https://share-ycbs.onrender.com/api/get-upload?id=${pid}`,
+      );
+      const respData = await response.json();
+      if (respData.error) {
+        throw new Error(respData.error);
+      }
+      const { data } = respData;
 
-      const response = await fetch('/api/transcribe', {
-        method: 'POST',
-        body: formData, // This mimics your curl -F "audio=@test.m4a"
-      });
+      const entryBody: { data: any; metadata: any; createdAt?: string } = {
+        data: data.json.entry.data,
+        metadata: {
+          ...data.json.entry.metadata,
+          title: `${data.json.entry.metadata.title} (from ycb/${data.creator})`,
+        },
+      };
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+      if (data.force_created_at) {
+        entryBody.createdAt = data.created_at;
       }
 
-      const data = await response.json();
-      const { transcription, cfURL } = data;
-      console.log('Transcribe response:', data);
-
-      console.log('Audio description:', `${transcription} - ${cfURL}`);
-
-      add(data.data.transcription, {
-        author: data.data.cfURL,
-        title: 'Audio',
+      const yresponse = await fetch('/api/add', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(entryBody),
       });
-      setLoading(false);
+      const addrData = await yresponse.json();
+      const parentId = addrData.respData.id;
+      console.log('addrData:', addrData);
+      lastEntryId = addrData.respData.id;
 
-      // const reader = new FileReader();
-      // reader.onload = () => {
-      //   const arrayBuffer = reader.result;
-      //   setLoading(true);
+      console.log('lastEntryId', lastEntryId);
 
-      //   const worker = new Worker('/audioWorker.js');
-      //   worker.postMessage({ file: arrayBuffer, apiKey });
+      const aliasIDs = [];
+      for await (const comment of data.json.comments) {
+        const commentBody: { data: any; metadata: any; createdAt?: string } = {
+          data: comment.data,
+          metadata: {
+            ...comment.metadata,
+            title: `${comment.metadata.title} (from ycb/${data.creator})`,
+            parent_id: parentId,
+          },
+        };
 
-      //   worker.onmessage = (e) => {
-      //     const { success, data, error } = e.data;
-      //     if (success) {
-      //       console.log('Audio description:', data);
-      //       // add(data.transcription, {
-      //       //   author: data.cfURL,
-      //       //   title: 'Audio',
-      //       // });
-      //     } else {
-      //       console.error('Error:', error);
-      //     }
-      //     setLoading(false);
-      //   };
-      // };
-      // reader.readAsArrayBuffer(file);
-    });
+        if (data.force_created_at) {
+          commentBody.createdAt = data.force_created_at;
+        }
+        const cresponse = await fetch('/api/add', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(commentBody),
+        });
+        const caddrData = await cresponse.json();
+        aliasIDs.push(caddrData.respData.id);
+      }
+
+      if (aliasIDs.length > 0) {
+        const zresponse = await fetch('/api/update', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            id: addrData.respData.id,
+            data: data.json.entry.data,
+            metadata: {
+              ...data.json.entry.metadata,
+              title: `${data.json.entry.metadata.title} (from ycb/${data.creator})`,
+              alias_ids: aliasIDs,
+            },
+          }),
+        });
+        const zaddrData = await zresponse.json();
+        console.log('zaddrData:', zaddrData);
+      }
+    };
+
+    let count = 0;
+    for await (const pid of ids) {
+      await processId(pid);
+      setShareYCBLoadingPct(Math.round(((count + 1) / ids.length) * 100));
+      count += 1;
+    }
+
+    setShareYCBLoadingPct(100);
+    return lastEntryId;
   };
 
   const uploadImage = async () => {
@@ -223,62 +442,127 @@ const Uploader = ({ closeModal }: { closeModal: () => void }) => {
         rows={4}
         style={{ fontSize: '17px' }}
         className="mt-4 block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder:text-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
-        placeholder="Your message..."
+        placeholder="What are you thinking about right now?..."
         value={textAreaValue}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' && e.metaKey) {
-            add(textAreaValue, {
-              author,
-              title,
-            });
-          }
-        }}
+        // onKeyDown={(e) => {
+        //   if (e.key === 'Enter' && e.metaKey) {
+        //     add(textAreaValue, {
+        //       author,
+        //       title,
+        //     });
+        //   }
+        // }}
         onChange={(e) => setTextAreaValue(e.target.value)}
       />
+      <button
+        type="button"
+        className="ml-2 mt-2 inline-block w-1/4 rounded-lg bg-gray-300 px-3 py-1 text-sm font-medium text-gray-900 hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300"
+        onClick={async () => {
+          try {
+            const response = await fetch(`/api/generateTitle`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                prompt: textAreaValue,
+              }),
+            });
+            // comes in as readableStream read the body
+            const data = await response.json();
+            if (data.title) {
+              setTitle(data.title);
+            }
+          } catch (error) {
+            console.error('Error fetching title:', error);
+          }
+        }}
+      >
+        Generate Title
+      </button>
       <input
         type="text"
         style={{ fontSize: '17px' }}
         className="mt-2 block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder:text-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
-        placeholder={title}
+        placeholder="Title your entry..."
         onChange={(e) => setTitle(e.target.value)}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' && e.metaKey) {
-            add(textAreaValue, { author, title });
-          }
-        }}
+        // onKeyDown={(e) => {
+        //   if (e.key === 'Enter' && e.metaKey) {
+        //     add(textAreaValue, { author, title });
+        //   }
+        // }}
         value={title}
       />
-      <input
-        type="text"
-        style={{ fontSize: '17px' }}
-        className="mt-2 block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder:text-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
-        placeholder={author}
-        onChange={(e) => setAuthor(e.target.value)}
-        onKeyDown={async (e) => {
-          if (e.key === 'Enter' && e.metaKey) {
-            const responseEntry = await add(textAreaValue, { author, title });
-            console.log('responseEntry:', responseEntry);
-            if (responseEntry.respData) {
-              router.push(`/dashboard/entry/${responseEntry.respData.id}`);
-              closeModal();
+      <div className="flex w-full">
+        <input
+          type="text"
+          style={{ fontSize: '17px' }}
+          id="modal-message-author"
+          className="mt-2 block grow rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500"
+          placeholder="A URL for your entry..."
+          onChange={(e) => setAuthor(e.target.value)}
+          // onKeyDown={async (e) => {
+          //   if (e.key === 'Enter' && e.metaKey) {
+          //     const responseEntry = await add(textAreaValue, { author, title });
+          //     console.log('responseEntry:', responseEntry);
+          //     if (responseEntry.respData) {
+          //       router.push(`/dashboard/entry/${responseEntry.respData.id}`);
+          //       closeModal();
+          //     }
+          //   }
+          // }}
+          value={author}
+        />
+        <button
+          type="button"
+          className="ml-2 mt-2 inline-block w-1/4 rounded-lg bg-gray-300 px-3 py-1 text-sm font-medium text-gray-900 hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300"
+          onClick={async () => {
+            try {
+              const response = await fetch(`/api/get-title?url=${author}`);
+              const data = await response.json();
+              if (data.title) {
+                setTextAreaValue(
+                  data.description
+                    ? `${data.description} | ${data.title}`
+                    : data.title,
+                );
+                setTitle(data.title);
+              }
+            } catch (error) {
+              console.error('Error fetching title:', error);
             }
-          }
-        }}
-        value={author}
-      />
+          }}
+        >
+          Get Title
+        </button>
+      </div>
       <button
         type="button"
         className="mt-2 block w-full rounded-lg bg-blue-700 px-5 py-2.5 text-sm font-medium text-white hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
         onClick={async () => {
+          if (textAreaValue.trim() === '') {
+            setShowError(true);
+            setErrorMessage('Please enter some text for your entry.');
+            return;
+          }
+          if (title.trim() === '') {
+            setShowError(true);
+            setErrorMessage('Please enter a title for your entry.');
+            return;
+          }
+          if (author.trim() === '') {
+            setShowError(true);
+            setErrorMessage('Please enter a URL for your entry.');
+            return;
+          }
           const responseEntry = await add(textAreaValue, { author, title });
-          console.log('responseEntry:', responseEntry);
           if (responseEntry.respData) {
             router.push(`/dashboard/entry/${responseEntry.respData.id}`);
             closeModal();
           }
         }}
       >
-        Add Entry (or press cmd/ctrl + enter)
+        Add Entry
       </button>
       <div className="inline-flex w-full items-center justify-center">
         <hr className="my-8 h-px w-64 border-0 bg-gray-200 dark:bg-gray-700" />
@@ -298,7 +582,7 @@ const Uploader = ({ closeModal }: { closeModal: () => void }) => {
         onClick={uploadImage}
         className="mt-2 block rounded-lg bg-blue-700 px-5 py-2.5 text-sm font-medium text-white hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
       >
-        Upload Image
+        I want to upload an image
       </button>
       <div className="inline-flex w-full items-center justify-center">
         <hr className="my-8 h-px w-64 border-0 bg-gray-200 dark:bg-gray-700" />
@@ -306,7 +590,7 @@ const Uploader = ({ closeModal }: { closeModal: () => void }) => {
           or
         </span>
       </div>
-      <input type="file" className="hidden" id="file-input-audio" />
+      {/* <input type="file" className="hidden" id="file-input-audio" />
       <button
         type="button"
         onClick={uploadAudio}
@@ -320,27 +604,82 @@ const Uploader = ({ closeModal }: { closeModal: () => void }) => {
         <span className="absolute left-1/2 -translate-x-1/2 bg-white px-3 font-medium text-gray-900 dark:bg-gray-900 dark:text-white">
           or
         </span>
-      </div>
+      </div> */}
       <button
+        type="button"
+        className="mt-2 block rounded-lg bg-blue-700 px-5 py-2.5 text-sm font-medium text-white hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300"
+        onClick={() => setShowShareYCBTextarea(true)}
+      >
+        I have an ID from ShareYCB
+      </button>
+
+      {showShareYCBTextarea && (
+        <div className="mt-2">
+          <textarea
+            rows={4}
+            className="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder:text-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
+            style={{ fontSize: '17px' }}
+            placeholder="eyJpZHMiOlsxNiwxNSwxNCwxMywxMiwxMCw5LDhdLCJmcm9tIjoiYnJhbSJ9"
+            value={shareYCBInput}
+            onChange={(e) => setShareYCBInput(e.target.value)}
+          />
+          <button
+            type="button"
+            className="mt-2 block rounded-lg bg-blue-700 px-5 py-2.5 text-sm font-medium text-white hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300"
+            onClick={async () => {
+              if (shareYCBInput) {
+                setLoading(true);
+                const lastID = await uploadFromShareYCB(shareYCBInput);
+                console.log('lastID', lastID);
+                setLoading(false);
+                setShareYCBLoadingPct(0);
+                router.push(`/dashboard/entry/${lastID}`);
+                setShowShareYCBTextarea(false);
+              }
+            }}
+          >
+            Submit
+          </button>
+          {showError && (
+            <div className="text-red-500">
+              {errorMessage}
+              <br />
+              Please try again.
+            </div>
+          )}
+        </div>
+      )}
+      {/* <button
         type="button"
         className="mt-2 block rounded-lg bg-blue-700 px-5 py-2.5 text-sm font-medium text-white hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300"
         onClick={async () => {
           const url = prompt('Enter the URL of the entry you want to upload');
           if (url) {
             setLoading(true);
-            const responseEntry = await uploadFromShareYCB(url);
-            console.log('responseEntry:', responseEntry);
-            if (responseEntry.respData) {
-              router.push(`/dashboard/entry/${responseEntry.respData.id}`);
-              closeModal();
-            }
+            await uploadFromShareYCB(url);
+            // console.log('responseEntry:', responseEntry);
+            // if (responseEntry.respData) {
+            //   router.push(`/dashboard/entry/${responseEntry.respData.id}`);
+            //   closeModal();
+            // }
             setLoading(false);
+            setShareYCBLoadingPct(0);
+            // redirect to dashboard
+            router.push(`/dashboard`);
           }
         }}
       >
         Upload from Share yCb
-      </button>
+      </button> */}
       {loading && <p>Loading...</p>}
+      {shareYCBLoadingPct !== 0 && (
+        <div className="h-2.5 w-full rounded-full bg-gray-200 dark:bg-gray-700">
+          <div
+            className="h-2.5 rounded-full bg-blue-600"
+            style={{ width: `${shareYCBLoadingPct}%` }}
+          />
+        </div>
+      )}
     </div>
   );
 };

@@ -1,8 +1,8 @@
+// Import the cookies utility
 import { NextResponse } from 'next/server';
 
 import { logger } from '@/libs/Logger';
-
-import { GET } from '../getCBPath/route';
+import { getAccessToken } from '@/utils/getAccessToken';
 
 // import env variables
 
@@ -10,36 +10,40 @@ export const POST = async (request: Request) => {
   const { id, data, metadata } = await request.json();
   const { CLOUD_URL } = process.env;
 
-  const dbRes = await GET(request);
-  if (!dbRes) {
-    return NextResponse.json({}, { status: 500 });
+  const TOKEN = getAccessToken();
+  console.log(TOKEN); // Retrieve the token from cookies
+
+  if (!TOKEN) {
+    return NextResponse.json({ error: 'No token provided' }, { status: 401 });
   }
-  const { DATABASE_URL, API_KEY } = await dbRes.json();
 
   const resp = await fetch(`${CLOUD_URL}/update`, {
-    method: 'POST',
+    method: 'PATCH',
     headers: {
       'Content-Type': 'application/json',
+      Authorization: `Bearer ${TOKEN}`,
     },
     body: JSON.stringify({
-      id: id.toString(),
-      dbPath: DATABASE_URL,
+      platform_id: id.toString(),
       data,
       metadata,
-      apiKey: API_KEY,
     }),
   });
-  logger.info('resp:', resp);
+  logger.info('update resp:', resp);
   const respData = await resp.json();
 
   try {
-    logger.info(`A new fetch has been created ${JSON.stringify(respData)}`);
+    logger.info(`A new update has been created ${JSON.stringify(respData)}`);
+
+    if (respData.error) {
+      throw new Error(respData.error);
+    }
 
     return NextResponse.json({
       respData,
     });
   } catch (error) {
-    logger.error(error, 'An error occurred while creating a search');
+    logger.error(error, 'An error occurred while creating a update');
 
     return NextResponse.json({}, { status: 500 });
   }

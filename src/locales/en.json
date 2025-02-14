@@ -12,8 +12,8 @@
     "made_with": "Made with"
   },
   "Index": {
-    "meta_title": "Next.js Boilerplate Presentation",
-    "meta_description": "Next js Boilerplate is the perfect starter code for your project. Build your React application with the Next.js framework."
+    "meta_title": "Your Commonbase Companion",
+    "meta_description": "Your Commonbase is a self-organizing scrapbook."
   },
   "Guestbook": {
     "meta_title": "Guestbook",
@@ -64,13 +64,13 @@
     "meta_title": "User Profile"
   },
   "DashboardLayout": {
-    "dashboard_link": "Dashboard",
-    "flow_link": "Flow",
+    "dashboard_link": "Home",
+    "flow_link": "Rant&Revive",
     "user_profile_link": "Manage your account",
-    "starred_entries_link": "Starred Entries",
-    "flow_sessions_link": "Past Flow States",
+    "starred_entries_link": "Starred",
+    "flow_sessions_link": "Past Rant&Revives",
     "inbox_link": "Inbox",
-    "garden_link": "Garden",
+    "garden_link": "Calendar",
     "grid_link": "Grid",
     "sign_out": "Sign out"
   }

@@ -1,8 +1,8 @@
+// Import the cookies utility
 import { NextResponse } from 'next/server';
 
 import { logger } from '@/libs/Logger';
-
-import { GET } from '../getCBPath/route';
+import { getAccessToken } from '@/utils/getAccessToken';
 
 // import env variables
 
@@ -10,21 +10,21 @@ export const POST = async (request: Request) => {
   const { id } = await request.json();
   const { CLOUD_URL } = process.env;
 
-  const dbRes = await GET(request);
-  if (!dbRes) {
-    return NextResponse.json({}, { status: 500 });
+  const TOKEN = getAccessToken();
+  console.log(TOKEN); // Retrieve the token from cookies
+
+  if (!TOKEN) {
+    return NextResponse.json({ error: 'No token provided' }, { status: 401 });
   }
-  const { DATABASE_URL, API_KEY } = await dbRes.json();
 
   const resp = await fetch(`${CLOUD_URL}/delete`, {
-    method: 'POST',
+    method: 'DELETE',
     headers: {
       'Content-Type': 'application/json',
+      Authorization: `Bearer ${TOKEN}`,
     },
     body: JSON.stringify({
-      id,
-      dbPath: DATABASE_URL,
-      apiKey: API_KEY,
+      platformId: id.toString(),
     }),
   });
 

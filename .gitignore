@@ -27,6 +27,8 @@ storybook-static
 # cache
 .swc/
 
+*.swp
+
 # production
 /build
 
@@ -44,7 +46,7 @@ yarn-error.log*
 # local env files
 .env*.local
 
-
+.env
 # prod env files
 .env*.production
 !.env.production
@@ -54,3 +56,5 @@ local
 
 # vercel
 .vercel
+
+commit-hook.mjs
