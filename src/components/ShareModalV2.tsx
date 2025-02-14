@@ -3,7 +3,6 @@
 
 'use client';
 
-import Link from 'next/link';
 import React, { useEffect, useState } from 'react';
 import Modal from 'react-modal';
 import QRCode from 'react-qr-code';
@@ -182,21 +181,27 @@ export default function Share({
               size={256}
               bgColor="#ffffff"
               fgColor="#000000"
+              style={{ margin: 'auto' }}
             />
-            <Link
-              target="_blank"
+            <button
+              type="button"
               className="mt-2 w-full rounded border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4 focus:ring-gray-300"
-              href={`https://share-ycbs.onrender.com/p/${entryId}`}
+              onClick={() =>
+                window.open(
+                  `https://share-ycbs.onrender.com/p/${entryId}`,
+                  '_blank',
+                )
+              }
             >
               open on shareycb
-            </Link>
+            </button>
             <button
               type="button"
               className="mt-2 w-full rounded border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4 focus:ring-gray-300"
               onClick={handleDownload}
               style={{ marginLeft: '8px' }}
             >
-              update
+              update with new data
             </button>
           </>
         )}

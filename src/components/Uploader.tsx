@@ -454,6 +454,32 @@ const Uploader = ({
         // }}
         onChange={(e) => setTextAreaValue(e.target.value)}
       />
+      <button
+        type="button"
+        className="ml-2 mt-2 inline-block w-1/4 rounded-lg bg-gray-300 px-3 py-1 text-sm font-medium text-gray-900 hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300"
+        onClick={async () => {
+          try {
+            const response = await fetch(`/api/generateTitle`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                prompt: textAreaValue,
+              }),
+            });
+            // comes in as readableStream read the body
+            const data = await response.json();
+            if (data.title) {
+              setTitle(data.title);
+            }
+          } catch (error) {
+            console.error('Error fetching title:', error);
+          }
+        }}
+      >
+        Generate Title
+      </button>
       <input
         type="text"
         style={{ fontSize: '17px' }}

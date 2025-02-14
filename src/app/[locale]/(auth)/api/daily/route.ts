@@ -1,7 +1,8 @@
-import { cookies } from 'next/headers'; // Import the cookies utility
+// Import the cookies utility
 import { NextResponse } from 'next/server';
 
 import { logger } from '@/libs/Logger';
+import { getAccessToken } from '@/utils/getAccessToken';
 
 // import env variables
 
@@ -9,7 +10,8 @@ export const POST = async (request: Request) => {
   const { date } = await request.json();
   const { CLOUD_URL } = process.env;
 
-  const TOKEN = cookies().get('platformToken')?.value; // Retrieve the token from cookies
+  const TOKEN = getAccessToken();
+  console.log(TOKEN);
 
   if (!TOKEN) {
     return NextResponse.json({ error: 'No token provided' }, { status: 401 });
@@ -24,6 +26,8 @@ export const POST = async (request: Request) => {
     body: JSON.stringify({
       excludeParentId: true,
       date,
+      // get the timezone from the user's browser
+      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
     }),
   });
   const data = await resp.json();

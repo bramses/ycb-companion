@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 
 export default function CenteredLayout(props: { children: React.ReactNode }) {
   const { userId } = auth();
+  console.log('userId:', userId);
 
   if (userId) {
     redirect('/dashboard');

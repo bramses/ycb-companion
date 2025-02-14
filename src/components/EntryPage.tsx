@@ -110,6 +110,9 @@ const EntryPage = () => {
   const [graphNodes, setGraphNodes] = useState<any[]>([]);
   const [currentIndex, setCurrentIndex] = useState<number | null>(null);
   const [showModal, setShowModal] = useState(false);
+  const [randomCommentPlaceholder, setRandomCommentPlaceholder] = useState(
+    'Add a comment... (press enter to save)',
+  );
 
   const router = useRouter();
 
@@ -139,6 +142,15 @@ const EntryPage = () => {
 
     return i;
   }
+
+  // get a random entry on load
+  useEffect(() => {
+    const asyncFn = async () => {
+      const entry = await fetchRandomEntry();
+      setRandomCommentPlaceholder(entry.data);
+    };
+    asyncFn();
+  }, []);
 
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
@@ -1910,7 +1922,7 @@ again:
           rows={3}
           style={{ fontSize: '17px' }}
           className="mb-2 w-full rounded border border-neutral-dark bg-white px-4 py-2 text-neutral-dark transition hover:bg-neutral-light"
-          placeholder="Add a comment... (press enter to save)"
+          placeholder={randomCommentPlaceholder}
           onKeyDown={(e) => {
             if (e.key === 'Enter') {
               e.preventDefault();
@@ -1939,7 +1951,7 @@ again:
           }}
           id="alias-input-comment"
         />
-        {/* <button
+        <button
           type="button"
           onClick={() => {
             const aliasInput = document.getElementById(`alias-input-comment`);
@@ -1964,7 +1976,7 @@ again:
           aria-label="Add alias"
         >
           Add Comment
-        </button> */}
+        </button>
 
         {/* <div className="relative mb-4 w-full">
           <textarea
@@ -2220,6 +2232,8 @@ again:
       {showAliasError && (
         <div className="text-red-500">Error adding comment. Try again.</div>
       )}
+      <hr className="my-8 h-px w-full border-0 bg-gray-200 dark:bg-gray-700" />
+
       {data ? (
         <div className="mb-2 [&_p]:my-2">
           <button
@@ -2317,6 +2331,7 @@ again:
         />
         <UploaderModalWrapper
           isOpen={isUploaderModalOpen || false}
+          type=""
           closeModalFn={() => closeModalActions()}
         />
         <h2>Actions</h2>

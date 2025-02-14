@@ -56,3 +56,5 @@ local
 
 # vercel
 .vercel
+
+commit-hook.mjs
