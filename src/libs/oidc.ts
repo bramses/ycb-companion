@@ -16,7 +16,7 @@ import { UserManager } from 'oidc-client-ts';
 // };
 
 const oidcConfig = {
-  authority: 'http://keycloak:8080/realms/ycb',
+  authority: 'https://yourcommonbase.com/keycloak/realms/ycb',
   client_id: 'ycb',
   redirect_uri: 'https://yourcommonbase.com/signin-callback',
   post_logout_redirect_uri: 'https://yourcommonbase.com/',

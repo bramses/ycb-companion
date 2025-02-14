@@ -43,6 +43,7 @@ export default async function middleware(req: any) {
     const newUrl = new URL('/signin', req.nextUrl.origin);
     newUrl.searchParams.set('callbackUrl', callbackUrl); // Add callbackUrl as a query parameter
     return Response.redirect('https://yourcommonbase.com/signin'); // TODO: does the auth need await now that i added routes to exclude auth?
+    // return Response.redirect('http://localhost:3000/signin'); // TODO: does the auth need await now that i added routes to exclude auth?
     // return intlMiddleware(req);
   }
 
