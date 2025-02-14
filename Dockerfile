@@ -22,14 +22,19 @@ FROM node:20-alpine AS runner
 # Set the working directory
 WORKDIR /app
 
-# Copy the built application from the builder stage
-COPY --from=builder /app/.next ./.next
-COPY --from=builder /app/public ./public
+# Copy package.json and package-lock.json first to leverage Docker cache
 COPY --from=builder /app/package.json ./
 COPY --from=builder /app/package-lock.json ./
 
 # Install only production dependencies
 RUN npm ci --only=production
+
+# Copy the built application from the builder stage
+COPY --from=builder /app/.next ./.next
+COPY --from=builder /app/public ./public
+
+# Copy the .env file last to avoid invalidating the cache for previous layers
+COPY --from=builder /app/.env ./
 
 # Expose the port the app runs on
 EXPOSE 3000
