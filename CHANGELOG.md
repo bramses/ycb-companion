@@ -1,3 +1,46 @@
+# [1.61.0](https://github.com/bramses/ycb-companion/compare/v1.60.1...v1.61.0) (2025-02-14)
+
+
+### Bug Fixes
+
+* Adjust match threshold for search API and enhance uploader functionality ([df9af1c](https://github.com/bramses/ycb-companion/commit/df9af1c3cdf6b09f03637ecb7c885345f51596a0))
+* Clean up code styling and comments across components ([1e7aa4e](https://github.com/bramses/ycb-companion/commit/1e7aa4e7f20bc774f2ba2e81a301bf07899c7f4c))
+* Delay input focus in dashboard and entry page for better UX during modal interactions ([bca50d9](https://github.com/bramses/ycb-companion/commit/bca50d94acfbdaae72ba28a7c88dfea8e087f388))
+* Enhance API request bodies to include createdAt and improve logging for add operations in route handler ([d8ec0c2](https://github.com/bramses/ycb-companion/commit/d8ec0c2fa9ea5fe826653b91def478b101f58429))
+* Prevent keyboard navigation conflicts with input elements ([923218b](https://github.com/bramses/ycb-companion/commit/923218b80777c60a409e61e343464fbf4e0af584))
+* Refactor search and sharing components with various improvements ([7350cf8](https://github.com/bramses/ycb-companion/commit/7350cf802147fb4b8837f564047bc70a69920a5b))
+* Refine comment handling and graph interaction ([1f52b4b](https://github.com/bramses/ycb-companion/commit/1f52b4bd11878450f820112d97a61c3a4ae673ca))
+* Update Uploader API endpoint to use production URL and adjust textarea font size for improved readability ([1f6aefb](https://github.com/bramses/ycb-companion/commit/1f6aefb91b7c953e5d0994143c70e4b6a1d4e38e))
+
+
+### Features
+
+* Add 'he' library for HTML entity decoding in title and description processing, and update package dependencies accordingly ([013eca0](https://github.com/bramses/ycb-companion/commit/013eca0bd91fd6b959b215ea41d3485ad76bb0ba))
+* Add 'r' key shortcut to open a random entry in DashboardLayout and refactor related functionality in EntryPage and SimpleDashboard ([3f98e62](https://github.com/bramses/ycb-companion/commit/3f98e622627ead0e4bca79647f7074cf7801d296))
+* Add commit-hook.js to .gitignore to exclude local commit hooks from version control ([f319d22](https://github.com/bramses/ycb-companion/commit/f319d2280f407f0e8014f106ed815d7900d0f3e6))
+* Add node-fetch v3.3.2 to package dependencies, enhance Dashboard layout with share functionality and modal integration ([a9971ec](https://github.com/bramses/ycb-companion/commit/a9971ec2f49a2af2769359387a7fe028d1524958))
+* Add node-html-parser dependency and enhance Uploader with new props for text, title, and author defaults in various components ([d13964d](https://github.com/bramses/ycb-companion/commit/d13964d072e72f67bedaed24d0b0ee1b694e7241))
+* Add OIDC client libraries and refactor auth components for improved user authentication flow in the application ([cc21eb2](https://github.com/bramses/ycb-companion/commit/cc21eb2dfd69712817c8153f591b0859a29b63a9))
+* Add title generation feature with API integration and button in Uploader component for enhanced user experience ([81325f0](https://github.com/bramses/ycb-companion/commit/81325f01be43b5031a1ef7031523f7ba97075a67))
+* add uploader modal for text entries in dashboard; refactor keyboard shortcuts for uploader modal activation ([1ad2f18](https://github.com/bramses/ycb-companion/commit/1ad2f1883aed1c938d8dad36d43cba7dd46ce760))
+* Enhance EntryPage with new actions for random entry, search and uploader modals; refactor keyboard navigation logic ([7c4ba22](https://github.com/bramses/ycb-companion/commit/7c4ba22ecc2d6f6baa40d5e41642122d5efcea8c))
+* Enhance landing page content and structure, adding detailed feature descriptions and maintaining responsive design ([8a9bd06](https://github.com/bramses/ycb-companion/commit/8a9bd06c3d6aa65860d4771ba02da7ac5c993a80))
+* Enhance search and graph expansion with platform ID and embedding checks ([ed44b87](https://github.com/bramses/ycb-companion/commit/ed44b87964cba7ed101b428b364a09f79309a8c3))
+* Enhance user interaction and modal focus across components ([54beb74](https://github.com/bramses/ycb-companion/commit/54beb7432f0d5b4ca6b48b105183d6bcd6f5420e))
+* Implement token-based authentication via cookies and add random entry shortcut ([aec75f9](https://github.com/bramses/ycb-companion/commit/aec75f994dde7cea97d6702e26791c860ad00c8b))
+* Implement Uploader component for ShareYCB with loading state and error handling, integrating async ID processing and submission logic ([89ab6dd](https://github.com/bramses/ycb-companion/commit/89ab6ddad45c448630402562c210179058ef4d15))
+* Improve comment interaction and search modal functionality ([223a440](https://github.com/bramses/ycb-companion/commit/223a44076962cb92f145065490bdd82d6fcaab2e))
+* Include user's timezone in POST request for daily API to enhance date handling across different regions ([0f9b74b](https://github.com/bramses/ycb-companion/commit/0f9b74b7d7be419c5c6d898fa988b7384418f256))
+* Integrate next-auth for authentication, adding Keycloak provider and related setup in middleware and auth configurations ([6dd8ad3](https://github.com/bramses/ycb-companion/commit/6dd8ad3d330302de28f63868b903a2aefb9c8132))
+* Integrate QR code functionality and enhance upload process from ShareYCB ([bd1030f](https://github.com/bramses/ycb-companion/commit/bd1030f01e395177d246391d0226b140b07f4b3e))
+* Redesign YCB Companion's landing page with new layout and added features, streamlining navigation for better user experience ([e2d8a2e](https://github.com/bramses/ycb-companion/commit/e2d8a2ee3f35cda99c61b289b6d022f830de4183))
+* Refactor authentication handling to streamline NextAuth integration and improve session management with updated layouts and components ([871a7f9](https://github.com/bramses/ycb-companion/commit/871a7f941bda09a6428ea77b5038bd3dc6fe3f6e))
+* Refactor commit hook and update exclusions in tsconfig, improve date handling and timezone logic in GardenDaily component ([8389618](https://github.com/bramses/ycb-companion/commit/838961897f2e01f520c50fc5aa72fc3f5f2716de))
+* Replace Link with button for share link, update button text for clarity, and adjust styles in ShareModalV2 component ([35fad7d](https://github.com/bramses/ycb-companion/commit/35fad7df3f069509aaf43da75f65da60cea34ae4))
+* Update meta title and description for the Index section in en.json to better reflect the Commonbase theme and purpose ([1a3837d](https://github.com/bramses/ycb-companion/commit/1a3837d79488d4ae8849cf762902ff96cc938f63))
+* Update page title and add multiple YouTube video embeds to showcase features in the unauth landing page ([5737826](https://github.com/bramses/ycb-companion/commit/5737826403c3cf3d2891bfefca70dfc2a0270d5e))
+* Update post-commit hook to use specific Node.js version for consistent environment during commits ([1f58108](https://github.com/bramses/ycb-companion/commit/1f581088c9a0579bc8847c9f349a4dbe06049025))
+
 ## [1.60.1](https://github.com/bramses/ycb-companion/compare/v1.60.0...v1.60.1) (2025-01-13)
 
 
