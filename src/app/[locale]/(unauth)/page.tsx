@@ -19,6 +19,13 @@ export default function Index() {
           <Link href="/about" className="text-blue-500 hover:underline">
             About
           </Link>
+          <Link
+            href="https://www.waitforit.me/signup/ebe2b5cc/"
+            target="_blank"
+            className="text-blue-500 hover:underline"
+          >
+            Join the Waitlist
+          </Link>
         </div>
         <h2 className="mb-4 text-2xl font-semibold">Features</h2>
         <p className="mb-8 text-lg">
