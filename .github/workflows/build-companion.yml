@@ -36,10 +36,10 @@ jobs:
           echo MEILI_DEFAULT_SEARCH_UID="${{ secrets.MEILI_DEFAULT_SEARCH_UID }}" >> $(pwd)/.env
           echo MEILI_DEFAULT_ADMIN_API_KEY="${{ secrets.MEILI_DEFAULT_ADMIN_API_KEY }}" >> $(pwd)/.env
           echo MEILI_DEFAULT_ADMIN_UID="${{ secrets.MEILI_DEFAULT_ADMIN_UID }}" >> $(pwd)/.env
-          echo OIDC_AUTHORITY="${{ secrets.OIDC_AUTHORITY }}" >> $(pwd)/.env
-          echo OIDC_CLIENT_ID="${{ secrets.OIDC_CLIENT_ID }}" >> $(pwd)/.env
-          echo OIDC_REDIRECT_URI="${{ secrets.OIDC_REDIRECT_URI }}" >> $(pwd)/.env
-          echo OIDC_LOGOUT_REDIRECT_URI="${{ secrets.OIDC_LOGOUT_REDIRECT_URI }}" >> $(pwd)/.env
+          echo NEXT_PUBLIC_OIDC_AUTHORITY="${{ secrets.NEXT_PUBLIC_OIDC_AUTHORITY }}" >> $(pwd)/.env
+          echo NEXT_PUBLIC_OIDC_CLIENT_ID="${{ secrets.NEXT_PUBLIC_OIDC_CLIENT_ID }}" >> $(pwd)/.env
+          echo NEXT_PUBLIC_OIDC_REDIRECT_URI="${{ secrets.NEXT_PUBLIC_OIDC_REDIRECT_URI }}" >> $(pwd)/.env
+          echo NEXT_PUBLIC_OIDC_LOGOUT_REDIRECT_URI="${{ secrets.NEXT_PUBLIC_OIDC_LOGOUT_REDIRECT_URI }}" >> $(pwd)/.env
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
