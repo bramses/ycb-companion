@@ -7,19 +7,27 @@ import { getAccessToken } from '@/utils/getAccessToken';
 // import env variables
 
 export const POST = async (request: Request) => {
-  const { data, metadata, createdAt } = await request.json();
+  const { data, metadata, createdAt, duplicateCheck } = await request.json();
   const { CLOUD_URL } = process.env;
   const TOKEN = getAccessToken();
-  console.log(TOKEN); // Retrieve the token from cookies
 
   if (!TOKEN) {
     return NextResponse.json({ error: 'No token provided' }, { status: 401 });
   }
 
-  const entryBody: { data: any; metadata: any; created_at?: string } = {
+  const entryBody: {
+    data: any;
+    metadata: any;
+    created_at?: string;
+    duplicate_check?: any;
+  } = {
     data,
     metadata,
   };
+
+  if (duplicateCheck) {
+    entryBody.duplicate_check = duplicateCheck;
+  }
 
   if (createdAt) {
     entryBody.created_at = createdAt;
