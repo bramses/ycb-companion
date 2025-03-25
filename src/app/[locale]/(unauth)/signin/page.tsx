@@ -21,6 +21,7 @@ export default function Home() {
         router.push('/dashboard'); // Redirect to dashboard
       } else {
         console.log('redirect');
+        console.log(userManager);
         await userManager.signinRedirect();
       }
     }

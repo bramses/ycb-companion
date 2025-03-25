@@ -1,9 +1,12 @@
 'use client';
 
+import 'react-lite-youtube-embed/dist/LiteYouTubeEmbed.css';
+
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import AnimatedNumbers from 'react-animated-numbers';
+import LiteYouTubeEmbed from 'react-lite-youtube-embed';
 
 import { fetchFavicon, fetchRandomEntry } from '@/helpers/functions';
 
@@ -32,6 +35,7 @@ const SimpleDashboard = () => {
   const [totalEntries, setTotalEntries] = useState(-1);
   const [todaysEntriesLength, setTodaysEntriesLength] = useState(0);
   const [uploaderModalType, setUploaderModalType] = useState('');
+  const [showLogEmbed, setShowLogEmbed] = useState<Record<string, boolean>>({});
 
   // const [inboxEntries, setInboxEntries] = useState<any[]>([]);
 
@@ -329,6 +333,14 @@ const SimpleDashboard = () => {
         })
         .filter((entry: any) => entry !== null);
 
+      log.forEach((entry: any) => {
+        if (entry.metadata.author.includes('youtube.com')) {
+          setShowLogEmbed((prev) => ({ ...prev, [entry.id]: false }));
+        } else {
+          // continue
+        }
+      });
+
       setLogEntries(log);
 
       // add favicon to each entry
@@ -364,26 +376,26 @@ const SimpleDashboard = () => {
     router.push(`/dashboard/entry/${entry.id}`);
   };
 
-  const [platformToken, setPlatformToken] = useState('');
+  // const [platformToken, setPlatformToken] = useState('');
 
-  useEffect(() => {
-    // Retrieve the token from cookies when the component mounts
-    const match = document.cookie.match(/(^| )platformToken=([^;]+)/);
-    if (match) {
-      setPlatformToken(match[2] || '');
-    }
-  }, []);
+  // useEffect(() => {
+  //   // Retrieve the token from cookies when the component mounts
+  //   const match = document.cookie.match(/(^| )platformToken=([^;]+)/);
+  //   if (match) {
+  //     setPlatformToken(match[2] || '');
+  //   }
+  // }, []);
 
-  const handleTokenChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const newToken = event.target.value;
-    setPlatformToken(newToken);
-    // Save the token to cookies
-    document.cookie = `platformToken=${newToken}; path=/;`;
-  };
+  // const handleTokenChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  //   const newToken = event.target.value;
+  //   setPlatformToken(newToken);
+  //   // Save the token to cookies
+  //   document.cookie = `platformToken=${newToken}; path=/;`;
+  // };
 
   return (
     <div>
-      <h1 className="mx-2 mt-8 text-xl font-extrabold text-gray-900 md:text-xl lg:text-xl">
+      {/* <h1 className="mx-2 mt-8 text-xl font-extrabold text-gray-900 md:text-xl lg:text-xl">
         Welcome to the{' '}
         <span className="bg-gradient-to-r from-sky-400 to-emerald-600 bg-clip-text text-transparent">
           Your Commonbase Launch Party!!
@@ -396,7 +408,7 @@ const SimpleDashboard = () => {
         className="w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500"
         value={platformToken}
         onChange={handleTokenChange}
-      />
+      /> */}
 
       <h2 className="mx-2 mt-8 text-xl font-extrabold text-gray-400 md:text-lg lg:text-lg">
         What do you want to accomplish today?
@@ -912,6 +924,41 @@ const SimpleDashboard = () => {
                   })()}{' '}
                   {new Date(entry.updatedAt).toLocaleDateString()}
                 </div>
+                {/* a button called 'show embed' that only shows if entry is a youtube video  on click display the embed */}
+                {entry.metadata.author.includes('youtube.com') && (
+                  <>
+                    <button
+                      type="button"
+                      className="inline-flex items-center rounded-full border border-gray-300 bg-gray-50 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:border-blue-600 focus:outline-none focus:ring-1 focus:ring-blue-600"
+                      onClick={() => {
+                        // if entry is a youtube video, display the embed
+                        console.log(`show embed for ${entry.id}`);
+                        console.log(entry.metadata.author);
+                        console.log(
+                          entry.metadata.author.split('v=')[1]?.split('&')[0],
+                        );
+                        console.log(showLogEmbed);
+                        setShowLogEmbed((prev) => ({
+                          ...prev,
+                          [entry.id]: true,
+                        }));
+                      }}
+                    >
+                      Show Embed
+                    </button>
+
+                    {showLogEmbed[entry.id] && (
+                      <div className="mt-2 text-sm text-gray-500">
+                        <LiteYouTubeEmbed
+                          id={
+                            entry.metadata.author.split('v=')[1]?.split('&')[0]
+                          }
+                          title="YouTube video"
+                        />
+                      </div>
+                    )}
+                  </>
+                )}
               </div>
             </div>
             {/* <hr className="my-4" /> */}

@@ -8,6 +8,7 @@ export const POST = async () => {
   const { CLOUD_URL } = process.env;
 
   const TOKEN = getAccessToken();
+  console.log('jwt is');
   console.log(TOKEN);
 
   if (!TOKEN) {
