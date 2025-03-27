@@ -1227,6 +1227,8 @@ const EntryPage = () => {
         (neighbor: any) => !existingNodeIds.includes(neighbor.id),
       );
 
+      console.log('newNeighbors', newNeighbors);
+
       // Update 'fData' with new neighbors
       setFData((prevData: any) => ({
         ...prevData,

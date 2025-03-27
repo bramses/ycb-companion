@@ -139,6 +139,7 @@ const SearchModalBeta = ({
   });
 
   const { user, isLoaded } = useUser();
+  const [userPlan, setUserPlan] = useState<any>(null);
 
   const handleSearchHelper = async (entryData: string) => {
     const parsedEntries = await fetchSearchEntries(
@@ -174,6 +175,11 @@ const SearchModalBeta = ({
       const tokenData = await token.json();
 
       if (tokenData.error) {
+        if (tokenData.error.includes('upgrade to search or synthesis plan')) {
+          setUserPlan('store');
+          return;
+          // throw new Error(tokenData.error);
+        }
         throw new Error(tokenData.error);
       }
       if (Object.keys(tokenData).length === 0) {
@@ -213,6 +219,9 @@ const SearchModalBeta = ({
           fetchToken();
         }
       } else {
+        if (userPlan && userPlan === 'store') {
+          return;
+        }
         fetchToken();
       }
     }, 1000);
@@ -220,7 +229,7 @@ const SearchModalBeta = ({
     return () => {
       clearInterval(interval);
     };
-  }, [meliToken]);
+  }, [meliToken, userPlan]);
 
   useEffect(() => {
     const initializeSearchClient = async () => {
@@ -702,6 +711,12 @@ const SearchModalBeta = ({
                 <hr className="my-4" />
               </div>
             ))}
+          </div>
+          <div className="text-sm text-gray-500">
+            <span className="font-normal">
+              To get full text search on Companion, upgrade to the search or
+              synthesis plan!
+            </span>
           </div>
         </div>
       )}

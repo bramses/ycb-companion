@@ -2,6 +2,7 @@
 
 import 'react-lite-youtube-embed/dist/LiteYouTubeEmbed.css';
 
+import Cookies from 'js-cookie';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -36,6 +37,7 @@ const SimpleDashboard = () => {
   const [todaysEntriesLength, setTodaysEntriesLength] = useState(0);
   const [uploaderModalType, setUploaderModalType] = useState('');
   const [showLogEmbed, setShowLogEmbed] = useState<Record<string, boolean>>({});
+  const [currentPlan, setCurrentPlan] = useState<any>(null);
 
   // const [inboxEntries, setInboxEntries] = useState<any[]>([]);
 
@@ -247,6 +249,34 @@ const SimpleDashboard = () => {
   }, []);
 
   useEffect(() => {
+    const fetchPlan = async () => {
+      const response = await fetch('/api/getPlan', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      const data = await response.json();
+      console.log('data:', data);
+      setCurrentPlan(data.data);
+      const user = Cookies.get('user');
+      if (user) {
+        const userData = JSON.parse(user);
+        console.log('userData:', userData);
+        const expiresAt = userData.expires_at;
+
+        // save to cookies and set expire to user's session
+        Cookies.set('plan', JSON.stringify(data.data.plan), {
+          expires: expiresAt,
+        });
+      } else {
+        console.log('no user');
+      }
+    };
+    fetchPlan();
+  }, []);
+
+  useEffect(() => {
     const todaysEntriesLengthFn = async () => {
       const today = new Date();
       const year = today.getFullYear();
@@ -409,6 +439,8 @@ const SimpleDashboard = () => {
         value={platformToken}
         onChange={handleTokenChange}
       /> */}
+
+      {currentPlan && <p>you are on the {currentPlan.plan} plan</p>}
 
       <h2 className="mx-2 mt-8 text-xl font-extrabold text-gray-400 md:text-lg lg:text-lg">
         What do you want to accomplish today?

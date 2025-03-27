@@ -8,14 +8,34 @@ export const POST = async () => {
   const { CLOUD_URL } = process.env;
 
   const TOKEN = getAccessToken();
-  console.log('jwt is');
-  console.log(TOKEN);
 
   if (!TOKEN) {
     return NextResponse.json({ error: 'No token provided' }, { status: 401 });
   }
 
   try {
+    const planResp = await fetch(`${CLOUD_URL}/user/plan`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${TOKEN}`,
+        'x-companion-secret': process.env.COMPANION_SECRET!,
+      },
+      body: JSON.stringify({}),
+    });
+
+    const planData = await planResp.json();
+    const { plan } = planData;
+
+    if (plan === 'store') {
+      return NextResponse.json(
+        { error: 'upgrade to search or synthesis plan' },
+        {
+          status: 200,
+        },
+      );
+    }
+
     const resp = await fetch(`${CLOUD_URL}/token`, {
       method: 'POST',
       headers: {
@@ -26,7 +46,12 @@ export const POST = async () => {
 
     if (!resp.ok) {
       logger.error(`Failed to create token: ${resp.status}`);
-      return NextResponse.json({}, { status: resp.status });
+      return NextResponse.json(
+        {
+          error: `Failed to create token: ${resp.status}`,
+        },
+        { status: resp.status },
+      );
     }
 
     const token = await resp.json();
@@ -34,6 +59,11 @@ export const POST = async () => {
     return NextResponse.json({ token });
   } catch (error) {
     logger.error(error, 'An error occurred while creating a token');
-    return NextResponse.json({}, { status: 500 });
+    return NextResponse.json(
+      {
+        error: 'An error occurred while creating a token',
+      },
+      { status: 500 },
+    );
   }
 };
