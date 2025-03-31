@@ -110,7 +110,7 @@ const Uploader = ({
         value={textAreaValue}
         onChange={(e) => setTextAreaValue(e.target.value)}
       />
-      {userPlan === 'search' || userPlan === 'synthesis' ? (
+      {userPlan === 'synthesis' ? (
         <>
           <input
             type="checkbox"
