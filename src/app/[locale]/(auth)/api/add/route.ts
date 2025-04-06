@@ -41,18 +41,39 @@ export const POST = async (request: Request) => {
     },
     body: JSON.stringify(entryBody),
   });
-  logger.info('resp:', resp);
+  logger.info('add resp:', resp);
   const respData = await resp.json();
+  const respStatus = resp.status;
 
   try {
     logger.info(`A new add has been created ${JSON.stringify(respData)}`);
 
+    if (respData.error) {
+      const error = new Error(respData.error);
+      (error as any).status = respStatus; // Attach the status property
+      throw error;
+    }
+
     return NextResponse.json({
       respData,
     });
-  } catch (error) {
+  } catch (error: any) {
     logger.error(error, 'An error occurred while creating a add');
 
-    return NextResponse.json({}, { status: 500 });
+    if (error.status === 429) {
+      return NextResponse.json(
+        {
+          error:
+            'You have reached the limit for your account. Please upgrade your plan.',
+        },
+        { status: 429 },
+      );
+    }
+    return NextResponse.json(
+      {
+        error: 'An error occurred while adding an entry',
+      },
+      { status: 500 },
+    );
   }
 };

@@ -37,11 +37,13 @@ export async function POST(req: Request) {
 
   const { prompt } = await req.json();
 
-  const { text } = await generateText({
+  let { text } = await generateText({
     model: openai('gpt-4o-mini'),
     system: 'Generate a concise and descriptive title for the given prompt.',
     prompt,
   });
 
+  // remove " from the beginning and end of the string if it exists
+  text = text.replace(/^"|"$/g, '');
   return NextResponse.json({ title: text.trim() }, { status: 200 });
 }

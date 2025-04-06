@@ -58,45 +58,38 @@ const Uploader = ({
     //   title,
     // };
 
-    const metadata: Record<string, string> = {};
-    console.log('argMetadata:', argMetadata);
-    for (const field of Object.keys(argMetadata)) {
-      if (argMetadata[field] !== undefined) {
-        metadata[field] = argMetadata[field]!;
+    try {
+      const metadata: Record<string, string> = {};
+      console.log('argMetadata:', argMetadata);
+      for (const field of Object.keys(argMetadata)) {
+        if (argMetadata[field] !== undefined) {
+          metadata[field] = argMetadata[field]!;
+        }
       }
+
+      const response = await fetch('/api/add', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          data,
+          metadata,
+        }),
+      });
+      const responseData = await response.json();
+
+      if (responseData.error) {
+        throw new Error(responseData.error);
+      }
+
+      return responseData;
+    } catch (err: any) {
+      setErrorMessage(err.message);
+      setShowError(true);
+      setLoading(false);
+      throw new Error(err.message);
     }
-
-    const response = await fetch('/api/add', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        data,
-        metadata,
-      }),
-    });
-    const responseData = await response.json();
-
-    return responseData;
-
-    // console.log('Response:', responseData);
-
-    // // clear input fields
-    // setTextAreaValue('');
-
-    // if (firstLastName.firstName && firstLastName.lastName) {
-    //   setTitle(`${firstLastName.firstName} ${firstLastName.lastName}`);
-    // } else {
-    //   setTitle('');
-    // }
-    // setAuthor('https://ycb-companion.onrender.com/dashboard');
-    // setLoading(false);
-    // // refocus on text area
-    // const modalMessage = document.getElementById('modal-message');
-    // if (modalMessage) {
-    //   modalMessage.focus();
-    // }
   };
 
   return (
@@ -201,20 +194,24 @@ const Uploader = ({
             }
           }
 
-          const responseEntry = await add(textAreaValue, {
-            author,
-            title: submittedTitle,
-          });
-          if (responseEntry.respData) {
-            router.push(`/dashboard/entry/${responseEntry.respData.id}`);
-            closeModal();
+          try {
+            const responseEntry = await add(textAreaValue, {
+              author,
+              title: submittedTitle,
+            });
+            if (responseEntry.respData) {
+              router.push(`/dashboard/entry/${responseEntry.respData.id}`);
+              closeModal();
+            }
+          } catch (err: any) {
+            console.error('Error adding entry:', err);
           }
         }}
       >
         Add Entry
       </button>
       {loading && <p>Loading...</p>}
-      {showError ? <p>{errorMessage}</p> : null}
+      {showError ? <p className="text-red-500">{errorMessage}</p> : null}
     </div>
   );
 };
