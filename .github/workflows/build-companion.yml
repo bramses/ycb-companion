@@ -56,7 +56,7 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
-          tags: alo42/frontend:${{ inputs.environment }}-${{ inputs.version }}
+          tags: commonbase/frontend:${{ inputs.environment }}-${{ inputs.version }}
 
   tagHelm:
     needs: build
