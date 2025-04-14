@@ -49,6 +49,7 @@
     "d3": "^7.9.0",
     "drizzle-orm": "^0.32.0",
     "formidable": "^3.5.1",
+    "fuse.js": "^7.1.0",
     "he": "^1.2.0",
     "husky": "^9.1.1",
     "instantsearch.js": "^4.75.6",
