@@ -3,6 +3,8 @@
 import Fuse from 'fuse.js';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
+import { fetchByID, updateEntry as apiUpdateEntry } from '@/helpers/functions';
+
 interface Entry {
   id: string;
   data: string;
@@ -18,6 +20,7 @@ interface ThreadEntryProps {
   idSet: React.MutableRefObject<Set<string>>;
   recordExpanded: (entry: Entry) => void;
   recordFetched: (entry: Entry) => void;
+  type: 'root' | 'parent' | 'comment' | 'neighbor';
 }
 
 const ThreadEntry: React.FC<ThreadEntryProps> = ({
@@ -27,14 +30,44 @@ const ThreadEntry: React.FC<ThreadEntryProps> = ({
   idSet,
   recordExpanded,
   recordFetched,
+  type,
 }) => {
   const [aliasComments, setAliasComments] = useState<Entry[]>([]);
+  const [parentComment, setParentComment] = useState<Entry | null>(null);
+  const [parentCommentLoaded, setParentCommentLoaded] = useState(false);
   const [aliasLoaded, setAliasLoaded] = useState(false);
+  const [cdnImageUrl, setCdnImageUrl] = useState<string>('');
+  const [isAddingComment, setIsAddingComment] = useState(false);
 
   const { metadata } = entry;
-  const { author } = metadata;
+  // const { author } = metadata;
   const { title } = metadata;
   const aliasIds: string[] = metadata.alias_ids || [];
+  const parentId = metadata.parent_id || null;
+
+  useEffect(() => {
+    if (metadata.type === 'image') {
+      const fetchData = async () => {
+        const { id } = entry;
+        const cdnResp = await fetch(`/api/fetchImageByIDs`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            ids: [id],
+          }),
+        });
+        const cdnData = await cdnResp.json();
+
+        setCdnImageUrl(
+          cdnData.data.body.urls[id] ? cdnData.data.body.urls[id] : '',
+        );
+      };
+
+      fetchData();
+    }
+  }, [metadata.type]);
 
   const handleToggle = async (e: React.SyntheticEvent<HTMLDetailsElement>) => {
     const details = e.currentTarget;
@@ -42,6 +75,22 @@ const ThreadEntry: React.FC<ThreadEntryProps> = ({
       recordExpanded(entry);
       if (!neighbors[entry.id]) {
         fetchNeighbors(entry.data, entry.id);
+      }
+      if (parentId && !parentCommentLoaded && !idSet.current.has(parentId)) {
+        const parent = await fetch('/api/fetch', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ id: parentId }),
+        });
+        const data = await parent.json();
+
+        if (!idSet.current.has(parentId)) {
+          idSet.current.add(parentId);
+          recordFetched(data.data);
+        }
+
+        setParentComment(data.data);
+        setParentCommentLoaded(true);
       }
       if (aliasIds.length && !aliasLoaded) {
         const fetchedComments: any[] = await Promise.all(
@@ -78,23 +127,198 @@ const ThreadEntry: React.FC<ThreadEntryProps> = ({
     }
   };
 
+  const checkForEmbeddings = async (entryId: string, aliasIDs: string[]) => {
+    const response = await fetch(`/api/checkForEmbed`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        id: entryId,
+      }),
+    });
+
+    const adata = await response.json();
+    if (adata.data.status !== 'completed') return false;
+
+    for await (const aliasID of aliasIDs) {
+      const cresponse = await fetch(`/api/checkForEmbed`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          id: entryId,
+          aliasID,
+        }),
+      });
+      const cdata = await cresponse.json();
+      if (cdata.data.status !== 'completed') return false;
+    }
+
+    return true;
+  };
+
+  const addComment = async (
+    aliasInput: string,
+    parent: { id: string; data: string; metadata: any },
+  ) => {
+    // moving away from transaction manager
+    // the goal is 1) add comment 2) update parent entry 3) extend the force directed graph with the new comment
+    // dont need to refresh the page
+
+    // add comment to data to visually show it
+
+    // setTempComments((prev) => [
+    //   ...prev,
+    //   {
+    //     aliasId: `temp-${uuidv4()}`,
+    //     aliasData: aliasInput,
+    //     aliasCreatedAt: new Date().toISOString(),
+    //     aliasUpdatedAt: new Date().toISOString(),
+    //     aliasMetadata: {
+    //       title: parent.metadata.title,
+    //       author: parent.metadata.author,
+    //       parent_id: parent.id,
+    //     },
+    //   },
+    // ]);
+
+    // set saving changes to true
+    // setIsSaving(true);
+    const addedComment = await fetch(`/api/add`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        data: aliasInput,
+        metadata: {
+          title: parent.metadata.title,
+          author: parent.metadata.author,
+          parent_id: parent.id,
+        },
+      }),
+    });
+
+    const addedCommentRespData = await addedComment.json();
+    const addedCommentData = addedCommentRespData.respData;
+
+    const parentRes = await fetchByID(parent.id);
+    let parentResMetadata = parentRes.metadata;
+    try {
+      parentResMetadata = parentRes.metadata;
+    } catch (err) {
+      console.error('Error parsing parent metadata:', err);
+    }
+    if (parentResMetadata.alias_ids) {
+      parentResMetadata.alias_ids = [
+        ...parentResMetadata.alias_ids,
+        addedCommentData.id,
+      ];
+    } else {
+      parentResMetadata.alias_ids = [addedCommentData.id];
+    }
+
+    await apiUpdateEntry(parent.id, parent.data, {
+      ...parentResMetadata,
+    });
+
+    // setIsSaving(false);
+
+    // setIsGraphLoading(true);
+
+    const checkEmbeddingsWithDelay = async (
+      entryId: string,
+      maxTries: number,
+      currentTry = 0,
+    ): Promise<boolean> => {
+      if (currentTry >= maxTries) return false;
+      const allEmbeddingsComplete = await checkForEmbeddings(entryId, []);
+      if (allEmbeddingsComplete) return true;
+      await new Promise<void>((resolve) => {
+        setTimeout(resolve, 1000);
+      });
+      return checkEmbeddingsWithDelay(entryId, maxTries, currentTry + 1);
+    };
+
+    const allEmbeddingsComplete = await checkEmbeddingsWithDelay(
+      addedCommentData.id,
+      10,
+    );
+
+    if (!allEmbeddingsComplete) {
+      console.log('Embeddings not complete after 10 tries -- try again later');
+      alert('Failed to complete embeddings. Please try again later.');
+      // Optionally, you can redirect the user or take other actions
+    }
+
+    setAliasComments((prev) => [
+      ...prev,
+      {
+        id: addedCommentData.id,
+        data: aliasInput,
+        comments: [],
+        createdAt: addedCommentData.createdAt, // adjust field names as needed
+        metadata: {
+          ...parent.metadata,
+          parent_id: parent.id,
+          title: parent.metadata.title,
+          author: parent.metadata.author,
+        },
+      },
+    ]);
+
+    idSet.current.add(addedCommentData.id);
+    recordFetched(addedCommentData);
+
+    // extend the force directed graph with the new comment
+    // get pen pals
+    // todo the switch of the order of update and fetchByID is causing the graph to not update correctly
+    // const penPals = await searchPenPals(addedCommentData.id, [
+    //   parent.id,
+    //   addedCommentData.id,
+    // ]);
+    // setFData((prevData: any) => ({
+    //   ...prevData,
+    //   comments: [
+    //     ...(prevData.comments || []),
+    //     { comment: aliasInput, penPals, id: addedCommentData.id },
+    //   ],
+    // }));
+
+    // setIsGraphLoading(false);
+  };
+
+  const getColor = (colortype: string) => {
+    if (colortype === 'parent') return 'green';
+    if (colortype === 'comment') return 'blue';
+    return 'black';
+  };
+
   return (
     <details
       style={{ marginLeft: '20px', marginTop: '10px' }}
       onToggle={handleToggle}
     >
       <summary style={{ cursor: 'pointer' }}>
-        {entry.data}{' '}
+        <span
+          style={{
+            color: getColor(type),
+          }}
+        >
+          {entry.data}
+        </span>{' '}
         <a
-          href={`https://ycb-companion.onrender.com/dashboard/entry/${entry.id}`}
+          href={`/dashboard/entry/${entry.id}`}
           target="_blank"
           rel="noopener noreferrer"
           className="text-blue-600 hover:underline"
         >
           <em>
             (by{' '}
-            {author.includes('https://imagedelivery.net') ? (
-              <img src={author} alt="author" />
+            {metadata.type === 'image' ? (
+              <img src={cdnImageUrl} alt="author" />
             ) : (
               title
             )}{' '}
@@ -102,6 +326,66 @@ const ThreadEntry: React.FC<ThreadEntryProps> = ({
           </em>
         </a>
       </summary>
+      <button
+        onClick={() => setIsAddingComment(true)}
+        type="button"
+        className="ml-2 text-blue-600 hover:underline"
+      >
+        Add Comment
+      </button>
+      {isAddingComment && (
+        <div className="flex">
+          <textarea
+            rows={3}
+            style={{ fontSize: '17px' }}
+            className="w-full rounded border border-neutral-dark bg-white px-4 py-2 pr-10 text-neutral-dark"
+            placeholder="add a comment..."
+            // onKeyDown={(e) => {
+            //   if (e.key === 'Enter') {
+            //     e.preventDefault();
+            //     const aliasInput = document.getElementById(
+            //       'alias-input-comment',
+            //     );
+            //     if (!aliasInput) return;
+            //     const alias = (aliasInput as HTMLInputElement).value.trim();
+            //     if (!alias) return;
+            //     addCommentV2(alias, {
+            //       id: entry.id,
+            //       data: entry.data,
+            //       metadata: entry.metadata,
+            //     });
+            //     (aliasInput as HTMLInputElement).value = '';
+            //   }
+            // }}
+            id={`alias-input-comment-${entry.id}`}
+          />
+          <button
+            type="button"
+            onClick={() => {
+              const aliasInput = document.getElementById(
+                `alias-input-comment-${entry.id}`,
+              );
+              if (!aliasInput) return;
+              const alias = (aliasInput as HTMLInputElement).value.trim();
+              if (!alias) return;
+              console.log('alias:', alias);
+              console.log('parent:', entry.data);
+              addComment(alias, {
+                id: entry.id,
+                data: entry.data,
+                metadata: entry.metadata,
+              });
+              (aliasInput as HTMLInputElement).value = '';
+
+              setIsAddingComment(false);
+            }}
+            className="rounded-full border border-neutral-light bg-neutral-light px-3 pb-1 text-xl text-neutral-dark focus:border-brand focus:ring-brand"
+            aria-label="add alias"
+          >
+            +
+          </button>
+        </div>
+      )}
       {aliasComments.map((comment) => (
         <ThreadEntry
           key={`${comment.id}-key`}
@@ -111,8 +395,21 @@ const ThreadEntry: React.FC<ThreadEntryProps> = ({
           idSet={idSet}
           recordExpanded={recordExpanded}
           recordFetched={recordFetched}
+          type="comment"
         />
       ))}
+      {parentComment && (
+        <ThreadEntry
+          key={`${parentComment.id}-key`}
+          entry={parentComment}
+          neighbors={neighbors}
+          fetchNeighbors={fetchNeighbors}
+          idSet={idSet}
+          recordExpanded={recordExpanded}
+          recordFetched={recordFetched}
+          type="parent"
+        />
+      )}
       {neighbors[entry.id] &&
         neighbors[entry.id]!.map((child) => (
           <ThreadEntry
@@ -123,6 +420,7 @@ const ThreadEntry: React.FC<ThreadEntryProps> = ({
             idSet={idSet}
             recordExpanded={recordExpanded}
             recordFetched={recordFetched}
+            type="neighbor"
           />
         ))}
     </details>
@@ -162,10 +460,11 @@ export default function Thread({ inputId }: { inputId: string }) {
   };
   const fetchNeighbors = async (query: string, id: string) => {
     try {
+      console.log('fetching neighbors for', `${id} query: ${query}`);
       const res = await fetch('/api/search', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ query }),
+        body: JSON.stringify({ platformId: id }),
       });
       const data = await res.json();
       const newNeighbors: Entry[] = data.data.filter((entry: Entry) => {
@@ -214,7 +513,7 @@ export default function Thread({ inputId }: { inputId: string }) {
       .map((entry, idx) => {
         const meta = entry.metadata;
         const { title } = meta;
-        return `${idx + 1}. [${entry.data} - ${title}](https://ycb-companion.onrender.com/dashboard/entry/${entry.id})`;
+        return `${idx + 1}. [${entry.data} - ${title}](/dashboard/entry/${entry.id})`;
       })
       .join('\n');
     try {
@@ -322,6 +621,7 @@ export default function Thread({ inputId }: { inputId: string }) {
             idSet={idSet}
             recordExpanded={recordExpanded}
             recordFetched={recordFetched}
+            type="root"
           />
         </div>
       )}
@@ -352,7 +652,7 @@ export default function Thread({ inputId }: { inputId: string }) {
                   style={{ marginBottom: '5px' }}
                 >
                   <a
-                    href={`https://ycb-companion.onrender.com/dashboard/entry/${result.item.id}`}
+                    href={`/dashboard/entry/${result.item.id}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     style={{ textDecoration: 'underline', color: 'blue' }}

@@ -514,20 +514,7 @@ const EntryPage = () => {
         console.log('cdndata.data.body', cdnData.data.body);
         console.log('cdndata.data.body.urls', cdnData.data.body.urls);
         console.log('cdndata.data.body.urls[id]', cdnData.data.body.urls[id]);
-        /*
 
-        {
-    "data": {
-        "status": 200,
-        "body": {
-            "urls": {
-                "56054dfb-f552-4753-8795-5d59bd8bca31": "https://djeod2qvj3cms.cloudfront.net/9c77cad9-7ecd-4b25-a9cd-8575ab6721c8/56054dfb-f552-4753-8795-5d59bd8bca31.webp?Expires=1744718756&Signature=mdO49jp768x3A8L6O2Elu7ByI9khF7QaphA0Nuaaoz2aMoJvwAJ-I8S~Ubum54jc3JUpJJjsClbc0noa~AIjAGmI2U5JJxGU0wTzTaldRkoppYGPq5r3KLYomPHPfP7TWREBS9h2jFkLNd62qkeUOb~WwgrJcX2Ut8oBlj8lOvLGN4iv1qN4xJsDowenPkoDs~mfTbbkCcAp6rWi2uMEsmH7wTuDiffybh5NRtUnhT3PYrD4gjRTPUs8nxkG5UrFMbMk0tlPMoKk-l01zNpV4xTQKolGhhzQAdTGUfi2ZI0QjU9QWAN36VfJtYNgww2CJCHP3tOt2EZXuXIFs4lr9w__&Key-Pair-Id=K1REMDSX9A33BN"
-            }
-        }
-    }
-}
-
-        */
         setCdnImageUrl(
           cdnData.data.body.urls[id] ? cdnData.data.body.urls[id] : '',
         );
@@ -2347,6 +2334,11 @@ again:
           entry.
         </div>
       )}
+      {data ? (
+        <div>
+          <Thread inputId={data.id} />
+        </div>
+      ) : null}
       {fData ? (
         <div className="relative">
           <div className="relative">
@@ -2373,11 +2365,6 @@ again:
               </div>
             )}
           </div>
-        </div>
-      ) : null}
-      {data ? (
-        <div>
-          <Thread inputId={data.id} />
         </div>
       ) : null}
       <div>
