@@ -12,6 +12,8 @@ const oidcConfig = {
   post_logout_redirect_uri: process.env.NEXT_PUBLIC_OIDC_LOGOUT_REDIRECT_URI!,
   scope: 'openid profile email',
   automaticSilentRenew: true,
+  silent_redirect_uri: `http:://localhost:3000/signin-silent-callback`,
+  accessTokenExpiringNotificationTime: 60,
   // userStore: new WebStorageStateStore({ store }),
 };
 
@@ -27,5 +29,13 @@ const oidcConfig = {
 // };
 
 const userManager = new UserManager(oidcConfig);
+
+// userManager.events.addAccessTokenExpired(() => {
+//   console.log('Access token expired');
+//   userManager
+//     .signinSilent()
+//     .then((user) => Cookies.set('user', JSON.stringify(user)))
+//     .catch(console.warn);
+// });
 
 export default userManager;

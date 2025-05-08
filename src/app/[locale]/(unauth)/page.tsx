@@ -13,9 +13,9 @@ export default function Index() {
           <Link href="/dashboard" className="text-blue-500 hover:underline">
             Dashboard
           </Link>
-          {/* <Link href="/sign-up" className="text-blue-500 hover:underline">
-            Register
-          </Link> */}
+          <Link href="/signin" className="text-blue-500 hover:underline">
+            Sign In
+          </Link>
           <Link href="/about" className="text-blue-500 hover:underline">
             About
           </Link>

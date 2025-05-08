@@ -14,16 +14,17 @@ export default function Home() {
       const currentTime = Math.floor(Date.now() / 1000);
 
       if (user) {
-        console.log('setting user:', user);
+        console.log('setting user silent:', user);
         Cookies.set('user', JSON.stringify(user));
         if (user.expires_at! < currentTime) {
-          console.log('renewing');
-          await userManager.signinRedirect();
+          console.log('[silent]renewing');
+          await userManager.signinSilent();
         }
         router.push('/dashboard'); // Redirect to dashboard
       } else {
-        console.log('redirect on signin');
-        await userManager.signinRedirect();
+        console.log('[silent] redirect');
+
+        await userManager.signinSilent();
         router.push('/dashboard'); // Redirect to dashboard
       }
     }
@@ -34,7 +35,7 @@ export default function Home() {
   // after 500 ms redirect to dashboard
   useEffect(() => {
     const timer = setTimeout(() => {
-      console.log('redirecting to dashboard');
+      console.log('[silent] redirecting to dashboard');
       router.push('/dashboard');
     }, 100);
     return () => clearTimeout(timer);

@@ -45,6 +45,9 @@ const ThreadEntry: React.FC<ThreadEntryProps> = ({
   const aliasIds: string[] = metadata.alias_ids || [];
   const parentId = metadata.parent_id || null;
 
+  const commentsNotLoaded = aliasIds.filter((id) => !idSet.current.has(id));
+  const parentNotLoaded = !idSet.current.has(parentId);
+
   useEffect(() => {
     if (metadata.type === 'image') {
       const fetchData = async () => {
@@ -309,6 +312,10 @@ const ThreadEntry: React.FC<ThreadEntryProps> = ({
         >
           {entry.data}
         </span>{' '}
+        {commentsNotLoaded.length > 0 && (
+          <span className="text-sm">({commentsNotLoaded.length} comments)</span>
+        )}
+        {parentNotLoaded && <span>(has parent)</span>}
         <a
           href={`/dashboard/entry/${entry.id}`}
           target="_blank"

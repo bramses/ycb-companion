@@ -3,6 +3,8 @@
 import { enUS, frFR } from '@clerk/localizations';
 import { ClerkProvider } from '@clerk/nextjs';
 
+import AuthProvider from '@/components/AuthProvider';
+import userManager from '@/libs/oidc';
 import { AppConfig } from '@/utils/AppConfig';
 
 export default function AuthLayout(props: {
@@ -24,6 +26,11 @@ export default function AuthLayout(props: {
     dashboardUrl = `/${props.params.locale}${dashboardUrl}`;
   }
 
+  userManager.events.addAccessTokenExpired(() => {
+    console.log('Access token expired -- silent renewing');
+    userManager.signinSilent().catch(console.warn);
+  });
+
   return (
     <ClerkProvider
       localization={clerkLocale}
@@ -32,7 +39,20 @@ export default function AuthLayout(props: {
       signInFallbackRedirectUrl={dashboardUrl}
       signUpFallbackRedirectUrl={dashboardUrl}
     >
-      {props.children}
+      {/* {props.children}
+      <iframe
+        src="/signin-silent-callback"
+        style={{ display: 'none' }}
+        title="silent renew"
+      /> */}
+      <AuthProvider>
+        {props.children}
+        <iframe
+          src="/silent-signin-callback"
+          style={{ display: 'none' }}
+          title="silent renew"
+        />
+      </AuthProvider>
     </ClerkProvider>
   );
 }
