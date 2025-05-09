@@ -3,6 +3,7 @@
 import Fuse from 'fuse.js';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
+import ImageUpload from '@/components/ImageUpload';
 import { fetchByID, updateEntry as apiUpdateEntry } from '@/helpers/functions';
 
 interface Entry {
@@ -38,6 +39,7 @@ const ThreadEntry: React.FC<ThreadEntryProps> = ({
   const [aliasLoaded, setAliasLoaded] = useState(false);
   const [cdnImageUrl, setCdnImageUrl] = useState<string>('');
   const [isAddingComment, setIsAddingComment] = useState(false);
+  const [isAddingImage, setIsAddingImage] = useState(false);
 
   const { metadata } = entry;
   // const { author } = metadata;
@@ -340,6 +342,14 @@ const ThreadEntry: React.FC<ThreadEntryProps> = ({
       >
         Add Comment
       </button>
+      <button
+        onClick={() => setIsAddingImage(true)}
+        type="button"
+        className="ml-2 text-blue-600 hover:underline"
+      >
+        Add Image
+      </button>
+      {isAddingImage && <ImageUpload metadata={{ parent_id: entry.id }} />}
       {isAddingComment && (
         <div className="flex">
           <textarea
