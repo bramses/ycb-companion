@@ -1,3 +1,4 @@
+import Cookies from 'js-cookie';
 import { UserManager } from 'oidc-client-ts';
 
 // OIDC_AUTHORITY=http://localhost:8080/realms/ycb
@@ -30,12 +31,12 @@ const oidcConfig = {
 
 const userManager = new UserManager(oidcConfig);
 
-// userManager.events.addAccessTokenExpired(() => {
-//   console.log('Access token expired');
-//   userManager
-//     .signinSilent()
-//     .then((user) => Cookies.set('user', JSON.stringify(user)))
-//     .catch(console.warn);
-// });
+userManager.events.addAccessTokenExpired(() => {
+  console.log('Access token expired');
+  userManager
+    .signinSilent()
+    .then((user) => Cookies.set('user', JSON.stringify(user)))
+    .catch(console.warn);
+});
 
 export default userManager;

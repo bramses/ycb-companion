@@ -10,10 +10,13 @@ export default function SilentCallback() {
     const renewUser = async () => {
       console.log('silent renewing');
       const user = await userManager.getUser();
-      if (!user) {
+      console.log('user is :', user);
+      const currentTime = Math.floor(Date.now() / 1000);
+      console.log(!user || (user && user.expires_at! < currentTime));
+      if (!user || (user && user.expires_at! < currentTime)) {
         // redirect to signin
         console.log('redirecting to signin');
-        await userManager.signinRedirect();
+        await userManager.signinPopup();
         return;
       }
       Cookies.set('user', JSON.stringify(user));

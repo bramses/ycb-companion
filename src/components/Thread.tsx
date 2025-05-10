@@ -4,7 +4,13 @@ import Fuse from 'fuse.js';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
 import ImageUpload from '@/components/ImageUpload';
-import { fetchByID, updateEntry as apiUpdateEntry } from '@/helpers/functions';
+import {
+  fetchByID,
+  fetchRandomEntry,
+  updateEntry as apiUpdateEntry,
+} from '@/helpers/functions';
+
+import LinkPreviewCard from './LinkPreview';
 
 interface Entry {
   id: string;
@@ -40,15 +46,26 @@ const ThreadEntry: React.FC<ThreadEntryProps> = ({
   const [cdnImageUrl, setCdnImageUrl] = useState<string>('');
   const [isAddingComment, setIsAddingComment] = useState(false);
   const [isAddingImage, setIsAddingImage] = useState(false);
+  const [randomCommentPlaceholder, setRandomCommentPlaceholder] =
+    useState('Add a comment...');
 
   const { metadata } = entry;
   // const { author } = metadata;
-  const { title } = metadata;
+  // const { title } = metadata;
   const aliasIds: string[] = metadata.alias_ids || [];
   const parentId = metadata.parent_id || null;
 
   const commentsNotLoaded = aliasIds.filter((id) => !idSet.current.has(id));
   const parentNotLoaded = !idSet.current.has(parentId);
+
+  useEffect(() => {
+    // get random entry on load
+    const asyncFn = async () => {
+      const rentry = await fetchRandomEntry();
+      setRandomCommentPlaceholder(rentry.data);
+    };
+    asyncFn();
+  }, []);
 
   useEffect(() => {
     if (metadata.type === 'image') {
@@ -321,8 +338,8 @@ const ThreadEntry: React.FC<ThreadEntryProps> = ({
   };
 
   const getColor = (colortype: string) => {
-    if (colortype === 'parent') return 'green';
-    if (colortype === 'comment') return 'blue';
+    if (colortype === 'parent') return 'purple';
+    if (colortype === 'comment') return 'coral';
     return 'black';
   };
 
@@ -338,6 +355,11 @@ const ThreadEntry: React.FC<ThreadEntryProps> = ({
           }}
         >
           {cdnImageUrl === '' ? entry.data : ''}
+          {metadata.type === 'image' ? (
+            <img src={cdnImageUrl} alt="author" />
+          ) : (
+            ''
+          )}
         </span>{' '}
         {commentsNotLoaded.length > 0 && (
           <span className="text-sm">({commentsNotLoaded.length} comments)</span>
@@ -349,16 +371,11 @@ const ThreadEntry: React.FC<ThreadEntryProps> = ({
           rel="noopener noreferrer"
           className="text-blue-600 hover:underline"
         >
-          <em>
-            (by{' '}
-            {metadata.type === 'image' ? (
-              <img src={cdnImageUrl} alt="author" />
-            ) : (
-              title
-            )}{' '}
-            {timeAgo(entry.createdAt)})
-          </em>
+          <em>{timeAgo(entry.createdAt)}</em>
         </a>
+        {!entry.metadata.author.includes('yourcommonbase.com') && (
+          <LinkPreviewCard url={entry.metadata.author} />
+        )}
       </summary>
       <button
         onClick={() => setIsAddingComment(true)}
@@ -381,7 +398,7 @@ const ThreadEntry: React.FC<ThreadEntryProps> = ({
             rows={3}
             style={{ fontSize: '17px' }}
             className="w-full rounded border border-neutral-dark bg-white px-4 py-2 pr-10 text-neutral-dark"
-            placeholder="add a comment..."
+            placeholder={randomCommentPlaceholder}
             // onKeyDown={(e) => {
             //   if (e.key === 'Enter') {
             //     e.preventDefault();
@@ -487,6 +504,10 @@ export default function Thread({ inputId }: { inputId: string }) {
   }>({});
   const idSet = useRef(new Set<string>());
 
+  useEffect(() => {
+    console.log('expandedEntries:', expandedEntries);
+  }, [expandedEntries]);
+
   const recordFetched = (entry: Entry) => {
     setFetchedEntries((prev) => {
       if (prev[entry.id]) return prev;
@@ -549,22 +570,6 @@ export default function Thread({ inputId }: { inputId: string }) {
   //     console.error('error fetching random:', error);
   //   }
   // };
-
-  const copyMarkdown = async () => {
-    const md = expandedEntries
-      .map((entry, idx) => {
-        const meta = entry.metadata;
-        const { title } = meta;
-        return `${idx + 1}. [${entry.data} - ${title}](/dashboard/entry/${entry.id})`;
-      })
-      .join('\n');
-    try {
-      await navigator.clipboard.writeText(md);
-      alert('markdown copied to clipboard!');
-    } catch (error) {
-      console.error('copy error:', error);
-    }
-  };
 
   useEffect(() => {
     // fetch id in props and set it as the parent
@@ -645,15 +650,6 @@ export default function Thread({ inputId }: { inputId: string }) {
 
   return (
     <div>
-      <div style={{ marginBottom: '10px' }}>
-        <button
-          onClick={copyMarkdown}
-          type="button"
-          className="btn btn-secondary rounded bg-green-500 px-4 py-2 text-white hover:bg-green-600"
-        >
-          copy markdown
-        </button>
-      </div>
       {parent && (
         <div style={{ marginTop: '10px' }}>
           <ThreadEntry

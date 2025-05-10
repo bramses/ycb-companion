@@ -13,7 +13,13 @@ export default function AuthProvider({
   useEffect(() => {
     const renew = async () => {
       try {
+        console.log('authprovider useeffect');
         await userManager.signinSilent();
+        const user = await userManager.getUser();
+        const currentTime = Math.floor(Date.now() / 1000);
+        if (!user || (user && user.expires_at! < currentTime)) {
+          await userManager.signinRedirect();
+        }
       } catch (error) {
         console.warn(error);
       }
