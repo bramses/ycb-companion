@@ -18,12 +18,12 @@ export default function Home() {
         Cookies.set('user', JSON.stringify(user));
         if (user.expires_at! < currentTime) {
           console.log('renewing');
-          await userManager.signinRedirect();
+          await userManager.signinPopup();
         }
         router.push('/dashboard'); // Redirect to dashboard
       } else {
         console.log('redirect on signin');
-        await userManager.signinRedirect();
+        await userManager.signinPopup();
         router.push('/dashboard'); // Redirect to dashboard
       }
     }

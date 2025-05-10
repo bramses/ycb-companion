@@ -18,7 +18,7 @@ export default function AuthProvider({
         const user = await userManager.getUser();
         const currentTime = Math.floor(Date.now() / 1000);
         if (!user || (user && user.expires_at! < currentTime)) {
-          await userManager.signinRedirect();
+          await userManager.signinPopup();
         }
       } catch (error) {
         console.warn(error);
