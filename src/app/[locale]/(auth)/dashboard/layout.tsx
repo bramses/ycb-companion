@@ -37,6 +37,16 @@ export default function DashboardLayout(props: { children: React.ReactNode }) {
   const openSearchModalBeta = () => setSearchModalBetaOpen(true);
   const closeSearchModalBeta = () => setSearchModalBetaOpen(false);
 
+  const [isStoreOpen, setIsStoreOpen] = useState(false);
+  // const [isSearchOpen, setIsSearchOpen] = useState(false);
+  // const [isSynthesizeOpen, setIsSynthesizeOpen] = useState(false);
+  // const [isShareOpen, setIsShareOpen] = useState(false);
+
+  const toggleStore = () => setIsStoreOpen((prev) => !prev);
+  // const toggleSearch = () => setIsSearchOpen((prev) => !prev);
+  // const toggleSynthesize = () => setIsSynthesizeOpen((prev) => !prev);
+  // const toggleShare = () => setIsShareOpen((prev) => !prev);
+
   const onOpenModal = (which: string) => {
     if (which === 'upload') {
       openFastEntryModal();
@@ -260,6 +270,11 @@ export default function DashboardLayout(props: { children: React.ReactNode }) {
     <BaseTemplate
       leftNav={
         <>
+          <li className="border-none text-gray-700 hover:text-gray-900">
+            <Link href="/" className="border-none">
+              Back to Landing Page
+            </Link>
+          </li>
           <li>
             <Link
               href="/dashboard/"
@@ -267,6 +282,60 @@ export default function DashboardLayout(props: { children: React.ReactNode }) {
             >
               {t('dashboard_link')}
             </Link>
+          </li>
+          <li>
+            <button onClick={toggleStore} className="border-none" type="button">
+              {isStoreOpen ? '-' : '+'}
+              Store
+            </button>
+            {isStoreOpen && (
+              <ul className="ml-4">
+                <li>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setUploaderModalType('text');
+                      setUploaderModalOpen(true);
+                      const intervalId = setInterval(() => {
+                        const input = document.getElementById('modal-message');
+                        if (input) {
+                          setTimeout(() => {
+                            input.focus();
+                          }, 100);
+                          clearInterval(intervalId); // Stop the interval once the input is focused
+                        }
+                      }, 100);
+                    }}
+                    className="border-none text-gray-700 hover:text-gray-900"
+                  >
+                    Text
+                  </button>
+                </li>
+                <li>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setUploaderModalType('url');
+                      setUploaderModalOpen(true);
+                      const intervalId = setInterval(() => {
+                        const input = document.getElementById(
+                          'modal-message-author',
+                        );
+                        if (input) {
+                          setTimeout(() => {
+                            input.focus();
+                          }, 100);
+                          clearInterval(intervalId); // Stop the interval once the input is focused
+                        }
+                      }, 100);
+                    }}
+                    className="border-none text-gray-700 hover:text-gray-900"
+                  >
+                    URL
+                  </button>
+                </li>
+              </ul>
+            )}
           </li>
           {/* <li className="border-none text-gray-700 hover:text-gray-900">
             <Link href="/dashboard/flow/" className="border-none">

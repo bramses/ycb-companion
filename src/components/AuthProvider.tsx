@@ -18,7 +18,9 @@ export default function AuthProvider({
         const user = await userManager.getUser();
         const currentTime = Math.floor(Date.now() / 1000);
         if (!user || (user && user.expires_at! < currentTime)) {
-          await userManager.signinPopup();
+          Cookies.set('user', '');
+          await userManager.clearStaleState();
+          await userManager.startSilentRenew();
         }
       } catch (error) {
         console.warn(error);
@@ -30,6 +32,7 @@ export default function AuthProvider({
     userManager.events.addAccessTokenExpiring(renew);
     userManager.events.addAccessTokenExpired(renew);
     userManager.events.addUserLoaded((user) => {
+      console.log('userManager.events.addUserLoaded:', user);
       Cookies.set('user', JSON.stringify(user));
     });
 

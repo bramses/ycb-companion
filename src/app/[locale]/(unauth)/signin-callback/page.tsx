@@ -15,7 +15,7 @@ export default function SigninCallback() {
       console.log('userManager:', userManager);
       const user = await userManager.getUser();
       Cookies.set('user', JSON.stringify(user));
-      await userManager.signinPopupCallback();
+      await userManager.signinRedirectCallback();
       router.push('/dashboard');
     }
 
