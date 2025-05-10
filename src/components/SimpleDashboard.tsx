@@ -265,6 +265,14 @@ const SimpleDashboard = () => {
         console.log('userData:', userData);
         const expiresAt = userData.expires_at;
 
+        const currentTime = Math.floor(Date.now() / 1000);
+        if (userData.expires_at! < currentTime) {
+          console.log('renewing');
+          window.location.href =
+            'https://development.yourcommonbase.com/keycloak/';
+          return;
+        }
+
         // save to cookies and set expire to user's session
         Cookies.set('plan', JSON.stringify(data.data.plan), {
           expires: expiresAt,
