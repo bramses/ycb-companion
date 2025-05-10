@@ -268,8 +268,7 @@ const SimpleDashboard = () => {
         const currentTime = Math.floor(Date.now() / 1000);
         if (userData.expires_at! < currentTime) {
           console.log('renewing');
-          window.location.href =
-            'https://development.yourcommonbase.com/keycloak/';
+          router.push('/signin-silent');
           return;
         }
 

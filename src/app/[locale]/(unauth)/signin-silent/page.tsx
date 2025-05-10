@@ -25,7 +25,7 @@ export default function Home() {
         console.log('[silent] redirect');
 
         await userManager.signinRedirect();
-        router.push('/dashboard'); // Redirect to dashboard
+        // router.push('/dashboard'); // Redirect to dashboard
       }
     }
 
