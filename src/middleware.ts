@@ -1,19 +1,20 @@
 // import { cookies } from 'next/headers';
+import { cookies } from 'next/headers';
 import createMiddleware from 'next-intl/middleware';
 
 import { AppConfig } from './utils/AppConfig';
 
 // Define the protected routes
-// const protectedRoutes = [
-//   /^\/dashboard(.*)/,
-//   /^\/[^/]+\/dashboard(.*)/, // Matches /:locale/dashboard(.*)
-//   /^\/api\/(.*)/,
-// ];
+const protectedRoutes = [
+  /^\/dashboard(.*)/,
+  /^\/[^/]+\/dashboard(.*)/, // Matches /:locale/dashboard(.*)
+  /^\/api\/(.*)/,
+];
 
 // Function to check if a route is protected
-// function isProtectedRoute(pathname: string): boolean {
-//   return protectedRoutes.some((route) => route.test(pathname));
-// }
+function isProtectedRoute(pathname: string): boolean {
+  return protectedRoutes.some((route) => route.test(pathname));
+}
 
 // Create the intl middleware
 const intlMiddleware = createMiddleware({
@@ -25,30 +26,50 @@ const intlMiddleware = createMiddleware({
 export default async function middleware(req: any) {
   // TODO i commented this out to test the auth
   // check for user in cookies and check if it's expired
-  // const user = cookies().get('user');
-  // let session = false;
-  // if (user) {
-  //   const userData = JSON.parse(user.value);
-  //   const currentTime = Math.floor(Date.now() / 1000);
+  const user = cookies().get('user');
 
-  //   if (userData.expires_at > currentTime) {
-  //     session = true;
-  //   } else {
-  //     console.log('user is expired');
-  //   }
-  // }
-  // if (
-  //   !session &&
-  //   isProtectedRoute(req.nextUrl.pathname) &&
-  //   !req.nextUrl.pathname.includes('/signin')
-  // ) {
-  //   const callbackUrl = req.nextUrl.href.replace(req.nextUrl.origin, ''); // Get the full URL as the callback
-  //   const newUrl = new URL('/signin', req.nextUrl.origin);
-  //   newUrl.searchParams.set('callbackUrl', callbackUrl); // Add callbackUrl as a query parameter
-  //   return Response.redirect(newUrl); // TODO: does the auth need await now that i added routes to exclude auth?
-  //   // return Response.redirect('http://localhost:3000/signin'); // TODO: does the auth need await now that i added routes to exclude auth?
-  //   // return intlMiddleware(req);
-  // }
+  let session = false;
+  if (user) {
+    const userData = JSON.parse(user.value);
+    if (user && userData) {
+      console.log('[middleware] user:', user);
+
+      const currentTime = Math.floor(Date.now() / 1000);
+
+      if (!userData) {
+        return Response.redirect(new URL('/signin', req.nextUrl.origin));
+      }
+
+      if (userData.expires_at > currentTime) {
+        session = true;
+      } else {
+        if (
+          isProtectedRoute(req.nextUrl.pathname) &&
+          !req.nextUrl.pathname.includes('/signin')
+        ) {
+          return Response.redirect(
+            new URL('/signin-silent', req.nextUrl.origin),
+          );
+        }
+        return intlMiddleware(req);
+      }
+    }
+    console.log(
+      !session &&
+        isProtectedRoute(req.nextUrl.pathname) &&
+        !req.nextUrl.pathname.includes('/signin'),
+    );
+    if (
+      !session &&
+      isProtectedRoute(req.nextUrl.pathname) &&
+      !req.nextUrl.pathname.includes('/signin')
+    ) {
+      const callbackUrl = req.nextUrl.href.replace(req.nextUrl.origin, ''); // Get the full URL as the callback
+      const newUrl = new URL('/signin', req.nextUrl.origin);
+      newUrl.searchParams.set('callbackUrl', callbackUrl); // Add callbackUrl as a query parameter
+      return Response.redirect(newUrl); // TODO: does the auth need await now that i added routes to exclude auth?
+    }
+  }
 
   // Apply intlMiddleware for all requests
   return intlMiddleware(req);

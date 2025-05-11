@@ -13,7 +13,7 @@ const oidcConfig = {
   post_logout_redirect_uri: process.env.NEXT_PUBLIC_OIDC_LOGOUT_REDIRECT_URI!,
   scope: 'openid profile email',
   automaticSilentRenew: true,
-  silent_redirect_uri: `http:://localhost:3000/signin-silent-callback`,
+  silent_redirect_uri: process.env.NEXT_PUBLIC_OIDC_SILENT_REDIRECT_URI!,
   accessTokenExpiringNotificationTime: 60,
   // userStore: new WebStorageStateStore({ store }),
 };

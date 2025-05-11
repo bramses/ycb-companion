@@ -1,12 +1,13 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 
+import userManager from '@/libs/oidc';
+
 export default function Signin() {
-  const router = useRouter();
   useEffect(() => {
     async function handleLogin() {
+      await userManager.signinRedirect();
       // const user = await userManager.getUser();
       // const currentTime = Math.floor(Date.now() / 1000);
 
@@ -20,21 +21,11 @@ export default function Signin() {
       //   router.push('/dashboard'); // Redirect to dashboard
       // } else {
       //   console.log('redirect on signin');
-      window.location.href = 'https://development.yourcommonbase.com/keycloak/';
       //   router.push('/dashboard'); // Redirect to dashboard
       // }
     }
 
     handleLogin();
-  }, []);
-
-  // after 500 ms redirect to dashboard
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      console.log('redirecting to dashboard');
-      router.push('/dashboard');
-    }, 100);
-    return () => clearTimeout(timer);
   }, []);
 
   return (
