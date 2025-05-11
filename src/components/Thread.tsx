@@ -373,9 +373,18 @@ const ThreadEntry: React.FC<ThreadEntryProps> = ({
         >
           <em>{timeAgo(entry.createdAt)}</em>
         </a>
-        {!entry.metadata.author.includes('yourcommonbase.com') && (
-          <LinkPreviewCard url={entry.metadata.author} />
-        )}
+        {!entry.metadata.author.includes('yourcommonbase.com') &&
+          entry.metadata.ogTitle &&
+          entry.metadata.ogDescription &&
+          entry.metadata.ogImages &&
+          entry.metadata.ogImages.length > 0 && (
+            <LinkPreviewCard
+              url={entry.metadata.author}
+              title={entry.metadata.ogTitle}
+              description={entry.metadata.ogDescription}
+              image={entry.metadata.ogImages[0]}
+            />
+          )}
       </summary>
       <button
         onClick={() => setIsAddingComment(true)}
