@@ -46,20 +46,23 @@ const Uploader = ({
     // };
 
     const metadata: Record<string, string> = {};
-    console.log('argMetadata:', argMetadata);
+    console.log('submitting:', {
+      url: data,
+      metadata,
+    });
     for (const field of Object.keys(argMetadata)) {
       if (argMetadata[field] !== undefined) {
         metadata[field] = argMetadata[field]!;
       }
     }
 
-    const response = await fetch('/api/add', {
+    const response = await fetch('/api/addURL', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        data,
+        url: data,
         metadata,
       }),
     });
@@ -86,22 +89,10 @@ const Uploader = ({
         className="mt-2 block w-full rounded-lg bg-blue-700 px-5 py-2.5 text-sm font-medium text-white hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
         onClick={async () => {
           try {
-            const response = await fetch(`/api/get-title?url=${author}`);
-            const data = await response.json();
-
-            if (data.title) {
-              const responseEntry = await add(
-                data.description
-                  ? `${data.description} | ${data.title}`
-                  : data.title,
-                { author, title: data.title },
-              );
-              if (responseEntry.respData) {
-                router.push(`/dashboard/entry/${responseEntry.respData.id}`);
-                closeModal();
-              }
-            } else {
-              throw new Error('No title found');
+            const responseEntry = await add(author, {});
+            if (responseEntry.respData) {
+              router.push(`/dashboard/entry/${responseEntry.respData.id}`);
+              closeModal();
             }
           } catch (err) {
             setShowError(true);

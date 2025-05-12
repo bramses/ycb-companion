@@ -23,7 +23,7 @@ export const POST = async (request: Request) => {
       Authorization: `Bearer ${TOKEN}`,
     },
     body: JSON.stringify({
-      excludeParentId: true,
+      excludeParentId: false,
       date,
       // get the timezone from the user's browser
       timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,

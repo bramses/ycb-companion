@@ -45,6 +45,7 @@ const ThreadEntry: React.FC<ThreadEntryProps> = ({
   const [aliasLoaded, setAliasLoaded] = useState(false);
   const [cdnImageUrl, setCdnImageUrl] = useState<string>('');
   const [isAddingComment, setIsAddingComment] = useState(false);
+  const [isAddingURL, setIsAddingURL] = useState(false);
   const [isAddingImage, setIsAddingImage] = useState(false);
   const [randomCommentPlaceholder, setRandomCommentPlaceholder] =
     useState('Add a comment...');
@@ -206,33 +207,17 @@ const ThreadEntry: React.FC<ThreadEntryProps> = ({
     return 'just now';
   }
 
+  // turn isodate into form mm-dd-yyyy
+  function convertDate(date: string) {
+    const dateParts = date.split('T');
+    const dateParts2 = dateParts[0]!.split('-');
+    return `${dateParts2[1]}-${dateParts2[2]}-${dateParts2[0]}`;
+  }
+
   const addComment = async (
     aliasInput: string,
     parent: { id: string; data: string; metadata: any },
   ) => {
-    // moving away from transaction manager
-    // the goal is 1) add comment 2) update parent entry 3) extend the force directed graph with the new comment
-    // dont need to refresh the page
-
-    // add comment to data to visually show it
-
-    // setTempComments((prev) => [
-    //   ...prev,
-    //   {
-    //     aliasId: `temp-${uuidv4()}`,
-    //     aliasData: aliasInput,
-    //     aliasCreatedAt: new Date().toISOString(),
-    //     aliasUpdatedAt: new Date().toISOString(),
-    //     aliasMetadata: {
-    //       title: parent.metadata.title,
-    //       author: parent.metadata.author,
-    //       parent_id: parent.id,
-    //     },
-    //   },
-    // ]);
-
-    // set saving changes to true
-    // setIsSaving(true);
     const addedComment = await fetch(`/api/add`, {
       method: 'POST',
       headers: {
@@ -337,6 +322,96 @@ const ThreadEntry: React.FC<ThreadEntryProps> = ({
     // setIsGraphLoading(false);
   };
 
+  const addURL = async (
+    url: string,
+    parent: { id: string; data: string; metadata: any },
+  ) => {
+    const addedComment = await fetch(`/api/addURL`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        url,
+        metadata: {
+          parent_id: entry.id,
+        },
+      }),
+    });
+
+    const addedCommentRespData = await addedComment.json();
+    const addedCommentData = addedCommentRespData.respData;
+
+    const parentRes = await fetchByID(parent.id);
+    let parentResMetadata = parentRes.metadata;
+    try {
+      parentResMetadata = parentRes.metadata;
+    } catch (err) {
+      console.error('Error parsing parent metadata:', err);
+    }
+    if (parentResMetadata.alias_ids) {
+      parentResMetadata.alias_ids = [
+        ...parentResMetadata.alias_ids,
+        addedCommentData.id,
+      ];
+    } else {
+      parentResMetadata.alias_ids = [addedCommentData.id];
+    }
+
+    await apiUpdateEntry(parent.id, parent.data, {
+      ...parentResMetadata,
+    });
+
+    // setIsSaving(false);
+
+    // setIsGraphLoading(true);
+
+    const checkEmbeddingsWithDelay = async (
+      entryId: string,
+      maxTries: number,
+      currentTry = 0,
+    ): Promise<boolean> => {
+      if (currentTry >= maxTries) return false;
+      const allEmbeddingsComplete = await checkForEmbeddings(entryId, []);
+      if (allEmbeddingsComplete) return true;
+      await new Promise<void>((resolve) => {
+        setTimeout(resolve, 1000);
+      });
+      return checkEmbeddingsWithDelay(entryId, maxTries, currentTry + 1);
+    };
+
+    const allEmbeddingsComplete = await checkEmbeddingsWithDelay(
+      addedCommentData.id,
+      10,
+    );
+
+    if (!allEmbeddingsComplete) {
+      console.log('Embeddings not complete after 10 tries -- try again later');
+      alert('Failed to complete embeddings. Please try again later.');
+      // Optionally, you can redirect the user or take other actions
+    }
+
+    setAliasComments((prev) => [
+      ...prev,
+      {
+        id: addedCommentData.id,
+        data: addedCommentData.data,
+        comments: [],
+        createdAt: addedCommentData.createdAt, // adjust field names as needed
+        metadata: {
+          ...parent.metadata,
+          parent_id: parent.id,
+          title: parent.metadata.title,
+          author: parent.metadata.author,
+        },
+      },
+    ]);
+
+    idSet.current.add(addedCommentData.id);
+    recordFetched(addedCommentData);
+    setIsAddingURL(false);
+  };
+
   const getColor = (colortype: string) => {
     if (colortype === 'parent') return 'purple';
     if (colortype === 'comment') return 'coral';
@@ -354,7 +429,14 @@ const ThreadEntry: React.FC<ThreadEntryProps> = ({
             color: getColor(type),
           }}
         >
-          {cdnImageUrl === '' ? entry.data : ''}
+          {cdnImageUrl === '' &&
+          !(
+            (entry.metadata.ogTitle || entry.metadata.ogDescription) &&
+            entry.metadata.ogImages &&
+            entry.metadata.ogImages.length > 0
+          )
+            ? entry.data
+            : ''}
           {metadata.type === 'image' ? (
             <img src={cdnImageUrl} alt="author" />
           ) : (
@@ -366,7 +448,7 @@ const ThreadEntry: React.FC<ThreadEntryProps> = ({
         )}
         {parentNotLoaded && <span>(has parent)</span>}
         <a
-          href={`/dashboard/entry/${entry.id}`}
+          href={`/dashboard/garden?date=${convertDate(entry.createdAt)}`}
           target="_blank"
           rel="noopener noreferrer"
           className="text-blue-600 hover:underline"
@@ -374,8 +456,7 @@ const ThreadEntry: React.FC<ThreadEntryProps> = ({
           <em>{timeAgo(entry.createdAt)}</em>
         </a>
         {!entry.metadata.author.includes('yourcommonbase.com') &&
-          entry.metadata.ogTitle &&
-          entry.metadata.ogDescription &&
+          (entry.metadata.ogTitle || entry.metadata.ogDescription) &&
           entry.metadata.ogImages &&
           entry.metadata.ogImages.length > 0 && (
             <LinkPreviewCard
@@ -400,7 +481,40 @@ const ThreadEntry: React.FC<ThreadEntryProps> = ({
       >
         Add Image
       </button>
+      <button
+        onClick={() => setIsAddingURL(true)}
+        type="button"
+        className="ml-2 text-blue-600 hover:underline"
+      >
+        Add URL
+      </button>
       {isAddingImage && <ImageUpload metadata={{ parent_id: entry.id }} />}
+      {isAddingURL && (
+        <div>
+          <input
+            type="text"
+            placeholder="https://yourcommonbase.com/dashboard"
+            className="w-full rounded border border-neutral-dark bg-white px-4 py-2 pr-10 text-neutral-dark"
+            style={{ fontSize: '17px' }}
+            id={`link-input-comment-${entry.id}`}
+          />
+          <button
+            onClick={() => {
+              const url = document.getElementById(
+                `link-input-comment-${entry.id}`,
+              );
+              if (!url) return;
+              const urlValue = (url as HTMLInputElement).value.trim();
+              if (!urlValue) return;
+              addURL(urlValue, entry);
+            }}
+            type="button"
+            className="ml-2 text-blue-600 hover:underline"
+          >
+            Add URL
+          </button>
+        </div>
+      )}
       {isAddingComment && (
         <div className="flex">
           <textarea
