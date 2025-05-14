@@ -158,6 +158,31 @@ export default function DashboardLayout(props: { children: React.ReactNode }) {
     };
   }, []);
 
+  useEffect(() => {
+    const handleKeyDown = (event: any) => {
+      const target = event.target as HTMLElement;
+      if (
+        event.key === 'i' &&
+        // meta key not pressed
+        !event.metaKey &&
+        !event.ctrlKey &&
+        !event.shiftKey &&
+        !target.tagName.toLowerCase().includes('input') &&
+        !target.tagName.toLowerCase().includes('textarea')
+      ) {
+        // upload url
+        setUploaderModalType('image');
+        setUploaderModalOpen(true);
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
+
   // add event listener to 'r' key to open random page
   useEffect(() => {
     // const fetchRandomEntry = async () => {
@@ -332,6 +357,18 @@ export default function DashboardLayout(props: { children: React.ReactNode }) {
                     className="border-none text-gray-700 hover:text-gray-900"
                   >
                     URL [u]
+                  </button>
+                </li>
+                <li>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setUploaderModalType('image');
+                      setUploaderModalOpen(true);
+                    }}
+                    className="border-none text-gray-700 hover:text-gray-900"
+                  >
+                    Image [i]
                   </button>
                 </li>
                 <button

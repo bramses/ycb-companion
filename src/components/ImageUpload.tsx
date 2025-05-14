@@ -5,7 +5,15 @@ import { useState } from 'react';
 
 import { fetchByID, updateEntry as apiUpdateEntry } from '@/helpers/functions';
 
-export default function ImageUploader({ metadata }: { metadata: any }) {
+interface UploaderProps {
+  metadata: any;
+  onUploadComplete?: (result: any) => void;
+}
+
+export default function ImageUploader({
+  metadata,
+  onUploadComplete,
+}: UploaderProps) {
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -61,6 +69,10 @@ export default function ImageUploader({ metadata }: { metadata: any }) {
       }
 
       setResult(json);
+
+      if (onUploadComplete) {
+        onUploadComplete(json);
+      }
     } catch (err) {
       console.error(err);
     } finally {
