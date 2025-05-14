@@ -38,12 +38,12 @@ export default function DashboardLayout(props: { children: React.ReactNode }) {
   const closeSearchModalBeta = () => setSearchModalBetaOpen(false);
 
   const [isStoreOpen, setIsStoreOpen] = useState(false);
-  // const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
   // const [isSynthesizeOpen, setIsSynthesizeOpen] = useState(false);
   // const [isShareOpen, setIsShareOpen] = useState(false);
 
   const toggleStore = () => setIsStoreOpen((prev) => !prev);
-  // const toggleSearch = () => setIsSearchOpen((prev) => !prev);
+  const toggleSearch = () => setIsSearchOpen((prev) => !prev);
   // const toggleSynthesize = () => setIsSynthesizeOpen((prev) => !prev);
   // const toggleShare = () => setIsShareOpen((prev) => !prev);
 
@@ -272,7 +272,7 @@ export default function DashboardLayout(props: { children: React.ReactNode }) {
         <>
           <li className="border-none text-gray-700 hover:text-gray-900">
             <Link href="/" className="border-none">
-              Back to Landing Page
+              Landing Page
             </Link>
           </li>
           <li>
@@ -308,7 +308,7 @@ export default function DashboardLayout(props: { children: React.ReactNode }) {
                     }}
                     className="border-none text-gray-700 hover:text-gray-900"
                   >
-                    Text
+                    Text [t]
                   </button>
                 </li>
                 <li>
@@ -331,7 +331,88 @@ export default function DashboardLayout(props: { children: React.ReactNode }) {
                     }}
                     className="border-none text-gray-700 hover:text-gray-900"
                   >
-                    URL
+                    URL [u]
+                  </button>
+                </li>
+                <button
+                  type="button"
+                  onClick={() => {
+                    window.open(
+                      'https://denim-prince-fcc.notion.site/Public-Roadmap-1f334f25fe4b807689b4f0c71056527a?pvs=4',
+                      '_blank',
+                    );
+                  }}
+                  className="border-none text-gray-700 hover:text-gray-900"
+                >
+                  Roadmap
+                </button>
+              </ul>
+            )}
+          </li>
+          <li>
+            <button
+              onClick={toggleSearch}
+              className="border-none"
+              type="button"
+            >
+              {isSearchOpen ? '-' : '+'}
+              Search
+            </button>
+            {isSearchOpen && (
+              <ul className="ml-4">
+                <li>
+                  <button
+                    type="button"
+                    onClick={() => router.push('/dashboard/garden/')}
+                    className="border-none text-gray-700 hover:text-gray-900"
+                  >
+                    Calendar
+                  </button>
+                </li>
+                <li>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      handleRandom();
+                    }}
+                    className="border-none text-gray-700 hover:text-gray-900"
+                  >
+                    Random [r]
+                  </button>
+                </li>
+                <li>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      openSearchModalBeta();
+                      const intervalId = setInterval(() => {
+                        const input =
+                          document.getElementById('modal-beta-search');
+                        if (input) {
+                          setTimeout(() => {
+                            input.focus();
+                          }, 100);
+                          clearInterval(intervalId); // Stop the interval once the input is focused
+                        }
+                      }, 100);
+                    }}
+                    className="border-none text-gray-700 hover:text-gray-900"
+                  >
+                    Search [/]
+                  </button>
+                </li>
+                <li>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      window.open(
+                        'https://denim-prince-fcc.notion.site/Public-Roadmap-1f334f25fe4b807689b4f0c71056527a?pvs=4',
+                        '_blank',
+                      );
+                    }}
+                    className="border-none text-gray-700 hover:text-gray-900"
+                  >
+                    Roadmap
                   </button>
                 </li>
               </ul>
@@ -364,14 +445,14 @@ export default function DashboardLayout(props: { children: React.ReactNode }) {
             </Link>
             <span> ({inboxCount.data.count})</span>
           </li> */}
-          <li>
+          {/* <li>
             <Link
               href="/dashboard/garden/"
               className="border-none text-gray-700 hover:text-gray-900"
             >
               {t('garden_link')}
             </Link>
-          </li>
+          </li> */}
           {/* <li>
             <Link
               href="/dashboard/grid/"
