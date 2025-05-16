@@ -39,12 +39,6 @@ export default function AuthLayout(props: {
       signInFallbackRedirectUrl={dashboardUrl}
       signUpFallbackRedirectUrl={dashboardUrl}
     >
-      {/* {props.children}
-      <iframe
-        src="/signin-silent-callback"
-        style={{ display: 'none' }}
-        title="silent renew"
-      /> */}
       <AuthProvider>
         {props.children}
         <iframe
