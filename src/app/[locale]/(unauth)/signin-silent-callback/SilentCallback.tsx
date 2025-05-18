@@ -10,7 +10,15 @@ export default function SilentCallback() {
   const router = useRouter();
   useEffect(() => {
     const renewUser = async () => {
-      await userManager.signinCallback();
+      try {
+        await userManager.signinSilentCallback();
+      } catch (err) {
+        console.warn(
+          'silent renew callback error, redirecting to sign in',
+          err,
+        );
+        router.push('/signin');
+      }
       const user = await userManager.getUser();
 
       Cookies.set('user', JSON.stringify(user));
