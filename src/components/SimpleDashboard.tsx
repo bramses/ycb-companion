@@ -286,10 +286,6 @@ const SimpleDashboard = () => {
       // if createdAt == updatedAt, say "added", else "updated"
       const log = data.data
         .map((entry: any) => {
-          // skip entries with parent_id
-          if (entry.metadata.parent_id) {
-            return null;
-          }
           if (entry.createdAt === entry.updatedAt) {
             return {
               ...entry,
@@ -333,6 +329,40 @@ const SimpleDashboard = () => {
   useEffect(() => {
     fetchLogEntries();
   }, []);
+
+  const [cdnImageUrls, setCdnImageUrls] = useState<{ [id: string]: string }>(
+    {},
+  );
+
+  useEffect(() => {
+    // Find all image entries that don't have a URL yet
+    const imageEntries = logEntries.filter(
+      (entry: any) =>
+        entry.metadata.type === 'image' && !cdnImageUrls[entry.id],
+    );
+
+    if (imageEntries.length === 0) return;
+
+    const fetchImages = async () => {
+      const ids = imageEntries.map((entry: any) => entry.id);
+      const cdnResp = await fetch(`/api/fetchImageByIDs`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids }),
+      });
+      const cdnData = await cdnResp.json();
+
+      // Update state with new URLs
+      setCdnImageUrls((prev) => ({
+        ...prev,
+        ...Object.fromEntries(
+          ids.map((id: string) => [id, cdnData.data.body.urls[id] || '']),
+        ),
+      }));
+    };
+
+    fetchImages();
+  }, [logEntries]);
 
   return (
     <div>
@@ -452,6 +482,13 @@ const SimpleDashboard = () => {
                       </div>
                     )}
                   </>
+                )}
+                {entry.metadata.type === 'image' && cdnImageUrls[entry.id] && (
+                  <img
+                    src={cdnImageUrls[entry.id]}
+                    alt="entry"
+                    style={{ maxWidth: 200, marginTop: 8 }}
+                  />
                 )}
               </div>
             </div>
