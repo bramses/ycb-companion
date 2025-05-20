@@ -484,19 +484,24 @@ const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
         ),
       ),
       ...data.expansion.flatMap((expansion: any) =>
-        expansion.children.map((child: any) => ({
-          id: child.id,
-          root: expansion.parent,
-          label: child.data,
-          group: 'expansionChild',
-          image: child.image,
-          title: child.title,
-          author: child.author,
-          createdAt: child.createdAt,
-          comments: child.comments,
-          similarity: child.similarity,
-          sourceLabel: expansion.comment,
-        })),
+        expansion.children.map(
+          (child: any) =>
+            getParentOrSelf(child, 'expansionChild', expansion.parent),
+
+          //   {
+          //   id: child.id,
+          //   root: expansion.parent,
+          //   label: child.data,
+          //   group: 'expansionChild',
+          //   image: child.image,
+          //   title: child.title,
+          //   author: child.author,
+          //   createdAt: child.createdAt,
+          //   comments: child.comments,
+          //   similarity: child.similarity,
+          //   sourceLabel: expansion.comment,
+          // }
+        ),
       ),
     ];
 
@@ -537,7 +542,7 @@ const ForceDirectedGraph: React.FC<ForceDirectedGraphProps> = ({
       ...data.expansion.flatMap((expansion: any) =>
         expansion.children.map((child: any) => ({
           source: expansion.parent,
-          target: child.id,
+          target: child.parent ? child.parent.id : child.id,
           similarity: child.similarity,
         })),
       ),

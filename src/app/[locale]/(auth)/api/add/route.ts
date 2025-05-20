@@ -7,19 +7,27 @@ import { getAccessToken } from '@/utils/getAccessToken';
 // import env variables
 
 export const POST = async (request: Request) => {
-  const { data, metadata, createdAt } = await request.json();
+  const { data, metadata, createdAt, duplicateCheck } = await request.json();
   const { CLOUD_URL } = process.env;
   const TOKEN = getAccessToken();
-  console.log(TOKEN); // Retrieve the token from cookies
 
   if (!TOKEN) {
     return NextResponse.json({ error: 'No token provided' }, { status: 401 });
   }
 
-  const entryBody: { data: any; metadata: any; created_at?: string } = {
+  const entryBody: {
+    data: any;
+    metadata: any;
+    created_at?: string;
+    duplicate_check?: any;
+  } = {
     data,
     metadata,
   };
+
+  if (duplicateCheck) {
+    entryBody.duplicate_check = duplicateCheck;
+  }
 
   if (createdAt) {
     entryBody.created_at = createdAt;
@@ -33,18 +41,39 @@ export const POST = async (request: Request) => {
     },
     body: JSON.stringify(entryBody),
   });
-  logger.info('resp:', resp);
+  logger.info('add resp:', resp);
   const respData = await resp.json();
+  const respStatus = resp.status;
 
   try {
     logger.info(`A new add has been created ${JSON.stringify(respData)}`);
 
+    if (respData.error) {
+      const error = new Error(respData.error);
+      (error as any).status = respStatus; // Attach the status property
+      throw error;
+    }
+
     return NextResponse.json({
       respData,
     });
-  } catch (error) {
+  } catch (error: any) {
     logger.error(error, 'An error occurred while creating a add');
 
-    return NextResponse.json({}, { status: 500 });
+    if (error.status === 429) {
+      return NextResponse.json(
+        {
+          error:
+            'You have reached the limit for your account. Please upgrade your plan.',
+        },
+        { status: 429 },
+      );
+    }
+    return NextResponse.json(
+      {
+        error: 'An error occurred while adding an entry',
+      },
+      { status: 500 },
+    );
   }
 };

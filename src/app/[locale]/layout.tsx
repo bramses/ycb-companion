@@ -58,6 +58,11 @@ export default function RootLayout(props: {
           messages={messages}
         >
           {props.children}
+          <iframe
+            src="/signin-silent-callback"
+            style={{ display: 'none' }}
+            title="silent renew"
+          />
         </NextIntlClientProvider>
       </body>
     </html>

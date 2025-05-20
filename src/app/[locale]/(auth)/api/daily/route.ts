@@ -11,7 +11,6 @@ export const POST = async (request: Request) => {
   const { CLOUD_URL } = process.env;
 
   const TOKEN = getAccessToken();
-  console.log(TOKEN);
 
   if (!TOKEN) {
     return NextResponse.json({ error: 'No token provided' }, { status: 401 });
@@ -24,7 +23,7 @@ export const POST = async (request: Request) => {
       Authorization: `Bearer ${TOKEN}`,
     },
     body: JSON.stringify({
-      excludeParentId: true,
+      excludeParentId: false,
       date,
       // get the timezone from the user's browser
       timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,

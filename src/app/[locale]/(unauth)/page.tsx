@@ -10,14 +10,21 @@ export default function Index() {
           Welcome to Your Commonbase Companion
         </h1>
         <div className="mb-8 flex space-x-4">
-          <Link href="/sign-in" className="text-blue-500 hover:underline">
-            Login
+          <Link href="/dashboard" className="text-blue-500 hover:underline">
+            Dashboard
           </Link>
-          <Link href="/sign-up" className="text-blue-500 hover:underline">
-            Register
+          <Link href="/signin" className="text-blue-500 hover:underline">
+            Sign In
           </Link>
           <Link href="/about" className="text-blue-500 hover:underline">
             About
+          </Link>
+          <Link
+            href="https://www.waitforit.me/signup/ebe2b5cc/"
+            target="_blank"
+            className="text-blue-500 hover:underline"
+          >
+            Join the Waitlist
           </Link>
         </div>
         <h2 className="mb-4 text-2xl font-semibold">Features</h2>

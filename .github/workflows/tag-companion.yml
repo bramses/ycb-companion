@@ -1,0 +1,34 @@
+name: (TAG) Build + Push Frontend
+
+on:
+  push:
+    tags:
+      - "frontend-*-*.*.*"
+
+jobs:
+  extract_info:
+    name: Extract info from git tag
+    outputs:
+      ENVIRONMENT: ${{ steps.extract_tag.outputs.environment }}
+      VERSION: ${{ steps.extract_tag.outputs.version }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Extract tag info
+        id: extract_tag
+        run: |
+          TAG_NAME=${GITHUB_REF#refs/tags/} 
+          IFS='-' read -ra PARTS <<< "$TAG_NAME"
+          VERSION="${PARTS[-1]}"
+          ENVIRONMENT="${PARTS[-2]}"
+
+          echo "environment=${ENVIRONMENT}" >> "$GITHUB_OUTPUT"
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+
+  build_release_frontend:
+    name: Build and Release Frontend
+    needs: extract_info
+    uses: ./.github/workflows/build-companion.yml
+    with:
+      environment: ${{ needs.extract_info.outputs.ENVIRONMENT }}
+      version: ${{ needs.extract_info.outputs.VERSION }}
+    secrets: inherit

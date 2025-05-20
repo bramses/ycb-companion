@@ -36,7 +36,9 @@ const MeliSearchInstant = () => {
       <SearchBox />
       <Hits />
     </InstantSearch>
-  ) : null;
+  ) : (
+    <p>loading search</p>
+  );
 };
 
 export default MeliSearchInstant;

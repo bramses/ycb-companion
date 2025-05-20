@@ -3,8 +3,9 @@
 'use client';
 
 // import { useUser } from '@clerk/nextjs';
+import Cookies from 'js-cookie';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 interface UploaderProps {
   closeModal: () => void;
@@ -31,6 +32,16 @@ const Uploader = ({
   const [showError, setShowError] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [autoGenerateTitle, setAutoGenerateTitle] = useState(true); // New state for checkbox
+  const [userPlan, setUserPlan] = useState<any>(null);
+
+  useEffect(() => {
+    // get plan from cookies
+    const plan = Cookies.get('plan');
+    console.log('plan:', plan);
+    if (plan) {
+      setUserPlan(plan.replace(/"/g, ''));
+    }
+  }, []);
 
   const add = async (
     data: string,
@@ -47,45 +58,38 @@ const Uploader = ({
     //   title,
     // };
 
-    const metadata: Record<string, string> = {};
-    console.log('argMetadata:', argMetadata);
-    for (const field of Object.keys(argMetadata)) {
-      if (argMetadata[field] !== undefined) {
-        metadata[field] = argMetadata[field]!;
+    try {
+      const metadata: Record<string, string> = {};
+      console.log('argMetadata:', argMetadata);
+      for (const field of Object.keys(argMetadata)) {
+        if (argMetadata[field] !== undefined) {
+          metadata[field] = argMetadata[field]!;
+        }
       }
+
+      const response = await fetch('/api/add', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          data,
+          metadata,
+        }),
+      });
+      const responseData = await response.json();
+
+      if (responseData.error) {
+        throw new Error(responseData.error);
+      }
+
+      return responseData;
+    } catch (err: any) {
+      setErrorMessage(err.message);
+      setShowError(true);
+      setLoading(false);
+      throw new Error(err.message);
     }
-
-    const response = await fetch('/api/add', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        data,
-        metadata,
-      }),
-    });
-    const responseData = await response.json();
-
-    return responseData;
-
-    // console.log('Response:', responseData);
-
-    // // clear input fields
-    // setTextAreaValue('');
-
-    // if (firstLastName.firstName && firstLastName.lastName) {
-    //   setTitle(`${firstLastName.firstName} ${firstLastName.lastName}`);
-    // } else {
-    //   setTitle('');
-    // }
-    // setAuthor('https://ycb-companion.onrender.com/dashboard');
-    // setLoading(false);
-    // // refocus on text area
-    // const modalMessage = document.getElementById('modal-message');
-    // if (modalMessage) {
-    //   modalMessage.focus();
-    // }
   };
 
   return (
@@ -99,31 +103,52 @@ const Uploader = ({
         value={textAreaValue}
         onChange={(e) => setTextAreaValue(e.target.value)}
       />
-      <input
-        type="checkbox"
-        id="auto-generate-title"
-        checked={autoGenerateTitle}
-        onChange={() => setAutoGenerateTitle(!autoGenerateTitle)}
-        className="ml-2 mt-2"
-      />
-      {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */}
-      <label
-        className="ml-2 text-sm font-medium text-gray-900"
-        htmlFor="auto-generate-title"
-      >
-        Auto-generate title
-      </label>
+      {userPlan === 'synthesis' ? (
+        <>
+          <input
+            type="checkbox"
+            id="auto-generate-title"
+            checked={autoGenerateTitle}
+            onChange={() => setAutoGenerateTitle(!autoGenerateTitle)}
+            className="ml-2 mt-2"
+          />
 
-      {!autoGenerateTitle && (
-        <input
-          type="text"
-          style={{ fontSize: '17px' }}
-          className="mt-2 block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder:text-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
-          placeholder="Title your entry..."
-          onChange={(e) => setTitle(e.target.value)}
-          value={title}
-        />
+          {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */}
+          <label
+            className="ml-2 text-sm font-medium text-gray-900"
+            htmlFor="auto-generate-title"
+          >
+            Auto-generate title
+          </label>
+
+          {!autoGenerateTitle && (
+            <input
+              type="text"
+              style={{ fontSize: '17px' }}
+              className="mt-2 block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder:text-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
+              placeholder="Title your entry..."
+              onChange={(e) => setTitle(e.target.value)}
+              value={title}
+            />
+          )}
+        </>
+      ) : (
+        <>
+          <input
+            type="text"
+            style={{ fontSize: '17px' }}
+            className="mt-2 block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder:text-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
+            placeholder="Title your entry..."
+            onChange={(e) => setTitle(e.target.value)}
+            value={title}
+          />
+
+          <span className="text-sm text-gray-500">
+            To get auto generated titles, upgrade to the synthesis plan!
+          </span>
+        </>
       )}
+
       <button
         type="button"
         className="mt-2 block w-full rounded-lg bg-blue-700 px-5 py-2.5 text-sm font-medium text-white hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
@@ -169,20 +194,24 @@ const Uploader = ({
             }
           }
 
-          const responseEntry = await add(textAreaValue, {
-            author,
-            title: submittedTitle,
-          });
-          if (responseEntry.respData) {
-            router.push(`/dashboard/entry/${responseEntry.respData.id}`);
-            closeModal();
+          try {
+            const responseEntry = await add(textAreaValue, {
+              author,
+              title: submittedTitle,
+            });
+            if (responseEntry.respData) {
+              router.push(`/dashboard/entry/${responseEntry.respData.id}`);
+              closeModal();
+            }
+          } catch (err: any) {
+            console.error('Error adding entry:', err);
           }
         }}
       >
         Add Entry
       </button>
       {loading && <p>Loading...</p>}
-      {showError ? <p>{errorMessage}</p> : null}
+      {showError ? <p className="text-red-500">{errorMessage}</p> : null}
     </div>
   );
 };

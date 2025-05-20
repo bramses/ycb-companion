@@ -19,15 +19,10 @@ const Uploader = ({
   titleDefault,
   authorDefault,
 }: UploaderProps) => {
-  // const { user, isLoaded } = useUser();
   const router = useRouter();
   console.log(textDefault);
   console.log(titleDefault);
   console.log(authorDefault);
-  // const [firstLastName, setFirstLastName] = useState({
-  //   firstName: '',
-  //   lastName: '',
-  // });
 
   const [loading, setLoading] = useState(false);
   const [shareYCBLoadingPct, setShareYCBLoadingPct] = useState(0);
