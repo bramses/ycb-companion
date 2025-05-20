@@ -41,22 +41,28 @@ export default function SettingsPage() {
   }
 
   return (
-    <form
-      onSubmit={uploadProfilePicture}
-      style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}
-    >
-      {preview && (
-        <img src={preview} alt="preview" style={{ maxWidth: '200px' }} />
-      )}
-      <input type="file" accept="image/*" onChange={handleFileChange} />
-      <button type="submit" disabled={!file || loading}>
-        {loading ? 'uploading...' : 'upload image'}
-      </button>
-      {result && (
-        <pre style={{ whiteSpace: 'pre-wrap' }}>
-          {JSON.stringify(result, null, 2)}
-        </pre>
-      )}
-    </form>
+    <>
+      <h1>Settings</h1>
+      <h2>Upload profile picture</h2>
+      <form
+        onSubmit={uploadProfilePicture}
+        style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}
+      >
+        {preview && (
+          <img src={preview} alt="preview" style={{ maxWidth: '200px' }} />
+        )}
+        <input type="file" accept="image/*" onChange={handleFileChange} />
+        <button type="submit" disabled={!file || loading}>
+          {loading ? 'uploading...' : 'upload image'}
+        </button>
+        {result && (
+          <pre style={{ whiteSpace: 'pre-wrap' }}>
+            {JSON.stringify(result, null, 2)}
+          </pre>
+        )}
+      </form>
+      <h2>Tiers</h2>
+      <p>Current Tier: </p>
+    </>
   );
 }

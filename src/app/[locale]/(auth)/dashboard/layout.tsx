@@ -6,7 +6,6 @@ import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useState } from 'react';
 import Modal from 'react-modal';
 
-import LocaleSwitcher from '@/components/LocaleSwitcher';
 import { LogOutButton } from '@/components/LogOutButton';
 import SearchModalBeta from '@/components/SearchModalBeta';
 import SpeedDial from '@/components/SpeedDial';
@@ -39,13 +38,13 @@ export default function DashboardLayout(props: { children: React.ReactNode }) {
 
   const [isStoreOpen, setIsStoreOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  // const [isSynthesizeOpen, setIsSynthesizeOpen] = useState(false);
-  // const [isShareOpen, setIsShareOpen] = useState(false);
+  const [isSynthesizeOpen, setIsSynthesizeOpen] = useState(false);
+  const [isShareOpen, setIsShareOpen] = useState(false);
 
   const toggleStore = () => setIsStoreOpen((prev) => !prev);
   const toggleSearch = () => setIsSearchOpen((prev) => !prev);
-  // const toggleSynthesize = () => setIsSynthesizeOpen((prev) => !prev);
-  // const toggleShare = () => setIsShareOpen((prev) => !prev);
+  const toggleSynthesize = () => setIsSynthesizeOpen((prev) => !prev);
+  const toggleShare = () => setIsShareOpen((prev) => !prev);
 
   const onOpenModal = (which: string) => {
     if (which === 'upload') {
@@ -455,6 +454,69 @@ export default function DashboardLayout(props: { children: React.ReactNode }) {
               </ul>
             )}
           </li>
+          <li>
+            <button
+              onClick={toggleSynthesize}
+              className="border-none"
+              type="button"
+            >
+              {isSynthesizeOpen ? '-' : '+'}
+              Synthesize
+            </button>
+            {isSynthesizeOpen && (
+              <ul className="ml-4">
+                <li>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      window.open(
+                        'https://denim-prince-fcc.notion.site/Public-Roadmap-1f334f25fe4b807689b4f0c71056527a?pvs=4',
+                        '_blank',
+                      );
+                    }}
+                    className="border-none text-gray-700 hover:text-gray-900"
+                  >
+                    Roadmap
+                  </button>
+                </li>
+              </ul>
+            )}
+          </li>
+          <li>
+            <button onClick={toggleShare} className="border-none" type="button">
+              {isShareOpen ? '-' : '+'}
+              Share
+            </button>
+            {isShareOpen && (
+              <ul className="ml-4">
+                <li>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      window.open('https://www.sharecommonbase.com/', '_blank');
+                    }}
+                    className="border-none text-gray-700 hover:text-gray-900"
+                  >
+                    Share Commonbase
+                  </button>
+                </li>
+                <li>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      window.open(
+                        'https://denim-prince-fcc.notion.site/Public-Roadmap-1f334f25fe4b807689b4f0c71056527a?pvs=4',
+                        '_blank',
+                      );
+                    }}
+                    className="border-none text-gray-700 hover:text-gray-900"
+                  >
+                    Roadmap
+                  </button>
+                </li>
+              </ul>
+            )}
+          </li>
           {/* <li className="border-none text-gray-700 hover:text-gray-900">
             <Link href="/dashboard/flow/" className="border-none">
               {t('flow_link')}
@@ -511,11 +573,15 @@ export default function DashboardLayout(props: { children: React.ReactNode }) {
       rightNav={
         <>
           <li>
-            <LogOutButton />
+            <Link
+              href="/dashboard/settings/"
+              className="border-none text-gray-700 hover:text-gray-900"
+            >
+              Settings
+            </Link>
           </li>
-
           <li>
-            <LocaleSwitcher />
+            <LogOutButton />
           </li>
         </>
       }
