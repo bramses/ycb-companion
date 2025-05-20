@@ -1,3 +1,7 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+
 import { AppConfig } from '@/utils/AppConfig';
 
 const BaseTemplate = (props: {
@@ -5,19 +9,46 @@ const BaseTemplate = (props: {
   rightNav?: React.ReactNode;
   children: React.ReactNode;
 }) => {
+  const [profilePicture, setProfilePicture] = useState<string>('');
+
+  // call /api/getProfilePicture to get the profile picture
+  useEffect(() => {
+    const fetchProfilePicture = async () => {
+      const response = await fetch('/api/getProfilePicture', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      const data = await response.json();
+      console.log('data:', data);
+      setProfilePicture(data.data.profilePicture.text);
+    };
+
+    fetchProfilePicture();
+  }, []);
+
   return (
     <div className="w-full px-1 text-gray-700 antialiased">
       <div className="mx-auto max-w-screen-md">
         <header className="border-b border-gray-300">
           <div className="pb-8 pt-16">
             <h1 className="text-3xl font-bold text-gray-900">
-              <img
-                src="/favicon.ico"
-                className="mr-2 inline-block"
-                width={28}
-                height={28}
-                alt="favicon"
-              />
+              {profilePicture !== '' ? (
+                <img
+                  src={profilePicture}
+                  alt="profile"
+                  className="size-16 rounded-full"
+                />
+              ) : (
+                <img
+                  src="/favicon.ico"
+                  className="mr-2 inline-block"
+                  width={28}
+                  height={28}
+                  alt="favicon"
+                />
+              )}
               {AppConfig.name}
             </h1>
             {/* <h2 className="text-xl">{t('description')}</h2> */}

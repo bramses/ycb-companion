@@ -36,7 +36,15 @@ userManager.events.addAccessTokenExpired(() => {
   userManager
     .signinSilent()
     .then((user) => Cookies.set('user', JSON.stringify(user)))
-    .catch(console.warn);
+    .catch((error) => {
+      console.warn('silent renew expired, sending to login', error);
+      userManager.signinRedirect();
+    });
+});
+
+userManager.events.addSilentRenewError((error) => {
+  console.warn('silent renew failed, sending to login', error);
+  userManager.signinRedirect();
 });
 
 export default userManager;

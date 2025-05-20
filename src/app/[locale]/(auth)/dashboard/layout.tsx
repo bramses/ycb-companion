@@ -6,7 +6,6 @@ import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useState } from 'react';
 import Modal from 'react-modal';
 
-import LocaleSwitcher from '@/components/LocaleSwitcher';
 import { LogOutButton } from '@/components/LogOutButton';
 import SearchModalBeta from '@/components/SearchModalBeta';
 import SpeedDial from '@/components/SpeedDial';
@@ -38,14 +37,14 @@ export default function DashboardLayout(props: { children: React.ReactNode }) {
   const closeSearchModalBeta = () => setSearchModalBetaOpen(false);
 
   const [isStoreOpen, setIsStoreOpen] = useState(false);
-  // const [isSearchOpen, setIsSearchOpen] = useState(false);
-  // const [isSynthesizeOpen, setIsSynthesizeOpen] = useState(false);
-  // const [isShareOpen, setIsShareOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isSynthesizeOpen, setIsSynthesizeOpen] = useState(false);
+  const [isShareOpen, setIsShareOpen] = useState(false);
 
   const toggleStore = () => setIsStoreOpen((prev) => !prev);
-  // const toggleSearch = () => setIsSearchOpen((prev) => !prev);
-  // const toggleSynthesize = () => setIsSynthesizeOpen((prev) => !prev);
-  // const toggleShare = () => setIsShareOpen((prev) => !prev);
+  const toggleSearch = () => setIsSearchOpen((prev) => !prev);
+  const toggleSynthesize = () => setIsSynthesizeOpen((prev) => !prev);
+  const toggleShare = () => setIsShareOpen((prev) => !prev);
 
   const onOpenModal = (which: string) => {
     if (which === 'upload') {
@@ -148,6 +147,31 @@ export default function DashboardLayout(props: { children: React.ReactNode }) {
             clearInterval(intervalId); // Stop the interval once the input is focused
           }
         }, 100);
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
+
+  useEffect(() => {
+    const handleKeyDown = (event: any) => {
+      const target = event.target as HTMLElement;
+      if (
+        event.key === 'i' &&
+        // meta key not pressed
+        !event.metaKey &&
+        !event.ctrlKey &&
+        !event.shiftKey &&
+        !target.tagName.toLowerCase().includes('input') &&
+        !target.tagName.toLowerCase().includes('textarea')
+      ) {
+        // upload url
+        setUploaderModalType('image');
+        setUploaderModalOpen(true);
       }
     };
 
@@ -272,7 +296,7 @@ export default function DashboardLayout(props: { children: React.ReactNode }) {
         <>
           <li className="border-none text-gray-700 hover:text-gray-900">
             <Link href="/" className="border-none">
-              Back to Landing Page
+              Landing Page
             </Link>
           </li>
           <li>
@@ -308,7 +332,7 @@ export default function DashboardLayout(props: { children: React.ReactNode }) {
                     }}
                     className="border-none text-gray-700 hover:text-gray-900"
                   >
-                    Text
+                    Text [t]
                   </button>
                 </li>
                 <li>
@@ -331,7 +355,163 @@ export default function DashboardLayout(props: { children: React.ReactNode }) {
                     }}
                     className="border-none text-gray-700 hover:text-gray-900"
                   >
-                    URL
+                    URL [u]
+                  </button>
+                </li>
+                <li>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setUploaderModalType('image');
+                      setUploaderModalOpen(true);
+                    }}
+                    className="border-none text-gray-700 hover:text-gray-900"
+                  >
+                    Image [i]
+                  </button>
+                </li>
+                <button
+                  type="button"
+                  onClick={() => {
+                    window.open(
+                      'https://denim-prince-fcc.notion.site/Public-Roadmap-1f334f25fe4b807689b4f0c71056527a?pvs=4',
+                      '_blank',
+                    );
+                  }}
+                  className="border-none text-gray-700 hover:text-gray-900"
+                >
+                  Roadmap
+                </button>
+              </ul>
+            )}
+          </li>
+          <li>
+            <button
+              onClick={toggleSearch}
+              className="border-none"
+              type="button"
+            >
+              {isSearchOpen ? '-' : '+'}
+              Search
+            </button>
+            {isSearchOpen && (
+              <ul className="ml-4">
+                <li>
+                  <button
+                    type="button"
+                    onClick={() => router.push('/dashboard/garden/')}
+                    className="border-none text-gray-700 hover:text-gray-900"
+                  >
+                    Calendar
+                  </button>
+                </li>
+                <li>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      handleRandom();
+                    }}
+                    className="border-none text-gray-700 hover:text-gray-900"
+                  >
+                    Random [r]
+                  </button>
+                </li>
+                <li>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      openSearchModalBeta();
+                      const intervalId = setInterval(() => {
+                        const input =
+                          document.getElementById('modal-beta-search');
+                        if (input) {
+                          setTimeout(() => {
+                            input.focus();
+                          }, 100);
+                          clearInterval(intervalId); // Stop the interval once the input is focused
+                        }
+                      }, 100);
+                    }}
+                    className="border-none text-gray-700 hover:text-gray-900"
+                  >
+                    Search [/]
+                  </button>
+                </li>
+                <li>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      window.open(
+                        'https://denim-prince-fcc.notion.site/Public-Roadmap-1f334f25fe4b807689b4f0c71056527a?pvs=4',
+                        '_blank',
+                      );
+                    }}
+                    className="border-none text-gray-700 hover:text-gray-900"
+                  >
+                    Roadmap
+                  </button>
+                </li>
+              </ul>
+            )}
+          </li>
+          <li>
+            <button
+              onClick={toggleSynthesize}
+              className="border-none"
+              type="button"
+            >
+              {isSynthesizeOpen ? '-' : '+'}
+              Synthesize
+            </button>
+            {isSynthesizeOpen && (
+              <ul className="ml-4">
+                <li>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      window.open(
+                        'https://denim-prince-fcc.notion.site/Public-Roadmap-1f334f25fe4b807689b4f0c71056527a?pvs=4',
+                        '_blank',
+                      );
+                    }}
+                    className="border-none text-gray-700 hover:text-gray-900"
+                  >
+                    Roadmap
+                  </button>
+                </li>
+              </ul>
+            )}
+          </li>
+          <li>
+            <button onClick={toggleShare} className="border-none" type="button">
+              {isShareOpen ? '-' : '+'}
+              Share
+            </button>
+            {isShareOpen && (
+              <ul className="ml-4">
+                <li>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      window.open('https://www.sharecommonbase.com/', '_blank');
+                    }}
+                    className="border-none text-gray-700 hover:text-gray-900"
+                  >
+                    Share Commonbase
+                  </button>
+                </li>
+                <li>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      window.open(
+                        'https://denim-prince-fcc.notion.site/Public-Roadmap-1f334f25fe4b807689b4f0c71056527a?pvs=4',
+                        '_blank',
+                      );
+                    }}
+                    className="border-none text-gray-700 hover:text-gray-900"
+                  >
+                    Roadmap
                   </button>
                 </li>
               </ul>
@@ -364,14 +544,14 @@ export default function DashboardLayout(props: { children: React.ReactNode }) {
             </Link>
             <span> ({inboxCount.data.count})</span>
           </li> */}
-          <li>
+          {/* <li>
             <Link
               href="/dashboard/garden/"
               className="border-none text-gray-700 hover:text-gray-900"
             >
               {t('garden_link')}
             </Link>
-          </li>
+          </li> */}
           {/* <li>
             <Link
               href="/dashboard/grid/"
@@ -393,11 +573,15 @@ export default function DashboardLayout(props: { children: React.ReactNode }) {
       rightNav={
         <>
           <li>
-            <LogOutButton />
+            <Link
+              href="/dashboard/settings/"
+              className="border-none text-gray-700 hover:text-gray-900"
+            >
+              Settings
+            </Link>
           </li>
-
           <li>
-            <LocaleSwitcher />
+            <LogOutButton />
           </li>
         </>
       }

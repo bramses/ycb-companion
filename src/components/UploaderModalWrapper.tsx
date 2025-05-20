@@ -27,6 +27,7 @@
 import Modal from 'react-modal';
 
 import Uploader from './Uploader';
+import ImageUploader from './uploaders/image';
 import ShareUploader from './uploaders/share';
 import TextUploader from './uploaders/text';
 import URLUploader from './uploaders/url';
@@ -53,22 +54,25 @@ const UploaderModal = ({
       <button onClick={closeModalFn} type="button">
         (close)
       </button>
-      {type !== 'url' && type !== 'text' && type !== 'share' && (
-        <>
-          <h2
-            className="mb-4 text-2xl font-semibold text-gray-800"
-            id="modal-title"
-          >
-            Fast Entry
-          </h2>
-          <Uploader
-            closeModal={closeModalFn}
-            textDefault=""
-            titleDefault=""
-            authorDefault="https://yourcommonbase.com/dashboard"
-          />
-        </>
-      )}
+      {type !== 'url' &&
+        type !== 'text' &&
+        type !== 'share' &&
+        type !== 'image' && (
+          <>
+            <h2
+              className="mb-4 text-2xl font-semibold text-gray-800"
+              id="modal-title"
+            >
+              Fast Entry
+            </h2>
+            <Uploader
+              closeModal={closeModalFn}
+              textDefault=""
+              titleDefault=""
+              authorDefault="https://yourcommonbase.com/dashboard"
+            />
+          </>
+        )}
       {type === 'url' && (
         <>
           <h2
@@ -78,6 +82,22 @@ const UploaderModal = ({
             URL Entry
           </h2>
           <URLUploader
+            closeModal={closeModalFn}
+            textDefault=""
+            titleDefault=""
+            authorDefault="https://yourcommonbase.com/dashboard"
+          />
+        </>
+      )}
+      {type === 'image' && (
+        <>
+          <h2
+            className="mb-4 text-2xl font-semibold text-gray-800"
+            id="modal-title"
+          >
+            Image Entry
+          </h2>
+          <ImageUploader
             closeModal={closeModalFn}
             textDefault=""
             titleDefault=""

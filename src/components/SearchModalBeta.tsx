@@ -139,7 +139,7 @@ const SearchModalBeta = ({
   });
 
   const { user, isLoaded } = useUser();
-  const [userPlan, setUserPlan] = useState<any>(null);
+  // const [userPlan, setUserPlan] = useState<any>(null);
 
   const handleSearchHelper = async (entryData: string) => {
     const parsedEntries = await fetchSearchEntries(
@@ -159,10 +159,10 @@ const SearchModalBeta = ({
   const [isSearchClient, setSearchClient] = useState<SearchClient | null>(null);
   // todo fix token
 
-  const [meliToken] = useState<{
-    token: string;
-    expiresAt: string;
-  } | null>(null);
+  // const [meliToken] = useState<{
+  //   token: string;
+  //   expiresAt: string;
+  // } | null>(null);
 
   const fetchToken = async () => {
     try {
@@ -176,7 +176,7 @@ const SearchModalBeta = ({
 
       if (tokenData.error) {
         if (tokenData.error.includes('upgrade to search or synthesis plan')) {
-          setUserPlan('store');
+          // setUserPlan('store');
           return;
           // throw new Error(tokenData.error);
         }
@@ -209,27 +209,27 @@ const SearchModalBeta = ({
     }
   };
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const storedToken = sessionStorage.getItem('meliToken');
-      if (storedToken) {
-        const { expiresAt } = JSON.parse(storedToken);
-        if (new Date(expiresAt) < new Date()) {
-          console.log('Token expired, fetching a new token...');
-          fetchToken();
-        }
-      } else {
-        if (userPlan && userPlan === 'store') {
-          return;
-        }
-        fetchToken();
-      }
-    }, 30000);
+  // useEffect(() => {
+  //   const interval = setInterval(() => {
+  //     const storedToken = sessionStorage.getItem('meliToken');
+  //     if (storedToken) {
+  //       const { expiresAt } = JSON.parse(storedToken);
+  //       if (new Date(expiresAt) < new Date()) {
+  //         console.log('Token expired, fetching a new token...');
+  //         fetchToken();
+  //       }
+  //     } else {
+  //       if (userPlan && userPlan === 'store') {
+  //         return;
+  //       }
+  //       fetchToken();
+  //     }
+  //   }, 30000);
 
-    return () => {
-      clearInterval(interval);
-    };
-  }, [meliToken, userPlan]);
+  //   return () => {
+  //     clearInterval(interval);
+  //   };
+  // }, [meliToken, userPlan]);
 
   useEffect(() => {
     const initializeSearchClient = async () => {
