@@ -4,11 +4,7 @@ import Fuse from 'fuse.js';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
 import ImageUpload from '@/components/ImageUpload';
-import {
-  fetchByID,
-  fetchRandomEntry,
-  updateEntry as apiUpdateEntry,
-} from '@/helpers/functions';
+import { fetchRandomEntry } from '@/helpers/functions';
 
 import LinkPreviewCard from './LinkPreview';
 
@@ -230,60 +226,62 @@ const ThreadEntry: React.FC<ThreadEntryProps> = ({
           author: parent.metadata.author,
           parent_id: parent.id,
         },
+        parent_id: parent.id,
       }),
     });
 
     const addedCommentRespData = await addedComment.json();
     const addedCommentData = addedCommentRespData.respData;
 
-    const parentRes = await fetchByID(parent.id);
-    let parentResMetadata = parentRes.metadata;
-    try {
-      parentResMetadata = parentRes.metadata;
-    } catch (err) {
-      console.error('Error parsing parent metadata:', err);
-    }
-    if (parentResMetadata.alias_ids) {
-      parentResMetadata.alias_ids = [
-        ...parentResMetadata.alias_ids,
-        addedCommentData.id,
-      ];
-    } else {
-      parentResMetadata.alias_ids = [addedCommentData.id];
-    }
+    // const parentRes = await fetchByID(parent.id);
+    // let parentResMetadata = parentRes.metadata;
+    // try {
+    //   parentResMetadata = parentRes.metadata;
+    // } catch (err) {
+    //   console.error('Error parsing parent metadata:', err);
+    // }
+    // if (parentResMetadata.alias_ids) {
+    //   parentResMetadata.alias_ids = [
+    //     ...parentResMetadata.alias_ids,
+    //     addedCommentData.id,
+    //   ];
+    // } else {
+    //   parentResMetadata.alias_ids = [addedCommentData.id];
+    // }
 
-    await apiUpdateEntry(parent.id, parent.data, {
-      ...parentResMetadata,
-    });
+    // await apiUpdateEntry(parent.id, parent.data, {
+    //   ...parentResMetadata,
+    // });
 
     // setIsSaving(false);
 
     // setIsGraphLoading(true);
 
-    const checkEmbeddingsWithDelay = async (
-      entryId: string,
-      maxTries: number,
-      currentTry = 0,
-    ): Promise<boolean> => {
-      if (currentTry >= maxTries) return false;
-      const allEmbeddingsComplete = await checkForEmbeddings(entryId, []);
-      if (allEmbeddingsComplete) return true;
-      await new Promise<void>((resolve) => {
-        setTimeout(resolve, 1000);
-      });
-      return checkEmbeddingsWithDelay(entryId, maxTries, currentTry + 1);
-    };
+    // TODO check if this is still needed
+    // const checkEmbeddingsWithDelay = async (
+    //   entryId: string,
+    //   maxTries: number,
+    //   currentTry = 0,
+    // ): Promise<boolean> => {
+    //   if (currentTry >= maxTries) return false;
+    //   const allEmbeddingsComplete = await checkForEmbeddings(entryId, []);
+    //   if (allEmbeddingsComplete) return true;
+    //   await new Promise<void>((resolve) => {
+    //     setTimeout(resolve, 1000);
+    //   });
+    //   return checkEmbeddingsWithDelay(entryId, maxTries, currentTry + 1);
+    // };
 
-    const allEmbeddingsComplete = await checkEmbeddingsWithDelay(
-      addedCommentData.id,
-      10,
-    );
+    // const allEmbeddingsComplete = await checkEmbeddingsWithDelay(
+    //   addedCommentData.id,
+    //   10,
+    // );
 
-    if (!allEmbeddingsComplete) {
-      console.log('Embeddings not complete after 10 tries -- try again later');
-      alert('Failed to complete embeddings. Please try again later.');
-      // Optionally, you can redirect the user or take other actions
-    }
+    // if (!allEmbeddingsComplete) {
+    //   console.log('Embeddings not complete after 10 tries -- try again later');
+    //   alert('Failed to complete embeddings. Please try again later.');
+    //   // Optionally, you can redirect the user or take other actions
+    // }
 
     setAliasComments((prev) => [
       ...prev,
@@ -342,25 +340,25 @@ const ThreadEntry: React.FC<ThreadEntryProps> = ({
     const addedCommentRespData = await addedComment.json();
     const addedCommentData = addedCommentRespData.respData;
 
-    const parentRes = await fetchByID(parent.id);
-    let parentResMetadata = parentRes.metadata;
-    try {
-      parentResMetadata = parentRes.metadata;
-    } catch (err) {
-      console.error('Error parsing parent metadata:', err);
-    }
-    if (parentResMetadata.alias_ids) {
-      parentResMetadata.alias_ids = [
-        ...parentResMetadata.alias_ids,
-        addedCommentData.id,
-      ];
-    } else {
-      parentResMetadata.alias_ids = [addedCommentData.id];
-    }
+    // const parentRes = await fetchByID(parent.id);
+    // let parentResMetadata = parentRes.metadata;
+    // try {
+    //   parentResMetadata = parentRes.metadata;
+    // } catch (err) {
+    //   console.error('Error parsing parent metadata:', err);
+    // }
+    // if (parentResMetadata.alias_ids) {
+    //   parentResMetadata.alias_ids = [
+    //     ...parentResMetadata.alias_ids,
+    //     addedCommentData.id,
+    //   ];
+    // } else {
+    //   parentResMetadata.alias_ids = [addedCommentData.id];
+    // }
 
-    await apiUpdateEntry(parent.id, parent.data, {
-      ...parentResMetadata,
-    });
+    // await apiUpdateEntry(parent.id, parent.data, {
+    //   ...parentResMetadata,
+    // });
 
     // setIsSaving(false);
 

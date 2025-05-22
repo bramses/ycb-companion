@@ -7,7 +7,8 @@ import { getAccessToken } from '@/utils/getAccessToken';
 // import env variables
 
 export const POST = async (request: Request) => {
-  const { data, metadata, createdAt, duplicateCheck } = await request.json();
+  const { data, metadata, createdAt, duplicateCheck, parentId } =
+    await request.json();
   const { CLOUD_URL } = process.env;
   const TOKEN = getAccessToken();
 
@@ -20,6 +21,7 @@ export const POST = async (request: Request) => {
     metadata: any;
     created_at?: string;
     duplicate_check?: any;
+    parent_id?: string;
   } = {
     data,
     metadata,
@@ -31,6 +33,10 @@ export const POST = async (request: Request) => {
 
   if (createdAt) {
     entryBody.created_at = createdAt;
+  }
+
+  if (metadata.parent_id || parentId) {
+    entryBody.parent_id = metadata.parent_id || parentId;
   }
 
   const resp = await fetch(`${CLOUD_URL}/add`, {
