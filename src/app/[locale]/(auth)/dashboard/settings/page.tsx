@@ -3,6 +3,43 @@
 import type { ChangeEvent, FormEvent } from 'react';
 import { useEffect, useState } from 'react';
 
+function DownloadCSVButton() {
+  const handleDownload = async () => {
+    try {
+      const res = await fetch('/api/download', {
+        method: 'GET',
+      });
+
+      if (!res.ok) {
+        console.error('failed to download:', res.status);
+        return;
+      }
+
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', 'commonbase.csv');
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } catch (err) {
+      console.error('download error:', err);
+    }
+  };
+
+  return (
+    <button
+      onClick={handleDownload}
+      type="button"
+      className="rounded bg-blue-600 p-2 text-white"
+    >
+      Download CSV
+    </button>
+  );
+}
+
 export default function SettingsPage() {
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
@@ -136,6 +173,8 @@ export default function SettingsPage() {
       <ul className="mb-4 list-inside list-disc">
         <li>Coming Soon</li>
       </ul>
+      <h3 className="mb-2 text-xl font-semibold">Download CSV:</h3>
+      <DownloadCSVButton />
     </>
   );
 }
