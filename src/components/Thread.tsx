@@ -4,7 +4,13 @@ import Fuse from 'fuse.js';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
 import ImageUpload from '@/components/ImageUpload';
+import PendingQueue from '@/components/PendingQueue';
 import { fetchRandomEntry } from '@/helpers/functions';
+import {
+  enqueueAddText,
+  enqueueAddURL,
+  useAddQueueProcessor,
+} from '@/hooks/useAddQueue';
 
 import LinkPreviewCard from './LinkPreview';
 
@@ -146,37 +152,37 @@ const ThreadEntry: React.FC<ThreadEntryProps> = ({
     }
   };
 
-  const checkForEmbeddings = async (entryId: string, aliasIDs: string[]) => {
-    const response = await fetch(`/api/checkForEmbed`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        id: entryId,
-      }),
-    });
+  // const checkForEmbeddings = async (entryId: string, aliasIDs: string[]) => {
+  //   const response = await fetch(`/api/checkForEmbed`, {
+  //     method: 'POST',
+  //     headers: {
+  //       'Content-Type': 'application/json',
+  //     },
+  //     body: JSON.stringify({
+  //       id: entryId,
+  //     }),
+  //   });
 
-    const adata = await response.json();
-    if (adata.data.status !== 'completed') return false;
+  //   const adata = await response.json();
+  //   if (adata.data.status !== 'completed') return false;
 
-    for await (const aliasID of aliasIDs) {
-      const cresponse = await fetch(`/api/checkForEmbed`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          id: entryId,
-          aliasID,
-        }),
-      });
-      const cdata = await cresponse.json();
-      if (cdata.data.status !== 'completed') return false;
-    }
+  //   for await (const aliasID of aliasIDs) {
+  //     const cresponse = await fetch(`/api/checkForEmbed`, {
+  //       method: 'POST',
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //       },
+  //       body: JSON.stringify({
+  //         id: entryId,
+  //         aliasID,
+  //       }),
+  //     });
+  //     const cdata = await cresponse.json();
+  //     if (cdata.data.status !== 'completed') return false;
+  //   }
 
-    return true;
-  };
+  //   return true;
+  // };
 
   function timeAgo(dateString: string) {
     const now = Date.now();
@@ -210,205 +216,276 @@ const ThreadEntry: React.FC<ThreadEntryProps> = ({
     return `${dateParts2[1]}-${dateParts2[2]}-${dateParts2[0]}`;
   }
 
-  const addComment = async (
+  const addComment = (
     aliasInput: string,
     parent: { id: string; data: string; metadata: any },
   ) => {
-    const addedComment = await fetch(`/api/add`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        data: aliasInput,
-        metadata: {
-          title: parent.metadata.title,
-          author: parent.metadata.author,
-          parent_id: parent.id,
-        },
-        parent_id: parent.id,
-      }),
-    });
-
-    const addedCommentRespData = await addedComment.json();
-    const addedCommentData = addedCommentRespData.respData;
-
-    // const parentRes = await fetchByID(parent.id);
-    // let parentResMetadata = parentRes.metadata;
-    // try {
-    //   parentResMetadata = parentRes.metadata;
-    // } catch (err) {
-    //   console.error('Error parsing parent metadata:', err);
-    // }
-    // if (parentResMetadata.alias_ids) {
-    //   parentResMetadata.alias_ids = [
-    //     ...parentResMetadata.alias_ids,
-    //     addedCommentData.id,
-    //   ];
-    // } else {
-    //   parentResMetadata.alias_ids = [addedCommentData.id];
-    // }
-
-    // await apiUpdateEntry(parent.id, parent.data, {
-    //   ...parentResMetadata,
-    // });
-
-    // setIsSaving(false);
-
-    // setIsGraphLoading(true);
-
-    // TODO check if this is still needed
-    // const checkEmbeddingsWithDelay = async (
-    //   entryId: string,
-    //   maxTries: number,
-    //   currentTry = 0,
-    // ): Promise<boolean> => {
-    //   if (currentTry >= maxTries) return false;
-    //   const allEmbeddingsComplete = await checkForEmbeddings(entryId, []);
-    //   if (allEmbeddingsComplete) return true;
-    //   await new Promise<void>((resolve) => {
-    //     setTimeout(resolve, 1000);
-    //   });
-    //   return checkEmbeddingsWithDelay(entryId, maxTries, currentTry + 1);
-    // };
-
-    // const allEmbeddingsComplete = await checkEmbeddingsWithDelay(
-    //   addedCommentData.id,
-    //   10,
-    // );
-
-    // if (!allEmbeddingsComplete) {
-    //   console.log('Embeddings not complete after 10 tries -- try again later');
-    //   alert('Failed to complete embeddings. Please try again later.');
-    //   // Optionally, you can redirect the user or take other actions
-    // }
-
-    setAliasComments((prev) => [
-      ...prev,
+    enqueueAddText(
       {
-        id: addedCommentData.id,
         data: aliasInput,
-        comments: [],
-        createdAt: addedCommentData.createdAt, // adjust field names as needed
         metadata: {
-          ...parent.metadata,
           parent_id: parent.id,
           title: parent.metadata.title,
           author: parent.metadata.author,
         },
+        parentId: parent.id,
       },
-    ]);
-
-    idSet.current.add(addedCommentData.id);
-    recordFetched(addedCommentData);
-
-    // extend the force directed graph with the new comment
-    // get pen pals
-    // todo the switch of the order of update and fetchByID is causing the graph to not update correctly
-    // const penPals = await searchPenPals(addedCommentData.id, [
-    //   parent.id,
-    //   addedCommentData.id,
-    // ]);
-    // setFData((prevData: any) => ({
-    //   ...prevData,
-    //   comments: [
-    //     ...(prevData.comments || []),
-    //     { comment: aliasInput, penPals, id: addedCommentData.id },
-    //   ],
-    // }));
-
-    // setIsGraphLoading(false);
+      (addedCommentData) => {
+        // this runs when server finally accepts it
+        setAliasComments((prev) => [
+          ...prev,
+          {
+            id: addedCommentData.id,
+            data: aliasInput,
+            comments: [],
+            createdAt: addedCommentData.createdAt,
+            metadata: {
+              ...parent.metadata,
+              parent_id: parent.id,
+              title: parent.metadata.title,
+              author: parent.metadata.author,
+            },
+          },
+        ]);
+        idSet.current.add(addedCommentData.id);
+        recordFetched(addedCommentData);
+      },
+    );
   };
 
   const addURL = async (
     url: string,
     parent: { id: string; data: string; metadata: any },
   ) => {
-    const addedComment = await fetch(`/api/addURL`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
+    enqueueAddURL(
+      {
         url,
         metadata: {
-          parent_id: entry.id,
-        },
-      }),
-    });
-
-    const addedCommentRespData = await addedComment.json();
-    const addedCommentData = addedCommentRespData.respData;
-
-    // const parentRes = await fetchByID(parent.id);
-    // let parentResMetadata = parentRes.metadata;
-    // try {
-    //   parentResMetadata = parentRes.metadata;
-    // } catch (err) {
-    //   console.error('Error parsing parent metadata:', err);
-    // }
-    // if (parentResMetadata.alias_ids) {
-    //   parentResMetadata.alias_ids = [
-    //     ...parentResMetadata.alias_ids,
-    //     addedCommentData.id,
-    //   ];
-    // } else {
-    //   parentResMetadata.alias_ids = [addedCommentData.id];
-    // }
-
-    // await apiUpdateEntry(parent.id, parent.data, {
-    //   ...parentResMetadata,
-    // });
-
-    // setIsSaving(false);
-
-    // setIsGraphLoading(true);
-
-    const checkEmbeddingsWithDelay = async (
-      entryId: string,
-      maxTries: number,
-      currentTry = 0,
-    ): Promise<boolean> => {
-      if (currentTry >= maxTries) return false;
-      const allEmbeddingsComplete = await checkForEmbeddings(entryId, []);
-      if (allEmbeddingsComplete) return true;
-      await new Promise<void>((resolve) => {
-        setTimeout(resolve, 1000);
-      });
-      return checkEmbeddingsWithDelay(entryId, maxTries, currentTry + 1);
-    };
-
-    const allEmbeddingsComplete = await checkEmbeddingsWithDelay(
-      addedCommentData.id,
-      10,
-    );
-
-    if (!allEmbeddingsComplete) {
-      console.log('Embeddings not complete after 10 tries -- try again later');
-      alert('Failed to complete embeddings. Please try again later.');
-      // Optionally, you can redirect the user or take other actions
-    }
-
-    setAliasComments((prev) => [
-      ...prev,
-      {
-        id: addedCommentData.id,
-        data: addedCommentData.data,
-        comments: [],
-        createdAt: addedCommentData.createdAt, // adjust field names as needed
-        metadata: {
-          ...parent.metadata,
           parent_id: parent.id,
-          title: parent.metadata.title,
-          author: parent.metadata.author,
         },
       },
-    ]);
-
-    idSet.current.add(addedCommentData.id);
-    recordFetched(addedCommentData);
-    setIsAddingURL(false);
+      (addedCommentData) => {
+        // this runs when server finally accepts it
+        setAliasComments((prev) => [
+          ...prev,
+          {
+            id: addedCommentData.id,
+            data: addedCommentData.data,
+            comments: [],
+            createdAt: addedCommentData.createdAt,
+            metadata: {
+              ...parent.metadata,
+              parent_id: parent.id,
+              title: parent.metadata.title,
+              author: parent.metadata.author,
+            },
+          },
+        ]);
+        idSet.current.add(addedCommentData.id);
+        recordFetched(addedCommentData);
+      },
+    );
   };
+
+  // const addCommentOld = async (
+  //   aliasInput: string,
+  //   parent: { id: string; data: string; metadata: any },
+  // ) => {
+  //   const addedComment = await fetch(`/api/add`, {
+  //     method: 'POST',
+  //     headers: {
+  //       'Content-Type': 'application/json',
+  //     },
+  //     body: JSON.stringify({
+  //       data: aliasInput,
+  //       metadata: {
+  //         title: parent.metadata.title,
+  //         author: parent.metadata.author,
+  //         parent_id: parent.id,
+  //       },
+  //       parent_id: parent.id,
+  //     }),
+  //   });
+
+  //   const addedCommentRespData = await addedComment.json();
+  //   const addedCommentData = addedCommentRespData.respData;
+
+  //   // const parentRes = await fetchByID(parent.id);
+  //   // let parentResMetadata = parentRes.metadata;
+  //   // try {
+  //   //   parentResMetadata = parentRes.metadata;
+  //   // } catch (err) {
+  //   //   console.error('Error parsing parent metadata:', err);
+  //   // }
+  //   // if (parentResMetadata.alias_ids) {
+  //   //   parentResMetadata.alias_ids = [
+  //   //     ...parentResMetadata.alias_ids,
+  //   //     addedCommentData.id,
+  //   //   ];
+  //   // } else {
+  //   //   parentResMetadata.alias_ids = [addedCommentData.id];
+  //   // }
+
+  //   // await apiUpdateEntry(parent.id, parent.data, {
+  //   //   ...parentResMetadata,
+  //   // });
+
+  //   // setIsSaving(false);
+
+  //   // setIsGraphLoading(true);
+
+  //   // TODO check if this is still needed
+  //   // const checkEmbeddingsWithDelay = async (
+  //   //   entryId: string,
+  //   //   maxTries: number,
+  //   //   currentTry = 0,
+  //   // ): Promise<boolean> => {
+  //   //   if (currentTry >= maxTries) return false;
+  //   //   const allEmbeddingsComplete = await checkForEmbeddings(entryId, []);
+  //   //   if (allEmbeddingsComplete) return true;
+  //   //   await new Promise<void>((resolve) => {
+  //   //     setTimeout(resolve, 1000);
+  //   //   });
+  //   //   return checkEmbeddingsWithDelay(entryId, maxTries, currentTry + 1);
+  //   // };
+
+  //   // const allEmbeddingsComplete = await checkEmbeddingsWithDelay(
+  //   //   addedCommentData.id,
+  //   //   10,
+  //   // );
+
+  //   // if (!allEmbeddingsComplete) {
+  //   //   console.log('Embeddings not complete after 10 tries -- try again later');
+  //   //   alert('Failed to complete embeddings. Please try again later.');
+  //   //   // Optionally, you can redirect the user or take other actions
+  //   // }
+
+  //   setAliasComments((prev) => [
+  //     ...prev,
+  //     {
+  //       id: addedCommentData.id,
+  //       data: aliasInput,
+  //       comments: [],
+  //       createdAt: addedCommentData.createdAt, // adjust field names as needed
+  //       metadata: {
+  //         ...parent.metadata,
+  //         parent_id: parent.id,
+  //         title: parent.metadata.title,
+  //         author: parent.metadata.author,
+  //       },
+  //     },
+  //   ]);
+
+  //   idSet.current.add(addedCommentData.id);
+  //   recordFetched(addedCommentData);
+
+  //   // extend the force directed graph with the new comment
+  //   // get pen pals
+  //   // todo the switch of the order of update and fetchByID is causing the graph to not update correctly
+  //   // const penPals = await searchPenPals(addedCommentData.id, [
+  //   //   parent.id,
+  //   //   addedCommentData.id,
+  //   // ]);
+  //   // setFData((prevData: any) => ({
+  //   //   ...prevData,
+  //   //   comments: [
+  //   //     ...(prevData.comments || []),
+  //   //     { comment: aliasInput, penPals, id: addedCommentData.id },
+  //   //   ],
+  //   // }));
+
+  //   // setIsGraphLoading(false);
+  // };
+
+  // const addURLOld = async (
+  //   url: string,
+  //   parent: { id: string; data: string; metadata: any },
+  // ) => {
+  //   const addedComment = await fetch(`/api/addURL`, {
+  //     method: 'POST',
+  //     headers: {
+  //       'Content-Type': 'application/json',
+  //     },
+  //     body: JSON.stringify({
+  //       url,
+  //       metadata: {
+  //         parent_id: entry.id,
+  //       },
+  //     }),
+  //   });
+
+  //   const addedCommentRespData = await addedComment.json();
+  //   const addedCommentData = addedCommentRespData.respData;
+
+  //   // const parentRes = await fetchByID(parent.id);
+  //   // let parentResMetadata = parentRes.metadata;
+  //   // try {
+  //   //   parentResMetadata = parentRes.metadata;
+  //   // } catch (err) {
+  //   //   console.error('Error parsing parent metadata:', err);
+  //   // }
+  //   // if (parentResMetadata.alias_ids) {
+  //   //   parentResMetadata.alias_ids = [
+  //   //     ...parentResMetadata.alias_ids,
+  //   //     addedCommentData.id,
+  //   //   ];
+  //   // } else {
+  //   //   parentResMetadata.alias_ids = [addedCommentData.id];
+  //   // }
+
+  //   // await apiUpdateEntry(parent.id, parent.data, {
+  //   //   ...parentResMetadata,
+  //   // });
+
+  //   // setIsSaving(false);
+
+  //   // setIsGraphLoading(true);
+
+  //   const checkEmbeddingsWithDelay = async (
+  //     entryId: string,
+  //     maxTries: number,
+  //     currentTry = 0,
+  //   ): Promise<boolean> => {
+  //     if (currentTry >= maxTries) return false;
+  //     const allEmbeddingsComplete = await checkForEmbeddings(entryId, []);
+  //     if (allEmbeddingsComplete) return true;
+  //     await new Promise<void>((resolve) => {
+  //       setTimeout(resolve, 1000);
+  //     });
+  //     return checkEmbeddingsWithDelay(entryId, maxTries, currentTry + 1);
+  //   };
+
+  //   const allEmbeddingsComplete = await checkEmbeddingsWithDelay(
+  //     addedCommentData.id,
+  //     10,
+  //   );
+
+  //   if (!allEmbeddingsComplete) {
+  //     console.log('Embeddings not complete after 10 tries -- try again later');
+  //     alert('Failed to complete embeddings. Please try again later.');
+  //     // Optionally, you can redirect the user or take other actions
+  //   }
+
+  //   setAliasComments((prev) => [
+  //     ...prev,
+  //     {
+  //       id: addedCommentData.id,
+  //       data: addedCommentData.data,
+  //       comments: [],
+  //       createdAt: addedCommentData.createdAt, // adjust field names as needed
+  //       metadata: {
+  //         ...parent.metadata,
+  //         parent_id: parent.id,
+  //         title: parent.metadata.title,
+  //         author: parent.metadata.author,
+  //       },
+  //     },
+  //   ]);
+
+  //   idSet.current.add(addedCommentData.id);
+  //   recordFetched(addedCommentData);
+  //   setIsAddingURL(false);
+  // };
 
   const getColor = (colortype: string) => {
     if (colortype === 'parent') return 'purple';
@@ -624,6 +701,7 @@ export default function Thread({ inputId }: { inputId: string }) {
     [key: string]: Entry;
   }>({});
   const idSet = useRef(new Set<string>());
+  useAddQueueProcessor(); // kick off background processor
 
   useEffect(() => {
     console.log('expandedEntries:', expandedEntries);
@@ -773,6 +851,8 @@ export default function Thread({ inputId }: { inputId: string }) {
     <div>
       {parent && (
         <div style={{ marginTop: '10px' }}>
+          <PendingQueue idSet={idSet} />
+
           <ThreadEntry
             entry={parent}
             neighbors={neighbors}
