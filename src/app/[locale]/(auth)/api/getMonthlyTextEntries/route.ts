@@ -15,7 +15,7 @@ export const POST = async () => {
     return NextResponse.json({ error: 'No token provided' }, { status: 401 });
   }
 
-  const resp = await fetch(`${CLOUD_URL}/user/plan`, {
+  const resp = await fetch(`${CLOUD_URL}/user/monthly/text`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -24,17 +24,19 @@ export const POST = async () => {
     },
     body: JSON.stringify({}),
   });
-  logger.info('resp:', resp);
   const data = await resp.json();
 
   try {
-    logger.info(`fetch plan ${JSON.stringify(data)}`);
+    logger.info(`monthly text entries: ${JSON.stringify(data)}`);
 
     return NextResponse.json({
       data,
     });
   } catch (error) {
-    logger.error(error, 'An error occurred while creating a search');
+    logger.error(
+      error,
+      'An error occurred while fetching monthly text entries',
+    );
 
     return NextResponse.json({}, { status: 500 });
   }

@@ -54,6 +54,10 @@ export async function POST(request: NextRequest) {
       forwardForm.append('metadata', formData.get('metadata')!);
     }
 
+    if (formData.get('parent_id')) {
+      forwardForm.append('parent_id', formData.get('parent_id')!);
+    }
+
     const proxyRes = await fetch(`${CLOUD_URL}/v2/addImage`, {
       method: 'POST',
       headers: {
