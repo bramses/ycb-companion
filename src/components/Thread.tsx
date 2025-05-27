@@ -3,6 +3,7 @@
 import Fuse from 'fuse.js';
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
+import ReactMarkdown from 'react-markdown';
 
 import ImageUpload from '@/components/ImageUpload';
 import PendingQueue from '@/components/PendingQueue';
@@ -511,9 +512,11 @@ const ThreadEntry: React.FC<ThreadEntryProps> = ({
             (entry.metadata.ogTitle || entry.metadata.ogDescription) &&
             entry.metadata.ogImages &&
             entry.metadata.ogImages.length > 0
-          )
-            ? entry.data
-            : ''}
+          ) ? (
+            <ReactMarkdown>{entry.data}</ReactMarkdown>
+          ) : (
+            ''
+          )}
           {metadata.type === 'image' ? (
             <img src={cdnImageUrl} alt="author" />
           ) : (
