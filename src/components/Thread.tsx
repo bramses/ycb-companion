@@ -4,6 +4,7 @@ import Fuse from 'fuse.js';
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
+import { InstagramEmbed } from 'react-social-media-embed';
 
 import ImageUpload from '@/components/ImageUpload';
 import PendingQueue from '@/components/PendingQueue';
@@ -555,6 +556,9 @@ const ThreadEntry: React.FC<ThreadEntryProps> = ({
               image={entry.metadata.ogImages[0]}
             />
           )}
+        {entry.metadata.author.includes('instagram.com') && (
+          <InstagramEmbed url={entry.metadata.author} />
+        )}
       </summary>
       <button
         onClick={() => setIsAddingComment(true)}
