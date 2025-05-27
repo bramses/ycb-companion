@@ -209,28 +209,6 @@ const SearchModalBeta = ({
     }
   };
 
-  // useEffect(() => {
-  //   const interval = setInterval(() => {
-  //     const storedToken = sessionStorage.getItem('meliToken');
-  //     if (storedToken) {
-  //       const { expiresAt } = JSON.parse(storedToken);
-  //       if (new Date(expiresAt) < new Date()) {
-  //         console.log('Token expired, fetching a new token...');
-  //         fetchToken();
-  //       }
-  //     } else {
-  //       if (userPlan && userPlan === 'store') {
-  //         return;
-  //       }
-  //       fetchToken();
-  //     }
-  //   }, 30000);
-
-  //   return () => {
-  //     clearInterval(interval);
-  //   };
-  // }, [meliToken, userPlan]);
-
   useEffect(() => {
     const initializeSearchClient = async () => {
       try {
@@ -430,18 +408,6 @@ const SearchModalBeta = ({
               >
                 {isLoading ? 'Loading...' : 'Search'}
               </button>
-              {/* <button
-                type="button"
-                onClick={() => {
-                  window.open(
-                    `https://www.google.com/search?q=${inputValue}`,
-                    '_blank',
-                  );
-                }}
-                className="mb-2 me-2 w-full rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-4 focus:ring-gray-300"
-              >
-                Search the Web
-              </button> */}
             </div>
             {searchResults.map((result: any) => (
               <>
@@ -714,8 +680,14 @@ const SearchModalBeta = ({
           </div>
           <div className="text-sm text-gray-500">
             <span className="font-normal">
-              To get full text search on Companion, upgrade to the search or
-              synthesis plan!
+              To get{' '}
+              <a
+                href="https://imagedelivery.net/CrhaOMV08a-ykXmRKTxGRA/6e225654-0867-414b-08e1-fb2ee804e700/public"
+                target="_blank"
+              >
+                full text search and OCR on your images on Companion, upgrade to
+                the search or synthesis plan!
+              </a>
             </span>
           </div>
         </div>

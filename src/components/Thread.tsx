@@ -1,6 +1,7 @@
 'use client';
 
 import Fuse from 'fuse.js';
+import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
 import ImageUpload from '@/components/ImageUpload';
@@ -51,6 +52,7 @@ const ThreadEntry: React.FC<ThreadEntryProps> = ({
   const [isAddingImage, setIsAddingImage] = useState(false);
   const [randomCommentPlaceholder, setRandomCommentPlaceholder] =
     useState('Add a comment...');
+  const router = useRouter();
 
   const { metadata } = entry;
   // const { author } = metadata;
@@ -530,6 +532,15 @@ const ThreadEntry: React.FC<ThreadEntryProps> = ({
         >
           <em>{timeAgo(entry.createdAt)}</em>
         </a>
+        <button
+          onClick={() => {
+            router.push(`/dashboard/entry/${entry.id}`);
+          }}
+          type="button"
+          className="ml-2 text-blue-600 hover:underline"
+        >
+          <em>{entry.id}</em>
+        </button>
         {!entry.metadata.author.includes('yourcommonbase.com') &&
           (entry.metadata.ogTitle || entry.metadata.ogDescription) &&
           entry.metadata.ogImages &&
