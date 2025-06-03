@@ -1,5 +1,3 @@
-// import { cookies } from 'next/headers';
-import { NextResponse } from 'next/server';
 import createMiddleware from 'next-intl/middleware';
 
 import { AppConfig } from './utils/AppConfig';
@@ -95,22 +93,6 @@ export default async function middleware(req: any) {
   //   return response;
   // }
 
-  if (
-    req.nextUrl.pathname.includes('/dashboard/entry') &&
-    !req.nextUrl.pathname.includes('/signin') &&
-    !req.nextUrl.pathname.includes('/signin-callback')
-  ) {
-    const callbackUrl = req.nextUrl.href.replace(req.nextUrl.origin, ''); // Get the full URL as the callback
-    // console.log('5 callbackUrl:', callbackUrl);
-    const newUrl = new URL('/signin', req.nextUrl.origin);
-    newUrl.searchParams.set('callbackUrl', callbackUrl); // Add callbackUrl as a query parameter
-    console.log('5 newUrl:', newUrl.toString());
-    const response = NextResponse.redirect(newUrl);
-    response.cookies.set('routeTo', callbackUrl, { path: '/' });
-    return response;
-  }
-
-  console.log('returning middleware for:', req.nextUrl.href);
   // Apply intlMiddleware for all requests
   return intlMiddleware(req);
 }

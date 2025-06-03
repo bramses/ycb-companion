@@ -18,11 +18,10 @@ export default function SigninCallback() {
       console.log('signin window.location.href:', Cookies.get('routeTo'));
       const callbackUrl = searchParams.get('callbackUrl');
       console.log('callbackUrl:', callbackUrl);
-      await userManager.signinCallback();
-      const user = await userManager.getUser();
-
+      const user = await userManager.signinRedirectCallback();
       console.log('user si:', user);
-      const redirectTo = (user?.state as string) || '/dashboard';
+      const redirectTo =
+        (user?.state as string) || Cookies.get('routeTo') || '/dashboard';
       Cookies.set('user', JSON.stringify(user));
       Cookies.remove('routeTo');
       router.push(redirectTo);

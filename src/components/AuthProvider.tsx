@@ -51,19 +51,12 @@ export default function AuthProvider({
       const path = window.location.pathname;
 
       // if we’re on the callback page, finish signin and redirect
-      if (path === '/signin-callback' || path === '/signin-silent-callback') {
-        try {
-          console.log('handling signin-callback');
-          const user = await userManager.signinRedirectCallback();
-          // user.state should be the original pathname you passed into signinRedirect()
-          const dest = user.state || '/dashboard';
-          console.log('user.state:', user.state);
-          console.log('going back to:', dest);
-          router.replace(dest as string);
-        } catch (e) {
-          console.error('failed callback, sending to signin', e);
-          router.replace('/signin');
-        }
+      if (
+        path === '/signin-callback' ||
+        path === '/signin-silent-callback' ||
+        path === '/signin' ||
+        path === '/signin-silent'
+      ) {
         return;
       }
 
