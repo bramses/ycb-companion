@@ -23,6 +23,7 @@ interface Entry {
   comments?: Entry[];
   createdAt: string;
   metadata: any;
+  similarity?: number;
 }
 
 interface ThreadEntryProps {
@@ -516,27 +517,40 @@ const ThreadEntry: React.FC<ThreadEntryProps> = ({
             ''
           )}
         </span>{' '}
-        {commentsNotLoaded.length > 0 && (
-          <span className="text-sm">({commentsNotLoaded.length} comments)</span>
-        )}
-        {parentNotLoaded && <span>(has parent)</span>}
-        <a
-          href={`/dashboard/garden?date=${convertDate(entry.createdAt)}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-blue-600 hover:underline"
-        >
-          <em>{timeAgo(entry.createdAt)}</em>
-        </a>
-        <button
-          onClick={() => {
-            router.push(`/dashboard/entry/${entry.id}`);
-          }}
-          type="button"
-          className="ml-2 text-blue-600 hover:underline"
-        >
-          <em>{entry.id}</em>
-        </button>
+        <div className="mt-2 flex flex-wrap items-center gap-3">
+          {commentsNotLoaded.length > 0 && (
+            <span className="rounded bg-gray-100 px-2 py-1 text-sm">
+              ({commentsNotLoaded.length} comments)
+            </span>
+          )}
+          {parentNotLoaded && (
+            <span className="rounded bg-gray-100 px-2 py-1 text-sm">
+              (has parent)
+            </span>
+          )}
+          {entry.similarity !== undefined && (
+            <span className="rounded bg-blue-100 px-2 py-1 text-sm font-medium text-blue-800">
+              {Math.round(entry.similarity * 100)}% similar
+            </span>
+          )}
+          <a
+            href={`/dashboard/garden?date=${convertDate(entry.createdAt)}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-2 py-1 text-sm text-blue-600 hover:underline"
+          >
+            <em>{timeAgo(entry.createdAt)}</em>
+          </a>
+          <button
+            onClick={() => {
+              router.push(`/dashboard/entry/${entry.id}`);
+            }}
+            type="button"
+            className="px-2 py-1 text-sm text-blue-600 hover:underline"
+          >
+            <em>{entry.id}</em>
+          </button>
+        </div>
         {!entry.metadata.author.includes('yourcommonbase.com') &&
           (entry.metadata.ogTitle || entry.metadata.ogDescription) &&
           entry.metadata.ogImages &&
@@ -552,105 +566,105 @@ const ThreadEntry: React.FC<ThreadEntryProps> = ({
           <InstagramEmbed url={entry.metadata.author} />
         )}
       </summary>
-      <button
-        onClick={() => setIsAddingComment(true)}
-        type="button"
-        className="ml-2 text-blue-600 hover:underline"
-      >
-        Add Comment
-      </button>
-      <button
-        onClick={() => setIsAddingImage(true)}
-        type="button"
-        className="ml-2 text-blue-600 hover:underline"
-      >
-        Add Image
-      </button>
-      <button
-        onClick={() => setIsAddingURL(true)}
-        type="button"
-        className="ml-2 text-blue-600 hover:underline"
-      >
-        Add URL
-      </button>
+      <div className="mb-2 mt-3 flex flex-wrap gap-4">
+        <button
+          onClick={() => setIsAddingComment(true)}
+          type="button"
+          className="rounded-md bg-blue-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-600"
+        >
+          Add Comment
+        </button>
+        <button
+          onClick={() => setIsAddingImage(true)}
+          type="button"
+          className="rounded-md bg-green-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-green-600"
+        >
+          Add Image
+        </button>
+        <button
+          onClick={() => setIsAddingURL(true)}
+          type="button"
+          className="rounded-md bg-purple-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-purple-600"
+        >
+          Add URL
+        </button>
+      </div>
       {isAddingImage && <ImageUpload metadata={{ parent_id: entry.id }} />}
       {isAddingURL && (
-        <div>
+        <div className="mt-3 space-y-3">
           <input
             type="text"
             placeholder="https://yourcommonbase.com/dashboard"
-            className="w-full rounded border border-neutral-dark bg-white px-4 py-2 pr-10 text-neutral-dark"
-            style={{ fontSize: '17px' }}
+            className="w-full rounded-md border border-gray-300 bg-white px-4 py-3 text-base text-gray-900"
             id={`link-input-comment-${entry.id}`}
           />
-          <button
-            onClick={() => {
-              const url = document.getElementById(
-                `link-input-comment-${entry.id}`,
-              );
-              if (!url) return;
-              const urlValue = (url as HTMLInputElement).value.trim();
-              if (!urlValue) return;
-              addURL(urlValue, entry);
-            }}
-            type="button"
-            className="ml-2 text-blue-600 hover:underline"
-          >
-            Add URL
-          </button>
+          <div className="flex gap-3">
+            <button
+              onClick={() => {
+                const url = document.getElementById(
+                  `link-input-comment-${entry.id}`,
+                );
+                if (!url) return;
+                const urlValue = (url as HTMLInputElement).value.trim();
+                if (!urlValue) return;
+                addURL(urlValue, entry);
+              }}
+              type="button"
+              className="rounded-md bg-purple-500 px-6 py-2 text-sm font-medium text-white transition-colors hover:bg-purple-600"
+            >
+              Add URL
+            </button>
+            <button
+              onClick={() => setIsAddingURL(false)}
+              type="button"
+              className="rounded-md bg-gray-500 px-6 py-2 text-sm font-medium text-white transition-colors hover:bg-gray-600"
+            >
+              Cancel
+            </button>
+          </div>
         </div>
       )}
       {isAddingComment && (
-        <div className="flex">
+        <div className="mt-3 space-y-3">
           <textarea
-            rows={3}
-            style={{ fontSize: '17px' }}
-            className="w-full rounded border border-neutral-dark bg-white px-4 py-2 pr-10 text-neutral-dark"
+            rows={4}
+            className="w-full rounded-md border border-gray-300 bg-white px-4 py-3 text-base text-gray-900"
             placeholder={randomCommentPlaceholder}
-            // onKeyDown={(e) => {
-            //   if (e.key === 'Enter') {
-            //     e.preventDefault();
-            //     const aliasInput = document.getElementById(
-            //       'alias-input-comment',
-            //     );
-            //     if (!aliasInput) return;
-            //     const alias = (aliasInput as HTMLInputElement).value.trim();
-            //     if (!alias) return;
-            //     addCommentV2(alias, {
-            //       id: entry.id,
-            //       data: entry.data,
-            //       metadata: entry.metadata,
-            //     });
-            //     (aliasInput as HTMLInputElement).value = '';
-            //   }
-            // }}
             id={`alias-input-comment-${entry.id}`}
           />
-          <button
-            type="button"
-            onClick={() => {
-              const aliasInput = document.getElementById(
-                `alias-input-comment-${entry.id}`,
-              );
-              if (!aliasInput) return;
-              const alias = (aliasInput as HTMLInputElement).value.trim();
-              if (!alias) return;
-              console.log('alias:', alias);
-              console.log('parent:', entry.data);
-              addComment(alias, {
-                id: entry.id,
-                data: entry.data,
-                metadata: entry.metadata,
-              });
-              (aliasInput as HTMLInputElement).value = '';
-
-              setIsAddingComment(false);
-            }}
-            className="rounded-full border border-neutral-light bg-neutral-light px-3 pb-1 text-xl text-neutral-dark focus:border-brand focus:ring-brand"
-            aria-label="add alias"
-          >
-            +
-          </button>
+          <div className="flex gap-3">
+            <button
+              type="button"
+              onClick={() => {
+                const aliasInput = document.getElementById(
+                  `alias-input-comment-${entry.id}`,
+                );
+                if (!aliasInput) return;
+                const alias = (aliasInput as HTMLInputElement).value.trim();
+                if (!alias) return;
+                console.log('alias:', alias);
+                console.log('parent:', entry.data);
+                addComment(alias, {
+                  id: entry.id,
+                  data: entry.data,
+                  metadata: entry.metadata,
+                });
+                (aliasInput as HTMLInputElement).value = '';
+                setIsAddingComment(false);
+              }}
+              className="rounded-md bg-blue-500 px-6 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-600"
+              aria-label="add comment"
+            >
+              Add Comment
+            </button>
+            <button
+              onClick={() => setIsAddingComment(false)}
+              type="button"
+              className="rounded-md bg-gray-500 px-6 py-2 text-sm font-medium text-white transition-colors hover:bg-gray-600"
+            >
+              Cancel
+            </button>
+          </div>
         </div>
       )}
       {aliasComments.map((comment) => (
