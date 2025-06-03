@@ -6,7 +6,6 @@ import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useState } from 'react';
 import Modal from 'react-modal';
 
-import { LogOutButton } from '@/components/LogOutButton';
 import SearchModalBeta from '@/components/SearchModalBeta';
 import SpeedDial from '@/components/SpeedDial';
 import Uploader from '@/components/Uploader';
@@ -571,19 +570,14 @@ export default function DashboardLayout(props: { children: React.ReactNode }) {
         </>
       }
       rightNav={
-        <>
-          <li>
-            <Link
-              href="/dashboard/settings/"
-              className="border-none text-gray-700 hover:text-gray-900"
-            >
-              Settings
-            </Link>
-          </li>
-          <li>
-            <LogOutButton />
-          </li>
-        </>
+        <li>
+          <Link
+            href="/dashboard/settings/"
+            className="border-none text-gray-700 hover:text-gray-900"
+          >
+            Settings
+          </Link>
+        </li>
       }
     >
       <SearchModalBeta

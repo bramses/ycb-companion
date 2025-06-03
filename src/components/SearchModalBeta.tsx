@@ -4,7 +4,6 @@
 /* eslint-disable jsx-a11y/click-events-have-key-events */
 /* eslint-disable jsx-a11y/no-static-element-interactions */
 
-import { useUser } from '@clerk/nextjs';
 import { instantMeiliSearch } from '@meilisearch/instant-meilisearch';
 import type { SearchClient } from 'instantsearch.js';
 import Image from 'next/image';
@@ -133,12 +132,7 @@ const SearchModalBeta = ({
 }) => {
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [firstLastName, setFirstLastName] = useState({
-    firstName: '',
-    lastName: '',
-  });
 
-  const { user, isLoaded } = useUser();
   // const [userPlan, setUserPlan] = useState<any>(null);
 
   const handleSearchHelper = async (entryData: string) => {
@@ -237,17 +231,6 @@ const SearchModalBeta = ({
   //     input!.focus();
   //   }
   // }, [isOpen]);
-
-  useEffect(() => {
-    if (!isLoaded) return;
-    // set first name as title
-    if (user?.firstName && user?.lastName) {
-      setFirstLastName({
-        firstName: user.firstName,
-        lastName: user.lastName,
-      });
-    }
-  }, [isLoaded, user]);
 
   const renderResultData = (result: any) => {
     if (
@@ -430,15 +413,7 @@ const SearchModalBeta = ({
                       {result.parentData ? (
                         <>
                           <div className="mr-2 flex size-6 shrink-0 items-center justify-center rounded-full bg-gray-300 text-xs font-bold text-white">
-                            {firstLastName.firstName &&
-                            firstLastName.lastName ? (
-                              <>
-                                {firstLastName.firstName[0]}
-                                {firstLastName.lastName[0]}
-                              </>
-                            ) : (
-                              'yCb'
-                            )}
+                            yCb
                           </div>
                           <span className="font-normal">{result.data}</span>
                         </>
@@ -568,15 +543,7 @@ const SearchModalBeta = ({
                         {result.parentData ? (
                           <>
                             <div className="mr-2 flex size-6 shrink-0 items-center justify-center rounded-full bg-gray-300 text-xs font-bold text-white">
-                              {firstLastName.firstName &&
-                              firstLastName.lastName ? (
-                                <>
-                                  {firstLastName.firstName[0]}
-                                  {firstLastName.lastName[0]}
-                                </>
-                              ) : (
-                                'yCb'
-                              )}
+                              yCb
                             </div>
                             <span className="font-normal">{result.data}</span>
                           </>

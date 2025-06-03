@@ -11,22 +11,22 @@ export default function SilentCallback() {
   useEffect(() => {
     const renewUser = async () => {
       try {
-        await userManager.signinSilentCallback();
+        console.log('previous window.location.href:', Cookies.get('routeTo'));
+        await userManager.signinSilentCallback(
+          Cookies.get('routeTo') || '/dashboard',
+        );
+        const user = await userManager.getUser();
+        const redirectTo = Cookies.get('routeTo') || '/dashboard';
+        console.log('redirectTo:', redirectTo);
+        Cookies.set('user', JSON.stringify(user));
+        Cookies.remove('routeTo');
+        router.push(redirectTo);
       } catch (err) {
         console.warn(
           'silent renew callback error, redirecting to sign in',
           err,
         );
         router.push('/signin');
-      }
-      const user = await userManager.getUser();
-
-      Cookies.set('user', JSON.stringify(user));
-      if (Cookies.get('routeTo')) {
-        router.push(Cookies.get('routeTo')!);
-        Cookies.remove('routeTo');
-      } else {
-        router.push('/dashboard');
       }
     };
 

@@ -1,25 +1,13 @@
-'use client';
+import { Suspense } from 'react';
 
-import { useEffect } from 'react';
+import SignIn from './SignInSilent';
 
-import userManager from '@/libs/oidc';
+export const dynamic = 'force-dynamic'; // disable static prerender
 
-export default function Home() {
-  useEffect(() => {
-    async function handleLogin() {
-      await userManager.signinSilent();
-    }
-
-    handleLogin();
-
-    // Redirect to /signin after 5 seconds
-    const timeout = setTimeout(() => {
-      window.location.href = '/signin';
-    }, 5000);
-
-    // Cleanup timeout if component unmounts
-    return () => clearTimeout(timeout);
-  }, []);
-
-  return <div>silent renew…</div>;
+export default function Page() {
+  return (
+    <Suspense fallback={<p>loading signin silent</p>}>
+      <SignIn />
+    </Suspense>
+  );
 }

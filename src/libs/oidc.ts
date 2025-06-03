@@ -18,17 +18,6 @@ const oidcConfig = {
   // userStore: new WebStorageStateStore({ store }),
 };
 
-// prod tester
-// const oidcConfig = {
-//   authority: 'https://yourcommonbase.com/keycloak/realms/ycb',
-//   client_id: 'ycb',
-//   redirect_uri: 'https://yourcommonbase.com/signin-callback',
-//   post_logout_redirect_uri: 'https://yourcommonbase.com/',
-//   scope: 'openid profile email',
-//   automaticSilentRenew: true,
-//   // userStore: new WebStorageStateStore({ store }),
-// };
-
 const userManager = new UserManager(oidcConfig);
 
 userManager.events.addAccessTokenExpired(() => {
@@ -42,8 +31,15 @@ userManager.events.addAccessTokenExpired(() => {
     });
 });
 
+// userManager.events.addUserLoaded(() => {
+//   // once we’ve got a valid user, turn on silent renew
+//   // userManager.settings.automaticSilentRenew = true;
+//   userManager.startSilentRenew();
+// });
+
 userManager.events.addSilentRenewError((error) => {
-  console.warn('silent renew failed, sending to login', error);
+  console.log('oi window.location.href:', window.location.href);
+  console.log('silent renew failed, sending to login', error);
   userManager.signinRedirect();
 });
 

@@ -2,13 +2,11 @@
 
 'use client';
 
-import { useUser } from '@clerk/nextjs';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 import { clearCache } from '@/helpers/old_cache';
 
 const Upload = () => {
-  const { user, isLoaded } = useUser();
   const [textAreaValue, setTextAreaValue] = useState('');
   const [metadataFields, setMetadataFields] = useState([
     { key: 'author', value: 'https://ycb-companion.onrender.com/dashboard' },
@@ -16,20 +14,6 @@ const Upload = () => {
   ]);
   const apiKey = process.env.NEXT_PUBLIC_API_KEY_CF_IMG;
   const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    if (!isLoaded) return;
-    // set first name as title
-    if (user?.firstName) {
-      setMetadataFields([
-        {
-          key: 'author',
-          value: 'https://ycb-companion.onrender.com/dashboard',
-        },
-        { key: 'title', value: `${user.firstName} ${user.lastName}` },
-      ]);
-    }
-  }, [isLoaded, user]);
 
   const addField = () => {
     setMetadataFields([...metadataFields, { key: '', value: '' }]);

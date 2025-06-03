@@ -9,7 +9,6 @@
 
 import 'react-lite-youtube-embed/dist/LiteYouTubeEmbed.css';
 
-import { useUser } from '@clerk/nextjs';
 // import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
@@ -75,11 +74,7 @@ const EntryPage = () => {
   // const [searchResults, setSearchResults] = useState<any[]>([]);
   // const router = useRouter();
   const [showAliasError] = useState(false);
-  const { user, isLoaded } = useUser();
-  const [firstLastName, setFirstLastName] = useState({
-    firstName: '',
-    lastName: '',
-  });
+
   const [showDeleteError] = useState(false);
   const [tempComments, setTempComments] = useState<any[]>([]);
   // const [uniqueRelationships, setUniqueRelationships] = useState<any>(
@@ -425,17 +420,6 @@ const EntryPage = () => {
       asyncFn();
     }
   }, [pathname, data]);
-
-  useEffect(() => {
-    if (!isLoaded) return;
-    // set first name as title
-    if (user?.firstName && user?.lastName) {
-      setFirstLastName({
-        firstName: user.firstName,
-        lastName: user.lastName,
-      });
-    }
-  }, [isLoaded, user]);
 
   useEffect(() => {
     const handleBeforeUnload = (event: BeforeUnloadEvent) => {
@@ -2127,14 +2111,7 @@ again:
             />
             <div className="flex">
               <div className="mr-2 flex size-6 shrink-0 items-center justify-center rounded-full bg-gray-300 text-xs font-bold text-white">
-                {firstLastName.firstName && firstLastName.lastName ? (
-                  <>
-                    {firstLastName.firstName[0]}
-                    {firstLastName.lastName[0]}
-                  </>
-                ) : (
-                  'YCB'
-                )}
+                YCB
               </div>
               {/* {alias &&
                 alias.aliasMetadata &&
@@ -2203,14 +2180,7 @@ again:
             />
             <div className="flex">
               <div className="mr-2 flex size-6 shrink-0 items-center justify-center rounded-full bg-gray-300 text-xs font-bold text-white">
-                {firstLastName.firstName && firstLastName.lastName ? (
-                  <>
-                    {firstLastName.firstName[0]}
-                    {firstLastName.lastName[0]}
-                  </>
-                ) : (
-                  'YCB'
-                )}
+                YCB
               </div>
               {/* {alias &&
                 alias.aliasMetadata &&
