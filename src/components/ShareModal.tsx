@@ -3,7 +3,6 @@
 
 'use client';
 
-import { useUser } from '@clerk/nextjs';
 import Link from 'next/link';
 import React, { useEffect, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
@@ -248,26 +247,9 @@ export default function Share({
   const [modalOpen, setModalOpen] = useState(true);
   const [showShareButton, setShowShareButton] = useState(true);
 
-  const { user, isLoaded } = useUser();
-  const [firstLastName, setFirstLastName] = useState({
-    firstName: '',
-    lastName: '',
-  });
-
   useEffect(() => {
     console.log(modalOpen);
   }, [modalOpen]);
-
-  useEffect(() => {
-    if (!isLoaded) return;
-    // set first name as title
-    if (user?.firstName && user?.lastName) {
-      setFirstLastName({
-        firstName: user.firstName,
-        lastName: user.lastName,
-      });
-    }
-  }, [isLoaded, user]);
 
   // a btn that checks url https://share-ycbs.onrender.com/p/{entryid} and if not a 404 does not show the button
   useEffect(() => {
@@ -396,7 +378,7 @@ export default function Share({
 
     const body = {
       json: modifiedJsonWithImages,
-      username: firstLastName.firstName.toLowerCase(), // todo: change to username on rollover from clerk to self hosted auth
+      username: 'ycb', // todo: change to username on rollover from clerk to self hosted auth
       entryid: entryId,
     };
 

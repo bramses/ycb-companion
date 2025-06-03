@@ -12,22 +12,32 @@ export default function SigninCallback() {
 
   useEffect(() => {
     async function handleCallback() {
+      console.log(window.location.href);
+      // get last router
       console.log('signinRedirectCallback');
-      console.log('callbackUrl:', searchParams.get('callbackUrl'));
+      console.log('signin window.location.href:', Cookies.get('routeTo'));
+      const callbackUrl = searchParams.get('callbackUrl');
+      console.log('callbackUrl:', callbackUrl);
       await userManager.signinCallback();
       const user = await userManager.getUser();
 
+      console.log('user si:', user);
+      const redirectTo = (user?.state as string) || '/dashboard';
       Cookies.set('user', JSON.stringify(user));
-      if (Cookies.get('routeTo')) {
-        router.push(Cookies.get('routeTo')!);
-        Cookies.remove('routeTo');
-      } else {
-        router.push('/dashboard');
-      }
+      Cookies.remove('routeTo');
+      router.push(redirectTo);
+
+      // Cookies.set('user', JSON.stringify(user));
+      // if (Cookies.get('routeTo')) {
+      //   router.push(Cookies.get('routeTo')!);
+      //   Cookies.remove('routeTo');
+      // } else {
+      //   router.push('/dashboard');
+      // }
     }
 
     handleCallback();
-  }, [router, searchParams]);
+  }, []);
 
   return <p>Redirecting...</p>;
 }

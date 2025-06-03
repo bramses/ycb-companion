@@ -508,16 +508,8 @@ const ThreadEntry: React.FC<ThreadEntryProps> = ({
             color: getColor(type),
           }}
         >
-          {cdnImageUrl === '' &&
-          !(
-            (entry.metadata.ogTitle || entry.metadata.ogDescription) &&
-            entry.metadata.ogImages &&
-            entry.metadata.ogImages.length > 0
-          ) ? (
-            <ReactMarkdown>{entry.data}</ReactMarkdown>
-          ) : (
-            ''
-          )}
+          <ReactMarkdown>{entry.data}</ReactMarkdown>
+
           {metadata.type === 'image' ? (
             <img src={cdnImageUrl} alt="author" />
           ) : (
@@ -792,12 +784,14 @@ export default function Thread({ inputId }: { inputId: string }) {
     // fetch id in props and set it as the parent
     const fetchEntry = async () => {
       try {
+        console.log('fetching init w id:', inputId);
         const res = await fetch('/api/fetch', {
           method: 'POST',
           headers: { 'content-type': 'application/json' },
           body: JSON.stringify({ id: inputId }),
         });
         const data = await res.json();
+        console.log('data:', data);
         const entry = data.data;
         if (!idSet.current.has(entry.id)) {
           idSet.current.add(entry.id);
@@ -805,18 +799,18 @@ export default function Thread({ inputId }: { inputId: string }) {
         }
         setParent(entry);
         setExpandedEntries([]);
-        if (entry.comments && entry.comments.length) {
-          const validComments = entry.comments.filter((comment: Entry) => {
-            if (idSet.current.has(comment.id)) return false;
-            idSet.current.add(comment.id);
-            recordFetched(comment);
-            return true;
-          });
-          setNeighbors((prev) => ({ ...prev, [entry.id]: validComments }));
-        }
-        fetchNeighbors(entry.data, entry.id);
+        // if (entry.comments && entry.comments.length) {
+        //   const validComments = entry.comments.filter((comment: Entry) => {
+        //     if (idSet.current.has(comment.id)) return false;
+        //     idSet.current.add(comment.id);
+        //     recordFetched(comment);
+        //     return true;
+        //   });
+        //   setNeighbors((prev) => ({ ...prev, [entry.id]: validComments }));
+        // }
+        // fetchNeighbors(entry.data, entry.id);
       } catch (error) {
-        console.error('error fetching random:', error);
+        console.error('error fetching init:', error);
       }
     };
     fetchEntry();
