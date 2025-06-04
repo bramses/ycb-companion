@@ -1,4 +1,4 @@
-// src/app/[locale]/(auth)/api/download/route.ts
+// src/app/[locale]/(auth)/api/searchToken/route.ts
 import { NextResponse } from 'next/server';
 
 import { logger } from '@/libs/Logger';

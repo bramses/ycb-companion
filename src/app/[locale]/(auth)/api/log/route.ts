@@ -7,7 +7,6 @@ import { getAccessToken } from '@/utils/getAccessToken';
 // import env variables
 
 export const POST = async (request: Request) => {
-  const { limit } = await request.json();
   const { CLOUD_URL } = process.env;
 
   const TOKEN = getAccessToken();
@@ -16,28 +15,35 @@ export const POST = async (request: Request) => {
     return NextResponse.json({ error: 'No token provided' }, { status: 401 });
   }
 
-  const resp = await fetch(`${CLOUD_URL}/log`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${TOKEN}`,
-    },
-    body: JSON.stringify({
-      limit,
-    }),
-  });
-  logger.info(`zresp: ${resp}`);
-  const data = await resp.json();
-
   try {
-    logger.info(`A new log has been created ${JSON.stringify(data)}`);
+    const { limit } = await request.json();
 
-    return NextResponse.json({
-      data,
+    const resp = await fetch(`${CLOUD_URL}/log`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${TOKEN}`,
+      },
+      body: JSON.stringify({ limit }),
     });
-  } catch (error) {
-    logger.error(error, 'An error occurred while creating a log');
 
-    return NextResponse.json({}, { status: 500 });
+    if (!resp.ok) {
+      logger.error(`Failed to fetch log entries: ${resp.status}`);
+      return NextResponse.json(
+        { error: `Failed to fetch log entries: ${resp.status}` },
+        { status: resp.status },
+      );
+    }
+
+    const data = await resp.json();
+    logger.info(`Log entries fetched successfully`);
+
+    return NextResponse.json({ data });
+  } catch (error) {
+    logger.error(error, 'An error occurred while fetching log entries');
+    return NextResponse.json(
+      { error: 'An error occurred while fetching log entries' },
+      { status: 500 },
+    );
   }
 };

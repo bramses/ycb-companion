@@ -95,6 +95,13 @@ export function useAddQueueProcessor() {
               callbacks.delete(local_id);
             }
             saveQueue(rest);
+          } else if (res.status === 401) {
+            // Authentication error - don't retry, clear the queue to prevent spam
+            console.warn(
+              'Authentication error in queue, clearing queue to prevent spam',
+            );
+            saveQueue([]);
+            callbacks.clear();
           } else {
             next.retries += 1; // increment retries
             if (next.retries >= 5) {

@@ -40,10 +40,13 @@ const EntryPage = () => {
   }, [data]);
 
   useEffect(() => {
+    console.log('ep pathname:', pathname);
     if (!data) {
       const asyncFn = async () => {
         // get id from pathname by popping the last element
+
         const id = pathname.split('/').pop();
+        console.log('id:', id);
         if (!id) return;
         const entryId = Array.isArray(id) ? id[0] : id; // Handle both string and string[]
         if (!entryId) return;
@@ -53,6 +56,7 @@ const EntryPage = () => {
           res = await fetchByID(entryId);
         } catch (error: any) {
           if (error.message.includes('No data returned from the API')) {
+            console.log('No data returned from the API');
             // remove current page from the history stack so user doesnt back to it for loop
             window.history.pushState({}, '', window.location.pathname);
             // Redirect to a 404 page

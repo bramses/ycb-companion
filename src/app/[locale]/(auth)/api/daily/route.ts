@@ -7,7 +7,6 @@ import { getAccessToken } from '@/utils/getAccessToken';
 // import env variables
 
 export const POST = async (request: Request) => {
-  const { date } = await request.json();
   const { CLOUD_URL } = process.env;
 
   const TOKEN = getAccessToken();
@@ -16,30 +15,40 @@ export const POST = async (request: Request) => {
     return NextResponse.json({ error: 'No token provided' }, { status: 401 });
   }
 
-  const resp = await fetch(`${CLOUD_URL}/entriesByDate`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${TOKEN}`,
-    },
-    body: JSON.stringify({
-      excludeParentId: false,
-      date,
-      // get the timezone from the user's browser
-      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-    }),
-  });
-  const data = await resp.json();
-
   try {
-    logger.info(`A new daily has been created ${JSON.stringify(data)}`);
+    const { date } = await request.json();
 
-    return NextResponse.json({
-      data,
+    const resp = await fetch(`${CLOUD_URL}/entriesByDate`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${TOKEN}`,
+      },
+      body: JSON.stringify({
+        excludeParentId: false,
+        date,
+        // get the timezone from the user's browser
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+      }),
     });
-  } catch (error) {
-    logger.error(error, 'An error occurred while creating a daily');
 
-    return NextResponse.json({}, { status: 500 });
+    if (!resp.ok) {
+      logger.error(`Failed to fetch daily entries: ${resp.status}`);
+      return NextResponse.json(
+        { error: `Failed to fetch daily entries: ${resp.status}` },
+        { status: resp.status },
+      );
+    }
+
+    const data = await resp.json();
+    logger.info(`Daily entries fetched successfully`);
+
+    return NextResponse.json({ data });
+  } catch (error) {
+    logger.error(error, 'An error occurred while fetching daily entries');
+    return NextResponse.json(
+      { error: 'An error occurred while fetching daily entries' },
+      { status: 500 },
+    );
   }
 };

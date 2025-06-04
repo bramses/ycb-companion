@@ -2,7 +2,6 @@
 
 'use client';
 
-import { useUser } from '@clerk/nextjs';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname, useSearchParams } from 'next/navigation';
@@ -72,7 +71,6 @@ const CustomLabel = ({
 };
 
 const SearchResults = () => {
-  const { user, isLoaded } = useUser();
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
   const [textAreaValue, setTextAreaValue] = useState('');
   const [showLoading, setShowLoading] = useState(false);
@@ -84,11 +82,6 @@ const SearchResults = () => {
   const [entriesCreated, setEntriesCreated] = useState(0);
   const [entriesUpdated, setEntriesUpdated] = useState(0);
   const [showPieChart, setShowPieChart] = useState(false);
-
-  const [firstLastName, setFirstLastName] = useState({
-    firstName: '',
-    lastName: '',
-  });
 
   const searchParams = useSearchParams();
   // const router = useRouter();
@@ -215,17 +208,6 @@ const SearchResults = () => {
       console.error('Error fetching entries summary:', error);
     }
   };
-
-  useEffect(() => {
-    if (!isLoaded) return;
-    // set first name as title
-    if (user?.firstName && user?.lastName) {
-      setFirstLastName({
-        firstName: user.firstName,
-        lastName: user.lastName,
-      });
-    }
-  }, [isLoaded, user]);
 
   useEffect(() => {
     const query = searchParams.get('query');
@@ -522,14 +504,7 @@ const SearchResults = () => {
                   {result.parentData ? (
                     <>
                       <div className="mr-2 flex size-6 shrink-0 items-center justify-center rounded-full bg-gray-300 text-xs font-bold text-white">
-                        {firstLastName.firstName && firstLastName.lastName ? (
-                          <>
-                            {firstLastName.firstName[0]}
-                            {firstLastName.lastName[0]}
-                          </>
-                        ) : (
-                          'yCb'
-                        )}
+                        yCb
                       </div>
                       <span className="font-normal">{result.data}</span>
                     </>

@@ -7,7 +7,6 @@ import { getAccessToken } from '@/utils/getAccessToken';
 // import env variables
 
 export const POST = async (request: Request) => {
-  const { id } = await request.json();
   const { CLOUD_URL } = process.env;
 
   const TOKEN = getAccessToken();
@@ -16,27 +15,37 @@ export const POST = async (request: Request) => {
     return NextResponse.json({ error: 'No token provided' }, { status: 401 });
   }
 
-  const resp = await fetch(`${CLOUD_URL}/fetch`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${TOKEN}`,
-    },
-    body: JSON.stringify({
-      platformId: id.toString(),
-    }),
-  });
-  const data = await resp.json();
-
   try {
-    logger.info(`A new fetch has been created ${JSON.stringify(data)}`);
+    const { id } = await request.json();
 
-    return NextResponse.json({
-      data,
+    const resp = await fetch(`${CLOUD_URL}/fetch`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${TOKEN}`,
+      },
+      body: JSON.stringify({
+        platformId: id.toString(),
+      }),
     });
-  } catch (error) {
-    logger.error(error, 'An error occurred while creating a search');
 
-    return NextResponse.json({}, { status: 500 });
+    if (!resp.ok) {
+      logger.error(`Failed to fetch entry: ${resp.status}`);
+      return NextResponse.json(
+        { error: `Failed to fetch entry: ${resp.status}` },
+        { status: resp.status },
+      );
+    }
+
+    const data = await resp.json();
+    logger.info(`Entry fetched successfully for ID: ${id}`);
+
+    return NextResponse.json({ data });
+  } catch (error) {
+    logger.error(error, 'An error occurred while fetching entry');
+    return NextResponse.json(
+      { error: 'An error occurred while fetching entry' },
+      { status: 500 },
+    );
   }
 };

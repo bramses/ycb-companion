@@ -11,22 +11,41 @@ export default function SilentCallback() {
   useEffect(() => {
     const renewUser = async () => {
       try {
-        await userManager.signinSilentCallback();
+        const user = (await userManager.signinSilentCallback()) as any;
+
+        if (!user || !user.access_token) {
+          console.error(
+            'Silent authentication failed - no user or access token',
+          );
+          // Don't redirect to avoid infinite loops, let the parent handle it
+          throw new Error('Silent authentication failed');
+        }
+
+        const redirectTo =
+          (user?.state as string) || Cookies.get('routeTo') || '/dashboard';
+        console.log('Redirecting to:', redirectTo);
+
+        // Set cookie with validated user object
+        Cookies.set('user', JSON.stringify(user), {
+          path: '/',
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'lax',
+          domain:
+            window.location.hostname === 'localhost'
+              ? undefined
+              : window.location.hostname,
+        });
+
+        console.log('Silent callback: Cookie set successfully');
+
+        Cookies.remove('routeTo');
+        router.push(redirectTo);
       } catch (err) {
         console.warn(
           'silent renew callback error, redirecting to sign in',
           err,
         );
         router.push('/signin');
-      }
-      const user = await userManager.getUser();
-
-      Cookies.set('user', JSON.stringify(user));
-      if (Cookies.get('routeTo')) {
-        router.push(Cookies.get('routeTo')!);
-        Cookies.remove('routeTo');
-      } else {
-        router.push('/dashboard');
       }
     };
 

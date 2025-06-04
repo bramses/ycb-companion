@@ -1,17 +1,13 @@
-'use client';
+import { Suspense } from 'react';
 
-import { useEffect } from 'react';
+import SignIn from './SignInSilent';
 
-import userManager from '@/libs/oidc';
+export const dynamic = 'force-dynamic'; // disable static prerender
 
-export default function Home() {
-  useEffect(() => {
-    async function handleLogin() {
-      await userManager.signinSilent();
-    }
-
-    handleLogin();
-  }, []);
-
-  return <div>silent renew…</div>;
+export default function Page() {
+  return (
+    <Suspense fallback={<p>loading signin silent</p>}>
+      <SignIn />
+    </Suspense>
+  );
 }

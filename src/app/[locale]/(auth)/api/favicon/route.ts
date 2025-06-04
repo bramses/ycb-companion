@@ -1,7 +1,5 @@
 import { NextResponse } from 'next/server';
 
-import { logger } from '@/libs/Logger';
-
 export const GET = async (request: Request) => {
   // extract favicon url from query using https://s2.googleusercontent.com/s2/favicons?domain_url=https://www.stackoverflow.com
 
@@ -18,8 +16,8 @@ export const GET = async (request: Request) => {
   const favicoRes = await fetch(
     `https://s2.googleusercontent.com/s2/favicons?domain_url=${url}`,
   );
-  logger.info(`Fetching favicon for ${url}`);
-  logger.info(`Favicon response status: ${favicoRes.status}`);
+  // logger.info(`Fetching favicon for ${url}`);
+  // logger.info(`Favicon response status: ${favicoRes.status}`);
 
   if (!favicoRes.ok) {
     return NextResponse.json(
