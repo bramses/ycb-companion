@@ -1,0 +1,28 @@
+
+> next-js-boilerplate@1.1.0 dev
+> run-p dev:*
+
+
+> next-js-boilerplate@1.1.0 dev:next
+> next dev
+
+
+> next-js-boilerplate@1.1.0 dev:spotlight
+> spotlight-sidecar
+
+🔎 [Spotlight] Sidecar listening on 8969
+  ▲ Next.js 14.2.28
+  - Local:        http://localhost:3000
+  - Environments: .env.local
+  - Experiments (use with caution):
+    · instrumentationHook
+
+ ✓ Starting...
+ ○ Compiling /instrumentation ...
+ ✓ Compiled /instrumentation in 3.4s (1005 modules)
+ ✓ Ready in 5.6s
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (318kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+ ✓ Compiled /src/middleware in 267ms (518 modules)
+ ○ Compiling /[locale]/api/healthz ...
+ ✓ Compiled /[locale]/api/healthz in 1977ms (1704 modules)
+ GET /api/healthz 200 in 3131ms

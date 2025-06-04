@@ -1,0 +1,51 @@
+
+> next-js-boilerplate@1.1.0 dev
+> run-p dev:*
+
+
+> next-js-boilerplate@1.1.0 dev:spotlight
+> spotlight-sidecar
+
+
+> next-js-boilerplate@1.1.0 dev:next
+> next dev
+
+🔎 [Spotlight] Sidecar is already running on port 8969
+ ⚠ Port 3000 is in use, trying 3001 instead.
+ ⚠ Port 3001 is in use, trying 3002 instead.
+  ▲ Next.js 14.2.28
+  - Local:        http://localhost:3002
+  - Environments: .env.local
+  - Experiments (use with caution):
+    · instrumentationHook
+
+ ✓ Starting...
+ ○ Compiling /instrumentation ...
+ ✓ Compiled /instrumentation in 3.1s (1005 modules)
+ ✓ Ready in 5.3s
+ ○ Compiling /src/middleware ...
+ ✓ Compiled /src/middleware in 820ms (518 modules)
+ ○ Compiling /[locale]/api/debug-cookies ...
+ ✓ Compiled /[locale]/api/debug-cookies in 2.3s (1711 modules)
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (318kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+ GET /api/debug-cookies 200 in 3950ms
+ ○ Compiling /[locale]/api/test-cookie ...
+ ✓ Compiled /[locale]/api/test-cookie in 566ms (1713 modules)
+ POST /api/test-cookie 200 in 1652ms
+ GET /api/test-cookie 200 in 20ms
+ ○ Compiling /[locale]/api/count ...
+ ✓ Compiled /[locale]/api/count in 874ms (1900 modules)
+userData structure: {
+  "access_token": "test-token-123",
+  "id_token": "test-id-token",
+  "profile": {
+    "sub": "test-user"
+  }
+}
+access token found, length: 14
+TOKEN received in count route: test-token-123...
+[15:28:28.855] [31mERROR[39m: [36mFailed to fetch count: 500[39m
+ POST /api/count 500 in 2206ms
+ ✓ Compiled in 884ms (1898 modules)
+ ✓ Compiled in 710ms (781 modules)
+[?25h

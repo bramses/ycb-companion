@@ -1,14 +1,14 @@
 'use client';
 
 import Cookies from 'js-cookie';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { useEffect } from 'react';
 
 import userManager from '@/libs/oidc';
 
 export default function SigninCallback() {
   const searchParams = useSearchParams();
-  const router = useRouter();
+  // const router = useRouter();
 
   useEffect(() => {
     async function handleCallback() {
@@ -20,11 +20,32 @@ export default function SigninCallback() {
       console.log('callbackUrl:', callbackUrl);
       const user = await userManager.signinRedirectCallback();
       console.log('user si:', user);
+
+      if (!user || !user.access_token) {
+        console.error('Authentication failed - no user or access token');
+        // Don't redirect to avoid infinite loops, just show error
+        return;
+      }
+
       const redirectTo =
         (user?.state as string) || Cookies.get('routeTo') || '/dashboard';
-      Cookies.set('user', JSON.stringify(user));
+
+      // Set cookie with validated user object
+      Cookies.set('user', JSON.stringify(user), {
+        path: '/',
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        domain:
+          window.location.hostname === 'localhost'
+            ? undefined
+            : window.location.hostname,
+      });
+
+      // Force page reload to ensure server-side sees the cookie
+      console.log('Authentication complete, reloading to sync cookies');
+
       Cookies.remove('routeTo');
-      router.push(redirectTo);
+      window.location.href = redirectTo;
 
       // Cookies.set('user', JSON.stringify(user));
       // if (Cookies.get('routeTo')) {

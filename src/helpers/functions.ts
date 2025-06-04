@@ -1,14 +1,10 @@
 import type { Dispatch, SetStateAction } from 'react';
 
+import { authedFetch, authedPost } from '@/utils/authedFetchClient';
+
 export const fetchByID = async (entryId: string) => {
-  const response = await fetch('/api/fetch', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      id: entryId,
-    }),
+  const response = await authedPost('/api/fetch', {
+    id: entryId,
   });
 
   const resData = await response.json();
@@ -33,7 +29,7 @@ export const fetchByID = async (entryId: string) => {
 
 export async function fetchFavicon(url: string) {
   try {
-    const response = await fetch(`/api/favicon?url=${url}`);
+    const response = await authedFetch(`/api/favicon?url=${url}`);
     const data = await response.json();
 
     if (!data.favicon) {
@@ -47,13 +43,7 @@ export async function fetchFavicon(url: string) {
 }
 
 export async function fetchSearchEntriesHelper(query: string) {
-  const response = await fetch('/api/search', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ query }),
-  });
+  const response = await authedPost('/api/search', { query });
   const data = await response.json();
   const entries = data.data;
 

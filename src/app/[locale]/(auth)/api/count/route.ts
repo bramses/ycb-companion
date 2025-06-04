@@ -10,30 +10,37 @@ export const POST = async () => {
   const { CLOUD_URL } = process.env;
 
   const TOKEN = getAccessToken();
-  console.log(TOKEN); // Retrieve the token from cookies
 
-  console.log('TOKEN:', TOKEN);
   if (!TOKEN) {
     return NextResponse.json({ error: 'No token provided' }, { status: 401 });
   }
 
-  const resp = await fetch(`${CLOUD_URL}/count`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${TOKEN}`,
-    },
-  });
-
-  const data = await resp.json();
-
   try {
-    logger.info(`A new count has been created ${JSON.stringify(data)}`);
+    const resp = await fetch(`${CLOUD_URL}/count`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${TOKEN}`,
+      },
+    });
+
+    if (!resp.ok) {
+      logger.error(`Failed to fetch count: ${resp.status}`);
+      return NextResponse.json(
+        { error: `Failed to fetch count: ${resp.status}` },
+        { status: resp.status },
+      );
+    }
+
+    const data = await resp.json();
+    logger.info(`Count fetched successfully: ${JSON.stringify(data)}`);
 
     return NextResponse.json(data);
   } catch (error) {
-    logger.error(error, 'An error occurred while creating a count');
-
-    return NextResponse.json({}, { status: 500 });
+    logger.error(error, 'An error occurred while fetching count');
+    return NextResponse.json(
+      { error: 'An error occurred while fetching count' },
+      { status: 500 },
+    );
   }
 };

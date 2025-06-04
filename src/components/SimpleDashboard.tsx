@@ -3,7 +3,7 @@
 import 'react-lite-youtube-embed/dist/LiteYouTubeEmbed.css';
 
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import AnimatedNumbers from 'react-animated-numbers';
 import LiteYouTubeEmbed from 'react-lite-youtube-embed';
 
@@ -25,6 +25,9 @@ const SimpleDashboard = () => {
   const [totalEntries, setTotalEntries] = useState(-1);
   const [todaysEntriesLength, setTodaysEntriesLength] = useState(0);
   const [showLogEmbed, setShowLogEmbed] = useState<Record<string, boolean>>({});
+  const hasLoadedCount = useRef(false);
+  const hasLoadedDaily = useRef(false);
+  const hasLoadedLog = useRef(false);
 
   // const [inboxEntries, setInboxEntries] = useState<any[]>([]);
 
@@ -217,6 +220,9 @@ const SimpleDashboard = () => {
   // }, []);
 
   const fetchTotalEntries = async () => {
+    if (hasLoadedCount.current) return;
+
+    hasLoadedCount.current = true;
     try {
       const response = await fetch('/api/count', {
         method: 'POST',
@@ -228,6 +234,7 @@ const SimpleDashboard = () => {
       setTotalEntries(data.count);
     } catch (error) {
       console.error('Error fetching total entries:', error);
+      hasLoadedCount.current = false; // Reset on error to allow retry
     }
   };
 
@@ -237,34 +244,42 @@ const SimpleDashboard = () => {
 
   useEffect(() => {
     const todaysEntriesLengthFn = async () => {
-      const today = new Date();
-      const year = today.getFullYear();
-      const month = today.getMonth() + 1;
-      let monthString = month.toString();
-      // put a 0 in front of month if it is less than 10
-      if (month < 10) {
-        monthString = `0${month}`;
-      }
-      const day = today.getDate();
-      let dayString = day.toString();
-      if (day < 10) {
-        dayString = `0${day}`;
-      }
-      const dateString = `${year}-${monthString}-${dayString}`;
+      if (hasLoadedDaily.current) return;
 
-      // call /api/entries
-      const response = await fetch('/api/daily', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ date: dateString }),
-      });
-      const responseData = await response.json();
+      hasLoadedDaily.current = true;
+      try {
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = today.getMonth() + 1;
+        let monthString = month.toString();
+        // put a 0 in front of month if it is less than 10
+        if (month < 10) {
+          monthString = `0${month}`;
+        }
+        const day = today.getDate();
+        let dayString = day.toString();
+        if (day < 10) {
+          dayString = `0${day}`;
+        }
+        const dateString = `${year}-${monthString}-${dayString}`;
 
-      // console.log('Fetched records:', responseData);
-      // set entries to the mapped data
-      setTodaysEntriesLength(responseData.data.length);
+        // call /api/entries
+        const response = await fetch('/api/daily', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ date: dateString }),
+        });
+        const responseData = await response.json();
+
+        // console.log('Fetched records:', responseData);
+        // set entries to the mapped data
+        setTodaysEntriesLength(responseData.data.length);
+      } catch (error) {
+        console.error('Error fetching daily entries:', error);
+        hasLoadedDaily.current = false; // Reset on error to allow retry
+      }
     };
 
     todaysEntriesLengthFn();
@@ -272,6 +287,9 @@ const SimpleDashboard = () => {
 
   // get log entries
   const fetchLogEntries = async () => {
+    if (hasLoadedLog.current) return;
+
+    hasLoadedLog.current = true;
     try {
       const response = await fetch('/api/log', {
         method: 'POST',
@@ -323,6 +341,7 @@ const SimpleDashboard = () => {
       setLogEntries(faviconData);
     } catch (error) {
       console.error('Error fetching log entries:', error);
+      hasLoadedLog.current = false; // Reset on error to allow retry
     }
   };
 
@@ -362,7 +381,7 @@ const SimpleDashboard = () => {
     };
 
     fetchImages();
-  }, [logEntries]);
+  }, []);
 
   return (
     <div>
